@@ -1,3 +1,0 @@
-file 'file:/Users/vivek/python/nn-visualization/media/videos/transform/480p15/partial_movie_files/NNTransformTwo/00000.mp4'
-file 'file:/Users/vivek/python/nn-visualization/media/videos/transform/480p15/partial_movie_files/NNTransformTwo/00001.mp4'
-file 'file:/Users/vivek/python/nn-visualization/media/videos/transform/480p15/partial_movie_files/NNTransformTwo/00002.mp4'

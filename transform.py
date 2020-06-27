@@ -3,7 +3,7 @@ from manimlib.imports import *
 import torch
 
 
-path = './K-5_2-Linear_H-100/model.pth'
+path = './model/model.pth'
 model = torch.load(path)
 
 
