@@ -5,6 +5,7 @@ import torch
 
 path = './model/model.pth'
 model = torch.load(path)
+torch.manual_seed(231)
 
 
 def get_data(n=100, d=2, c=3, std=0.2):
@@ -25,24 +26,34 @@ def get_data(n=100, d=2, c=3, std=0.2):
             ))
             y[ix] = i
             index += 1
-    return X, y
+    return X.numpy(), y.numpy()
 
 
 X, Y = get_data(c=5)
-X = X.numpy()
-Y = Y.numpy()
-
-
 colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
+
+
+class Decisions(VGroup):
+    def __init__(self, *args, **kwargs):
+        VGroup.__init__(self, *args, **kwargs)
+        M1 = [8, 0.15, -1.65]
+        M2 = [1.75, 0.1]
+        for i in M1:
+            self.add(FunctionGraph(lambda x: i * x, x_min=0, x_max=10))
+        for i in M2:
+            self.add(FunctionGraph(lambda x: i * x, x_min=-10, x_max=0))
 
 
 class NNTransform(LinearTransformationScene):
     CONFIG = {
         "show_basis_vectors": False,
+        "foreground_plane_kwargs": {
+            "x_line_frequency": 0.5,
+            "y_line_frequency": 0.5,
+        }
     }
 
     def construct(self):
-        NumberPlane
         init_dots = VGroup(
             *[
                 Dot([point[0], point[1], 0], color=colors[Y[index]],
@@ -55,12 +66,15 @@ class NNTransform(LinearTransformationScene):
                     radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
             ]
         )
+        d = Decisions()
+
         self.setup()
         self.add(init_dots)
-        self.plane.prepare_for_nonlinear_transform()
         self.wait()
-        self.apply_nonlinear_transformation(self.function, added_anims=[
-                                            Transform(init_dots, final_dots)], run_time=6)
+        self.apply_nonlinear_transformation(
+            self.function, added_anims=[Transform(init_dots, final_dots)], run_time=6)
+        self.wait()
+        self.play(Write(d))
         self.wait()
 
     def function(self, point):
