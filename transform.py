@@ -1,7 +1,5 @@
-import matplotlib.pyplot as plt
 from manimlib.imports import *
 import torch
-
 
 path = './model/model.pth'
 model = torch.load(path)
@@ -30,6 +28,7 @@ def get_data(n=100, d=2, c=3, std=0.2):
 
 
 X, Y = get_data(c=5)
+
 colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
 
 
@@ -38,10 +37,12 @@ class Decisions(VGroup):
         VGroup.__init__(self, *args, **kwargs)
         M1 = [8, 0.15, -1.65]
         M2 = [1.75, 0.1]
-        for i in M1:
-            self.add(FunctionGraph(lambda x: i * x, x_min=0, x_max=10))
-        for i in M2:
-            self.add(FunctionGraph(lambda x: i * x, x_min=-10, x_max=0))
+        self.add(*[
+            FunctionGraph(lambda x: i * x, x_min=0) for i in M1
+        ],
+            *[
+            FunctionGraph(lambda x: i * x, x_max=0) for i in M2
+        ])
 
 
 class NNTransform(LinearTransformationScene):
