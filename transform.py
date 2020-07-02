@@ -37,25 +37,57 @@ class DecisionQuad(VGroup):
         VGroup.__init__(self, *args, **kwargs)
         self.add(Polygon(ORIGIN, ))
 
+
 class Decisions(VGroup):
     def __init__(self, *args, **kwargs):
         VGroup.__init__(self, *args, **kwargs)
         M1 = [8, 0.15, -1.65]
         M2 = [1.75, 0.1]
-        poly_args={
-            "fill_opacity": 0.5,
-            "stroke_width": 8,
-            "color": RED
+        poly_args = {
+            "fill_opacity": 0.35,
+            "stroke_width": 6,
         }
         self.add(
-            Polygon(ORIGIN, [FRAME_HEIGHT/8, FRAME_HEIGHT-0.1, 0], [FRAME_WIDTH/2, 0, 0], **poly_args)
+            Polygon(
+                ORIGIN,
+                [FRAME_HEIGHT/(2 * 8), FRAME_HEIGHT/2, 0],
+                [FRAME_WIDTH/2, FRAME_HEIGHT/2, 0],
+                [FRAME_WIDTH/2, 0.15 * FRAME_WIDTH/2, 0],
+                **poly_args, color=YELLOW),
+            Polygon(
+                ORIGIN,
+                [FRAME_WIDTH/2, 0.15 * FRAME_WIDTH/2, 0],
+                [FRAME_WIDTH/2, -FRAME_HEIGHT/2, 0],
+                [-FRAME_HEIGHT/(2 * -1.65), -FRAME_HEIGHT/2, 0],
+                **poly_args, color=RED),
+            Polygon(
+                ORIGIN,
+                [-FRAME_HEIGHT/(2 * -1.65), -FRAME_HEIGHT/2, 0],
+                [-FRAME_HEIGHT/(2 * 1.75), -FRAME_HEIGHT/2, 0],
+                **poly_args, color=PURPLE),
+            Polygon(
+                ORIGIN,
+                [-FRAME_HEIGHT/(2 * 1.75), -FRAME_HEIGHT/2, 0],
+                [-FRAME_WIDTH/2, -FRAME_HEIGHT/2, 0],
+                [-FRAME_WIDTH/2, 0.1 * -FRAME_WIDTH/2, 0],
+                **poly_args, color=BLUE),
+            Polygon(
+                ORIGIN,
+                [-FRAME_WIDTH/2, 0.1 * -FRAME_WIDTH/2, 0],
+                [-FRAME_WIDTH/2, FRAME_HEIGHT/2, 0],
+                [FRAME_HEIGHT/(2 * 8), FRAME_HEIGHT/2, 0],
+                **poly_args, color=GREEN),
         )
+        """
         self.add(*[
             FunctionGraph(lambda x: i * x, x_min=0) for i in M1
         ],
             *[
             FunctionGraph(lambda x: i * x, x_max=0) for i in M2
         ])
+        """
+
+
 class NNTest(Scene):
     def construct(self):
         final_dots = VGroup(
@@ -66,11 +98,13 @@ class NNTest(Scene):
         )
         d = Decisions()
         self.add(final_dots, d)
+
     def function(self, point):
         x, y, z = point
         inp = torch.tensor([x, y], dtype=torch.float32)
         x, y = model[:3].forward(inp).detach().numpy()
         return 0.5 * (x * RIGHT + y * UP)
+
 
 class NNTransform(LinearTransformationScene):
     CONFIG = {
@@ -102,7 +136,9 @@ class NNTransform(LinearTransformationScene):
         self.apply_nonlinear_transformation(
             self.function, added_anims=[Transform(init_dots, final_dots)], run_time=6)
         self.wait()
-        self.play(Write(d))
+        for i in d:
+            self.play(Write(i))
+            self.wait(0.25)
         self.wait()
 
     def function(self, point):
