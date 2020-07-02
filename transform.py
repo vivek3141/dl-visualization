@@ -44,7 +44,7 @@ class Decisions(VGroup):
         M1 = [8, 0.15, -1.65]
         M2 = [1.75, 0.1]
         poly_args = {
-            "fill_opacity": 0.35,
+            "fill_opacity": 0.45,
             "stroke_width": 6,
         }
         self.add(
