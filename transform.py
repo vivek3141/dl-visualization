@@ -32,18 +32,40 @@ X, Y = get_data(c=5)
 colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
 
 
+class DecisionQuad(VGroup):
+    def __init__(self, func1, point, func2, color, *args, **kwargs):
+        VGroup.__init__(self, *args, **kwargs)
+        self.add(Polygon(ORIGIN, ))
+
 class Decisions(VGroup):
     def __init__(self, *args, **kwargs):
         VGroup.__init__(self, *args, **kwargs)
         M1 = [8, 0.15, -1.65]
         M2 = [1.75, 0.1]
+        poly_args={
+            "fill_opacity": 0.5,
+            "stroke_width": 8,
+            "color": RED
+        }
+        self.add(
+            Polygon(ORIGIN, [FRAME_HEIGHT/8, FRAME_HEIGHT-0.1, 0], [FRAME_WIDTH/2, 0, 0], **poly_args)
+        )
         self.add(*[
             FunctionGraph(lambda x: i * x, x_min=0) for i in M1
         ],
             *[
             FunctionGraph(lambda x: i * x, x_max=0) for i in M2
         ])
-
+class NNTest(Scene):
+    def construct(self):
+        final_dots = VGroup(
+            *[
+                Dot(self.function([point[0], point[1], 0]), color=colors[Y[index]],
+                    radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
+            ]
+        )
+        d = Decisions()
+        self.add(final_dots, d)
 
 class NNTransform(LinearTransformationScene):
     CONFIG = {
