@@ -28,7 +28,7 @@ colors = np.clip(colors, 0, 511)
 colors = zieger[colors[:, 0], colors[:, 1]]
 model = nn.Sequential(nn.Linear(2, 100), nn.Linear(100, 2))
 
-class ReluTransform(LinearTransformationScene):
+class RandomTransform(LinearTransformationScene):
     CONFIG = {
         "show_basis_vectors": False,
         "foreground_plane_kwargs": {
@@ -45,7 +45,7 @@ class ReluTransform(LinearTransformationScene):
         self.setup()
         self.play(Write(points))
         self.wait()
-        
+
         self.moving_mobjects += [*points]
 
         def func(point):
