@@ -66,6 +66,11 @@ class NNTest(Scene):
         )
         d = Decisions()
         self.add(final_dots, d)
+    def function(self, point):
+        x, y, z = point
+        inp = torch.tensor([x, y], dtype=torch.float32)
+        x, y = model[:3].forward(inp).detach().numpy()
+        return 0.5 * (x * RIGHT + y * UP)
 
 class NNTransform(LinearTransformationScene):
     CONFIG = {
