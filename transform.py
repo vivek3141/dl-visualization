@@ -32,78 +32,62 @@ X, Y = get_data(c=5)
 colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
 
 
-class DecisionQuad(VGroup):
-    def __init__(self, func1, point, func2, color, *args, **kwargs):
-        VGroup.__init__(self, *args, **kwargs)
-        self.add(Polygon(ORIGIN, ))
+class DecisionContour(VGroup):
+    CONFIG = {
+        "u_min": -FRAME_WIDTH/2,
+        "u_max": FRAME_WIDTH/2,
+        "v_min": -FRAME_HEIGHT/2,
+        "v_max": FRAME_HEIGHT/2,
+        "resolution": 256,
+        "fill_opacity": 0.45,
+    }
 
+    def __init__(self, **kwargs):
+        VGroup.__init__(self, **kwargs)
+        self.setup()
 
-class Decisions(VGroup):
-    def __init__(self, *args, **kwargs):
-        VGroup.__init__(self, *args, **kwargs)
-        M1 = [8, 0.15, -1.65]
-        M2 = [1.75, 0.1]
-        poly_args = {
-            "fill_opacity": 0.45,
-            "stroke_width": 6,
-        }
-        self.add(
-            Polygon(
-                ORIGIN,
-                [FRAME_HEIGHT/(2 * 8), FRAME_HEIGHT/2, 0],
-                [FRAME_WIDTH/2, FRAME_HEIGHT/2, 0],
-                [FRAME_WIDTH/2, 0.15 * FRAME_WIDTH/2, 0],
-                **poly_args, color=YELLOW),
-            Polygon(
-                ORIGIN,
-                [FRAME_WIDTH/2, 0.15 * FRAME_WIDTH/2, 0],
-                [FRAME_WIDTH/2, -FRAME_HEIGHT/2, 0],
-                [-FRAME_HEIGHT/(2 * -1.65), -FRAME_HEIGHT/2, 0],
-                **poly_args, color=RED),
-            Polygon(
-                ORIGIN,
-                [-FRAME_HEIGHT/(2 * -1.65), -FRAME_HEIGHT/2, 0],
-                [-FRAME_HEIGHT/(2 * 1.75), -FRAME_HEIGHT/2, 0],
-                **poly_args, color=PURPLE),
-            Polygon(
-                ORIGIN,
-                [-FRAME_HEIGHT/(2 * 1.75), -FRAME_HEIGHT/2, 0],
-                [-FRAME_WIDTH/2, -FRAME_HEIGHT/2, 0],
-                [-FRAME_WIDTH/2, 0.1 * -FRAME_WIDTH/2, 0],
-                **poly_args, color=BLUE),
-            Polygon(
-                ORIGIN,
-                [-FRAME_WIDTH/2, 0.1 * -FRAME_WIDTH/2, 0],
-                [-FRAME_WIDTH/2, FRAME_HEIGHT/2, 0],
-                [FRAME_HEIGHT/(2 * 8), FRAME_HEIGHT/2, 0],
-                **poly_args, color=GREEN),
+    def get_u_values_and_v_values(self):
+        res = tuplify(self.resolution)
+        if len(res) == 1:
+            u_res = v_res = res[0]
+        else:
+            u_res, v_res = res
+        u_min = self.u_min
+        u_max = self.u_max
+        v_min = self.v_min
+        v_max = self.v_max
+
+        u_values = np.linspace(u_min, u_max, u_res + 1)
+        v_values = np.linspace(v_min, v_max, v_res + 1)
+
+        return u_values, v_values
+
+    def setup(self):
+        u_values, v_values = self.get_u_values_and_v_values()
+        faces = VGroup()
+        for i in range(len(u_values) - 1):
+            for j in range(len(v_values) - 1):
+                u1, u2 = u_values[i:i + 2]
+                v1, v2 = v_values[j:j + 2]
+                face = VMobject()
+                face.set_points_as_corners([
+                    [u1, v1, 0],
+                    [u2, v1, 0],
+                    [u2, v2, 0],
+                    [u1, v2, 0],
+                    [u1, v1, 0],
+                ])
+                inp = torch.tensor([(u1+u2)/2, (v1+v2)/2], dtype=torch.float32)
+                c = colors[np.argmax(model[3:].forward(inp).detach().numpy())]
+                face.set_color(c)
+                faces.add(face)
+        faces.set_fill(
+            opacity=self.fill_opacity
         )
-        """
-        self.add(*[
-            FunctionGraph(lambda x: i * x, x_min=0) for i in M1
-        ],
-            *[
-            FunctionGraph(lambda x: i * x, x_max=0) for i in M2
-        ])
-        """
-
-
-class NNTest(Scene):
-    def construct(self):
-        final_dots = VGroup(
-            *[
-                Dot(self.function([point[0], point[1], 0]), color=colors[Y[index]],
-                    radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
-            ]
+        faces.set_stroke(
+            width=0,
         )
-        d = Decisions()
-        self.add(final_dots, d)
-
-    def function(self, point):
-        x, y, z = point
-        inp = torch.tensor([x, y], dtype=torch.float32)
-        x, y = model[:3].forward(inp).detach().numpy()
-        return 0.5 * (x * RIGHT + y * UP)
+        self.add(*faces)
 
 
 class NNTransform(LinearTransformationScene):
@@ -128,17 +112,15 @@ class NNTransform(LinearTransformationScene):
                     radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
             ]
         )
-        d = Decisions()
+        d = DecisionContour()
 
         self.setup()
         self.add(init_dots)
         self.wait()
         self.apply_nonlinear_transformation(
-            self.function, added_anims=[Transform(init_dots, final_dots)], run_time=6)
+            self.function, added_anims=[Transform(init_dots, final_dots)], run_time=8)
         self.wait()
-        for i in d:
-            self.play(Write(i))
-            self.wait(0.25)
+        self.play(FadeIn(d))
         self.wait()
 
     def function(self, point):
