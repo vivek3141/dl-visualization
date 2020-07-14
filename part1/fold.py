@@ -90,11 +90,11 @@ class FoldTransform(RandomTransform):
         inp = torch.tensor(point[:2], dtype=torch.float32)
         y, h, z = model(inp)
         x, y = z.detach().numpy()
-        return 2*(x * RIGHT + y * UP)
+        return 2 * (x * RIGHT + y * UP)
 
     def func2(self, point):
         x, y, z = point
         inp = torch.tensor(point[:2], dtype=torch.float32)
         y = model.linear2(inp)
         x, y = y.detach().numpy()
-        return 2.5*(x * RIGHT + y * UP)
+        return 2.5 * (x * RIGHT + y * UP)
