@@ -101,9 +101,7 @@ class TestTransform(Scene):
             frame.set_phi, 0,
             frame.set_theta, 0
         )
-
-        # self.begin_ambient_camera_rotation(rate=0.1)
-        # self.wait(10)
+        self.wait(2)
 
     def func(self, x, y):
         inp = torch.tensor([x, y], dtype=torch.float32)
