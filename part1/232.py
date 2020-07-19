@@ -28,12 +28,6 @@ class Model(nn.Module):
 torch.manual_seed(8)
 model = Model(2, 3, 2)
 
-
-def rgb2hex(r, g, b):
-    r, g, b = int(r * 255), int(g * 255), int(b * 255)
-    return "#{:02x}{:02x}{:02x}".format(r, g, b)
-
-
 zieger = plt.imread('ziegler.png')
 
 X = torch.randn(1000, 2)
@@ -47,36 +41,97 @@ colors = np.clip(colors, 0, 511)
 
 colors = zieger[colors[:, 0], colors[:, 1]]
 
+def rgb2hex(rgb):
+    return "#{:02x}{:02x}{:02x}".format(*map(lambda x: int(x * 255), rgb))
 
-class TestTransform(ThreeDScene):
+
+class TestTransform(Scene):
     def construct(self):
-        points = VGroup(*[
-            Dot(2*np.array([point[0], point[1], 0]), color=rgb2hex(*colors[index]),
-                radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)
-        ])
+        frame = self.camera.frame
+        points = VGroup()
+
+        for index, point in enumerate(H):
+            d = Dot(list(2*point) + [0], color=rgb2hex(c),
+                radius=0.75*DEFAULT_DOT_RADIUS)
+            points.add(d)
 
         plane = NumberPlane()
 
         self.play(Write(plane))
         self.play(Write(points))
         self.wait()
+        """
+        self.play(
+            frame.set_theta, 0,
+            frame.set_phi, 0.35 * PI
+        )
 
-        self.move_camera(0.8 * np.pi / 2, -0.45 * np.pi)
+        
+        rotate = True
+        frame.add_updater(
+            lambda m, dt: m.become(m.rotate(-0.2 * dt)) if rotate else None
+        )
 
         points2 = VGroup(
-            *[Dot(self.func(*point), color=rgb2hex(*colors[index]),
+            *[Dot(self.func(*point), color=rgb2hex(colors[index]),
                   radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)]
         )
 
-        self.play(Transform(points, points2))
-        self.begin_ambient_camera_rotation(rate=0.1)
+        self.play(Transform(points, points2), run_time=5)
         self.wait(10)
+
+        points3 = VGroup(
+            *[Dot(self.func2(*point), color=rgb2hex(colors[index]),
+                  radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)]
+        )
+
+        self.play(Transform(points, points3), run_time=5)
+        self.wait(10)
+
+        points4 = VGroup(
+            *[Dot(self.func3(*point), color=rgb2hex(colors[index]),
+                  radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)]
+        )
+
+        self.play(Transform(points, points4), run_time=5)
+        self.wait(2)
+        
+        rotate = False
+        self.play(
+            frame.set_phi, 0,
+            frame.set_theta, 0
+        )
+
+        #self.begin_ambient_camera_rotation(rate=0.1)
+        #self.wait(10)
+        """
 
     def func(self, x, y):
         inp = torch.tensor([x, y], dtype=torch.float32)
         y, h, z = model(inp)
         x, y, z = z.detach().numpy()
         return 3 * np.array([x, y, 2*z])
+    
+    def func2(self, x, y):
+        inp = torch.tensor([x, y], dtype=torch.float32)
+        y, h, z = model(inp)
+        x, y, z = h.detach().numpy()
+        return 3 * np.array([x, y, 2*z])
+
+    def func3(self, x, y):
+        inp = torch.tensor([x, y], dtype=torch.float32)
+        y, h, z = model(inp)
+        x, y = y.detach().numpy()
+        return 6 * np.array([x, y, 0])
+
+
+
+class Test(Scene):
+    def construct(self):
+        d = Dot(color="#dd01dd")
+
+        self.play(DrawBorderThenFill(d))
+        self.wait()
 
 
 class RandomTransform(LinearTransformationScene):
@@ -137,4 +192,3 @@ class FoldTransform(RandomTransform):
         inp = torch.tensor(point[:2], dtype=torch.float32)
         y, h, z = model(inp)
         x, y = z.detach().numpy()
-        return (x * RIGHT + y * UP)
