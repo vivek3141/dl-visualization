@@ -25,8 +25,13 @@ class Model(nn.Module):
         return self.linear2(h), h, z
 
 
-torch.manual_seed(8)
+torch.manual_seed(6)
 model = Model(2, 3, 2)
+model.linear1.weight.data = 3*torch.tensor(
+    [[-np.sqrt(2)/2, -np.sqrt(3)/3],
+     [np.sqrt(2)/2, -np.sqrt(3)/3],
+     [0, np.sqrt(3)/3]], dtype=torch.float32)
+model.linear1.bias.data.fill_(1)
 
 zieger = plt.imread('ziegler.png')
 
@@ -46,20 +51,24 @@ def rgb2hex(rgb):
     return "#{:02x}{:02x}{:02x}".format(*map(lambda x: int(x * 255), rgb))
 
 
-class TestTransform(Scene):
+class FoldTransform(Scene):
+    CONFIG = {
+        "wait_duration": 1
+    }
+
     def construct(self):
         frame = self.camera.frame
         points = VGroup()
 
         for index, point in enumerate(H):
-            d = Dot(list(2*point) + [0], color=rgb2hex(c),
+            d = Dot(list(2*point) + [0], color=rgb2hex(colors[index]),
                     radius=0.75*DEFAULT_DOT_RADIUS)
             points.add(d)
 
         plane = NumberPlane()
 
         self.play(Write(plane))
-        self.play(Write(points))
+        self.play(FadeIn(points))
         self.wait()
 
         self.play(
@@ -67,18 +76,24 @@ class TestTransform(Scene):
             frame.set_phi, 0.35 * PI
         )
 
+        axes = ThreeDAxes()
+
+        self.play(Write(axes))
+        self.wait()
+
         rotate = True
-        frame.add_updater(
-            lambda m, dt: m.become(m.rotate(-0.2 * dt)) if rotate else None
-        )
+        # frame.add_updater(
+        #    lambda m, dt: m.become(m.rotate(-0.2 * dt)) if rotate else None
+        # )
 
         points2 = VGroup(
             *[Dot(self.func(*point), color=rgb2hex(colors[index]),
                   radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)]
         )
-
+        # /Users/vivek/manim/manimlib/camera/camera.py:71: RuntimeWarning: invalid value encountered in arccos
+        # phi = np.arccos(Fz[2])
         self.play(Transform(points, points2), run_time=5)
-        self.wait(10)
+        self.wait(self.wait_duration)
 
         points3 = VGroup(
             *[Dot(self.func2(*point), color=rgb2hex(colors[index]),
@@ -86,7 +101,7 @@ class TestTransform(Scene):
         )
 
         self.play(Transform(points, points3), run_time=5)
-        self.wait(10)
+        self.wait(self.wait_duration)
 
         points4 = VGroup(
             *[Dot(self.func3(*point), color=rgb2hex(colors[index]),
@@ -103,20 +118,77 @@ class TestTransform(Scene):
         )
         self.wait(2)
 
+        # self.begin_ambient_camera_rotation(rate=0.1)
+        # self.wait(10)
+
     def func(self, x, y):
         inp = torch.tensor([x, y], dtype=torch.float32)
         y, h, z = model(inp)
         x, y, z = z.detach().numpy()
-        return 3 * np.array([x, y, 2*z])
+        return 1 * np.array([x, y, 1*z])
 
     def func2(self, x, y):
         inp = torch.tensor([x, y], dtype=torch.float32)
         y, h, z = model(inp)
         x, y, z = h.detach().numpy()
-        return 3 * np.array([x, y, 2*z])
+        return 1 * np.array([x, y, 1*z])
 
     def func3(self, x, y):
         inp = torch.tensor([x, y], dtype=torch.float32)
         y, h, z = model(inp)
         x, y = y.detach().numpy()
-        return 6 * np.array([x, y, 0])
+        return 1 * np.array([x, y, 0])
+
+
+class TestTransform(Scene):
+    CONFIG = {
+        "m1": np.array([
+            [-np.sqrt(2)/2, -np.sqrt(3)/3],
+            [np.sqrt(2)/2, -np.sqrt(3)/3],
+            [0, np.sqrt(3)/3]
+        ])
+    }
+
+    def construct(self):
+        frame = self.camera.frame
+        points = VGroup()
+
+        for index, point in enumerate(H):
+            d = Dot(list(2*point) + [0], color=rgb2hex(colors[index]),
+                    radius=0.75*DEFAULT_DOT_RADIUS)
+            points.add(d)
+
+        plane = NumberPlane()
+
+        self.play(Write(plane))
+        self.play(FadeIn(points))
+        self.wait()
+
+        self.play(
+            frame.set_theta, 0,
+            frame.set_phi, 0.35 * PI
+        )
+
+        axes = ThreeDAxes()
+        self.play(Write(axes))
+        self.wait()
+
+        points2 = VGroup(
+            *[Dot(self.func(point), color=rgb2hex(colors[index]),
+                  radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)]
+        )
+
+        self.play(Transform(points, points2))
+        self.wait()
+
+    def func(self, point):
+        x, y = point
+        inp = np.array([[x], [y]])
+        z = 3 * self.m1 @ inp + 1/3 * \
+            np.array([[np.sqrt(3)], [np.sqrt(3)], [np.sqrt(3)]])
+        # print(z)
+        # from pdb import set_trace; set_trace()
+        return z.T
+
+    def relu(self, point):
+        pass
