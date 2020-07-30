@@ -19,10 +19,12 @@ class NeuralNetworkMobject(VGroup):
         "brace_for_large_layers": True,
         "average_shown_activation_of_large_layer": True,
         "include_output_labels": False,
+        "arrow": False,
+        "arrow_tip_size": 0.1
     }
 
-    def __init__(self, neural_network, size=0.15):
-        VGroup.__init__(self)
+    def __init__(self, neural_network, size=0.15, *args, **kwargs):
+        VGroup.__init__(self, *args, **kwargs)
         self.layer_sizes = neural_network
         self.neuron_radius = size
         self.add_neurons()
@@ -96,6 +98,15 @@ class NeuralNetworkMobject(VGroup):
         self.add_to_back(self.edge_groups)
 
     def get_edge(self, neuron1, neuron2):
+        if self.arrow:
+            return Arrow(
+                neuron1.get_center(),
+                neuron2.get_center(),
+                buff=self.neuron_radius,
+                stroke_color=self.edge_color,
+                stroke_width=self.edge_stroke_width,
+                tip_length=self.arrow_tip_size
+            )
         return Line(
             neuron1.get_center(),
             neuron2.get_center(),
@@ -131,3 +142,30 @@ class NeuralNetworkMobject(VGroup):
             text.move_to(edge)
             weight_group.add(text)
         self.add(weight_group)
+
+
+class PerceptronMobject(NeuralNetworkMobject):
+    def add_neurons(self):
+        layers = VGroup(*[
+            self.get_layer(size)
+            for size in self.layer_sizes
+        ])
+        layers.arrange_submobjects(RIGHT, buff=self.layer_to_layer_buff)
+        self.layers = layers
+        self.add(self.layers[1])
+        if self.include_output_labels:
+            self.add_output_labels()
+    
+
+
+class PerceptronOne(Scene):
+    def construct(self):
+        n_color=RED
+        perc = PerceptronMobject([1, 1, 1], arrow=True, arrow_tip_size=0.1, size=0.25,neuron_stroke_color=n_color)
+        circ = Circle(fill_opacity=0.5, color=n_color, radius=0.25, stroke_opacity=0)
+        perc.add(circ)
+        perc.scale(2.5)
+        #for i in perc.layers[0]:
+            #self.remove(i)
+        #perc.remove(perc.layers[1][0])
+        self.add(perc)
