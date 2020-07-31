@@ -1,5 +1,9 @@
 from manimlib.imports import *
 
+
+def heaviside(x):
+    return int(x >= 0)
+
 # NeuralNetworkMobject is not my code, from 3b1b/manim
 
 
@@ -172,7 +176,7 @@ class PerceptronOne(Scene):
         perc = PerceptronMobject(
             [1, 1, 1], arrow=True, arrow_tip_size=0.1, size=0.25, neuron_stroke_color=self.n_color)
         perc.scale(1.5)
-        perc.shift(1.5 * UP)
+        perc.shift(1.5 * UP + 3.5 * LEFT)
 
         circ = Circle(fill_opacity=0.5, color=self.n_color,
                       radius=0.25, stroke_opacity=0)
@@ -180,7 +184,7 @@ class PerceptronOne(Scene):
         def circ_updater(circle):
             new_circle = Circle(
                 fill_opacity=0.5 * heaviside(x.get_value() - 20),
-                color=n_color,
+                color=self.n_color,
                 radius=0.25,
                 stroke_opacity=0
             )
@@ -192,13 +196,7 @@ class PerceptronOne(Scene):
 
         l = NumberLine(x_min=0, x_max=30, numbers_with_elongated_ticks=[], unit_size=0.15, tick_frequency=5,
                        include_numbers=True, numbers_to_show=[i for i in range(0, 31, 5)])
-        l.shift(2.25 * LEFT + 1.5 * DOWN)
-
-        # perc.add(circ)
-
-        # for i in perc.layers[0]:
-        # self.remove(i)
-        # perc.remove(perc.layers[1][0])
+        l.shift(5.75 * LEFT + 1.5 * DOWN)
 
         x_disp = TexMobject("0")
 
@@ -208,13 +206,10 @@ class PerceptronOne(Scene):
             )
             new_disp.shift(1 * LEFT + 1.5 * UP)
             x_disp.become(new_disp)
-            
+
         x_disp.add_updater(x_disp_updater)
 
         ptr = Triangle(fill_opacity=1)
-        # ptr.rotate(180 * DEGREES)
-        # ptr.scale(0.15)
-        # ptr.shift([(x.get_value()-15) * 0.15 - 3.5, -1.6, 0])
 
         def ptr_updater(ptr):
             new_ptr = Triangle(fill_opacity=1)
@@ -226,12 +221,6 @@ class PerceptronOne(Scene):
         ptr.add_updater(ptr_updater)
 
         self.add(circ, perc, l, x_disp, Line(10*UP, 10*DOWN), ptr)
-
-        grp = VGroup(perc, l)
-        grp.shift(3.5 * LEFT)
-
-        # x.set_value(21)
-
         self.wait()
 
         self.play(x.increment_value, 30, rate_func=linear, run_time=6)
