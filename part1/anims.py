@@ -155,17 +155,84 @@ class PerceptronMobject(NeuralNetworkMobject):
         self.add(self.layers[1])
         if self.include_output_labels:
             self.add_output_labels()
-    
+
+
+def heaviside(x):
+    return int(x >= 0)
 
 
 class PerceptronOne(Scene):
+    CONFIG = {
+        "n_color": RED
+    }
+
     def construct(self):
-        n_color=RED
-        perc = PerceptronMobject([1, 1, 1], arrow=True, arrow_tip_size=0.1, size=0.25,neuron_stroke_color=n_color)
-        circ = Circle(fill_opacity=0.5, color=n_color, radius=0.25, stroke_opacity=0)
-        perc.add(circ)
-        perc.scale(2.5)
-        #for i in perc.layers[0]:
-            #self.remove(i)
-        #perc.remove(perc.layers[1][0])
-        self.add(perc)
+        x = ValueTracker(0)
+
+        perc = PerceptronMobject(
+            [1, 1, 1], arrow=True, arrow_tip_size=0.1, size=0.25, neuron_stroke_color=self.n_color)
+        perc.scale(1.5)
+        perc.shift(1.5 * UP)
+
+        circ = Circle(fill_opacity=0.5, color=self.n_color,
+                      radius=0.25, stroke_opacity=0)
+
+        def circ_updater(circle):
+            new_circle = Circle(
+                fill_opacity=0.5 * heaviside(x.get_value() - 20),
+                color=n_color,
+                radius=0.25,
+                stroke_opacity=0
+            )
+            new_circle.scale(1.5)
+            new_circle.shift(3.5 * LEFT + 1.5 * UP)
+            circle.become(new_circle)
+
+        circ.add_updater(circ_updater)
+
+        l = NumberLine(x_min=0, x_max=30, numbers_with_elongated_ticks=[], unit_size=0.15, tick_frequency=5,
+                       include_numbers=True, numbers_to_show=[i for i in range(0, 31, 5)])
+        l.shift(2.25 * LEFT + 1.5 * DOWN)
+
+        # perc.add(circ)
+
+        # for i in perc.layers[0]:
+        # self.remove(i)
+        # perc.remove(perc.layers[1][0])
+
+        x_disp = TexMobject("0")
+
+        def x_disp_updater(x_disp):
+            new_disp = TexMobject(
+                str(heaviside(x.get_value() - 20))
+            )
+            new_disp.shift(1 * LEFT + 1.5 * UP)
+            x_disp.become(new_disp)
+            
+        x_disp.add_updater(x_disp_updater)
+
+        ptr = Triangle(fill_opacity=1)
+        # ptr.rotate(180 * DEGREES)
+        # ptr.scale(0.15)
+        # ptr.shift([(x.get_value()-15) * 0.15 - 3.5, -1.6, 0])
+
+        def ptr_updater(ptr):
+            new_ptr = Triangle(fill_opacity=1)
+            new_ptr.rotate(180 * DEGREES)
+            new_ptr.scale(0.15)
+            new_ptr.shift([(x.get_value()-15) * 0.15 - 3.5, -1.6, 0])
+            ptr.become(new_ptr)
+
+        ptr.add_updater(ptr_updater)
+
+        self.add(circ, perc, l, x_disp, Line(10*UP, 10*DOWN), ptr)
+
+        grp = VGroup(perc, l)
+        grp.shift(3.5 * LEFT)
+
+        # x.set_value(21)
+
+        self.wait()
+
+        self.play(x.increment_value, 30, rate_func=linear, run_time=6)
+        self.wait()
