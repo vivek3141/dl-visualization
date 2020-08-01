@@ -35,7 +35,7 @@ model.linear1.bias.data.fill_(1)
 
 zieger = plt.imread('ziegler.png')
 
-X = torch.randn(1000, 2)
+X = torch.randn(500, 2)
 H = torch.tanh(X)
 
 x_min = -1
@@ -51,18 +51,28 @@ def rgb2hex(rgb):
     return "#{:02x}{:02x}{:02x}".format(*map(lambda x: int(x * 255), rgb))
 
 
+def get_sphere(radius=0.12, shift=ORIGIN, color=RED, resolution=(21, 21)):
+    sphere = Sphere(resolution=resolution)
+    sphere.set_height(radius)
+    sphere.set_color(color)
+    sphere.shift(shift)
+    return sphere
+
+
 class FoldTransform(Scene):
     CONFIG = {
-        "wait_duration": 1
+        "wait_duration": 10
     }
 
     def construct(self):
         frame = self.camera.frame
-        points = VGroup()
+        points = SGroup()
 
         for index, point in enumerate(H):
-            d = Dot(list(2*point) + [0], color=rgb2hex(colors[index]),
-                    radius=0.75*DEFAULT_DOT_RADIUS)
+            d = get_sphere(shift=list(2*point) +
+                           [0], color=rgb2hex(colors[index]))
+            # d = Sphere(color=rgb2hex(colors[index]),
+            #        radius=0.75*DEFAULT_DOT_RADIUS).shift(list(2*point) + [0])
             points.add(d)
 
         plane = NumberPlane()
@@ -82,30 +92,27 @@ class FoldTransform(Scene):
         self.wait()
 
         rotate = True
-        # frame.add_updater(
-        #    lambda m, dt: m.become(m.rotate(-0.2 * dt)) if rotate else None
-        # )
+        frame.add_updater(
+            lambda m, dt: m.become(m.rotate(-0.2 * dt)) if rotate else None
+        )
 
-        points2 = VGroup(
-            *[Dot(self.func(*point), color=rgb2hex(colors[index]),
-                  radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)]
+        points2 = SGroup(
+            *[get_sphere(shift=self.func(*point), color=rgb2hex(colors[index])) for index, point in enumerate(H)]
         )
         # /Users/vivek/manim/manimlib/camera/camera.py:71: RuntimeWarning: invalid value encountered in arccos
         # phi = np.arccos(Fz[2])
         self.play(Transform(points, points2), run_time=5)
         self.wait(self.wait_duration)
 
-        points3 = VGroup(
-            *[Dot(self.func2(*point), color=rgb2hex(colors[index]),
-                  radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)]
+        points3 = SGroup(
+            *[get_sphere(shift=self.func2(*point), color=rgb2hex(colors[index])) for index, point in enumerate(H)]
         )
 
         self.play(Transform(points, points3), run_time=5)
         self.wait(self.wait_duration)
 
-        points4 = VGroup(
-            *[Dot(self.func3(*point), color=rgb2hex(colors[index]),
-                  radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)]
+        points4 = SGroup(
+            *[get_sphere(shift=self.func3(*point), color=rgb2hex(colors[index])) for index, point in enumerate(H)]
         )
 
         self.play(Transform(points, points4), run_time=5)

@@ -195,7 +195,7 @@ class PerceptronOne(Scene):
         circ.add_updater(circ_updater)
 
         l = NumberLine(x_min=0, x_max=30, numbers_with_elongated_ticks=[], unit_size=0.15, tick_frequency=5,
-                       include_numbers=True, numbers_to_show=[i for i in range(0, 31, 5)])
+                       include_numbers=True, numbers_to_show=list(range(0, 31, 5)))
         l.shift(5.75 * LEFT + 1.5 * DOWN)
 
         x_disp = TexMobject("0")
