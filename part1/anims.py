@@ -417,11 +417,6 @@ class PerceptronTwo(Scene):
 
         circ.add_updater(circ_updater)
 
-        l = NumberLine(x_min=0, x_max=30, numbers_with_elongated_ticks=[], unit_size=0.2, tick_frequency=5,
-                       include_numbers=True, numbers_to_show=list(range(0, 31, 5)))
-        # l.center()
-        l.shift((0.2 * -15 + q_width) * RIGHT)
-
         y_disp = TexMobject("0")
 
         def y_disp_updater(y_disp):
@@ -449,17 +444,32 @@ class PerceptronTwo(Scene):
         x_disp.add_updater(x_disp_updater)
         """
 
-        ptr = Triangle(fill_opacity=1)
+        n = 100
+        points = []
+        colors = []
+        c1 = "#99EDCC"
+        c2 = "#B85C8C"
 
-        def ptr_updater(ptr):
-            new_ptr = Triangle(fill_opacity=1)
-            new_ptr.rotate(180 * DEGREES)
-            new_ptr.scale(0.15)
-            new_ptr.shift(
-                [(x.get_value()) * 0.2 + (0.2 * -15 + q_width), -0.1, 0])
-            ptr.become(new_ptr)
+        for _ in range(n):
+            point = np.random.random(2) * 5.5 + 0.25
+            points.append(point)
+            colors.append(1 if point[0] > point[1] else 0)
 
-        ptr.add_updater(ptr_updater)
+        pointg = VGroup(
+            *[Dot([points[i][0], points[i][1], 0], color=c1 if colors[i] else c2) for i in range(len(colors))]
+        )
+        axes = Axes(
+            x_min=0,
+            x_max=6,
+            y_min=0,
+            y_max=6,
+            axis_config={
+                "include_tip": False
+            }
+        )
+        line = FunctionGraph(lambda x: x, x_min=0, x_max=6)
+        grp = VGroup(axes, pointg, line)
+        grp.center()
 
         inp_title = TextMobject(r"Input Space")
         inp_title.scale(1.5)
