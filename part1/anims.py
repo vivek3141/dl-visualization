@@ -184,10 +184,7 @@ class PerceptronOne(Scene):
                       radius=0.25, stroke_opacity=0)
         circ_on = False
 
-        to_move = False
-
         def circ_updater(circle):
-            if not to_move: return
             new_circle = Circle(
                 fill_opacity=0.5 *
                 heaviside(x.get_value() - 20) if not circ_on else 0.5,
@@ -209,7 +206,6 @@ class PerceptronOne(Scene):
         y_disp = TexMobject("0")
 
         def y_disp_updater(y_disp):
-            if not to_move: return
             new_disp = TexMobject(
                 str(heaviside(x.get_value() - 20)) if not circ_on else "1"
             )
@@ -221,7 +217,6 @@ class PerceptronOne(Scene):
         x_disp = TexMobject("0")
 
         def x_disp_updater(x_disp):
-            if not to_move: return
             new_disp = TexMobject(
                 str(int(x.get_value())) + r"^{\circ} \text{C}"
             )
@@ -233,7 +228,6 @@ class PerceptronOne(Scene):
         ptr = Triangle(fill_opacity=1)
 
         def ptr_updater(ptr):
-            if not to_move: return
             new_ptr = Triangle(fill_opacity=1)
             new_ptr.rotate(180 * DEGREES)
             new_ptr.scale(0.15)
@@ -247,7 +241,10 @@ class PerceptronOne(Scene):
         inp_title.scale(1.5)
         inp_title.shift(q_width * RIGHT + 3 * UP)
 
-        self.add(circ, perc, l, x_disp, ptr, y_disp, inp_title)
+        self.play(Write(circ), Write(perc), Write(x_disp), Write(y_disp))
+        self.wait()
+
+        self.play(Write(l), Write(ptr), Write(inp_title))
         self.wait()
 
         self.play(x.increment_value, 30, rate_func=linear, run_time=4)
@@ -303,14 +300,22 @@ class PerceptronOne(Scene):
         self.play(Uncreate(grp))
         
         to_move = False
-        grp2 = Group(circ, perc, x_disp, y_disp)
 
         eq3 = TexMobject(r"\hat{y} = H( mx + b )",
                         tex_to_color_map={r"H": YELLOW, "m": RED, "b": TEAL})
         eq3.scale(1.75)
         eq3.shift(2.5 * DOWN)
         
-        self.play(grp2.shift, q_width * RIGHT)
+        x_inp = TexMobject("x")
+        x_inp.scale(1.5)
+        x_inp.shift(2.5 * LEFT)
+
+        y_out = TexMobject(r"\hat{y}")
+        y_out.scale(1.5)
+        y_out.shift(2.5 * RIGHT)
+
+        self.play(perc.shift, q_width * RIGHT)
+        self.play(Write(x_inp), Write(y_out))
         self.play(Transform(eq, eq3))
         self.wait()
 
