@@ -270,10 +270,10 @@ class PerceptronOne(Scene):
         self.play(x.increment_value, -30, rate_func=linear, run_time=4)
         self.wait()
 
-        eq = TexMobject(r"\hat{y} = H( x - 20 )",
+        eq = TexMobject(r"\hat{y} = H(", r" x", r" - 20 ", r")",
                         tex_to_color_map={r"H": YELLOW})
         eq.scale(1.75)
-        eq.shift(2.5 * DOWN)
+        eq.shift(2.75 * DOWN)
 
         self.play(Write(eq))
         self.wait()
@@ -281,31 +281,35 @@ class PerceptronOne(Scene):
         rect2 = Rectangle(height=4, width=4, color=RED, fill_opacity=0.3)
         rect2.shift((10 * 0.2 + (0.2 * -15 + q_width)) * RIGHT)
 
-        eq2 = TexMobject(r"\hat{y} = H( -x + 20 )",
-                         tex_to_color_map={r"H": YELLOW, r"-": RED})
+        eq2 = TexMobject(r"-", color=RED)
         eq2.scale(1.75)
-        eq2.shift(2.5 * DOWN)
+        eq2.shift(2.75 * DOWN + 0.4 * LEFT)
 
         circ_on = True
 
-        self.play(Transform(rect, rect2), ApplyMethod(active_lbl.shift, 0.2 * 15 * LEFT), ApplyMethod(inactive_lbl.shift, 0.2 * 15 * RIGHT),
-                  ApplyMethod(circ.set_opacity, 1))
-        self.play(Transform(eq, eq2))
+        self.play(
+            Transform(rect, rect2),
+            ApplyMethod(active_lbl.shift, 0.2 * 15 * LEFT),
+            ApplyMethod(inactive_lbl.shift, 0.2 * 15 * RIGHT),
+            ApplyMethod(circ.set_opacity, 1)
+        )
+        self.play(ApplyMethod(eq[:3].shift, 0.75 * LEFT), FadeInFromDown(eq2))
         self.wait()
 
-        list_of_ok = [perc, eq, eq2]
+        list_of_ok = [perc, eq2, eq[:3], eq[3:]]
 
-        grp = Group(*[i for i in self.mobjects if i not in list_of_ok])
-        
+        grp = Group(rect, rect2, inactive_lbl, active_lbl, line,
+                    l, circ, x_disp, y_disp, inp_title, ptr)
+
         self.play(Uncreate(grp))
-        
+
         to_move = False
 
-        eq3 = TexMobject(r"\hat{y} = H( mx + b )",
-                        tex_to_color_map={r"H": YELLOW, "m": RED, "b": TEAL})
+        eq3 = TexMobject(r"\hat{y} = H( mx", r" + b )",
+                         tex_to_color_map={r"H": YELLOW, "m": RED, "b": TEAL})
         eq3.scale(1.75)
-        eq3.shift(2.5 * DOWN)
-        
+        eq3.shift(2.75 * DOWN + 0.7 * LEFT)
+
         x_inp = TexMobject("x")
         x_inp.scale(1.5)
         x_inp.shift(2.5 * LEFT)
@@ -316,7 +320,8 @@ class PerceptronOne(Scene):
 
         self.play(perc.shift, q_width * RIGHT)
         self.play(Write(x_inp), Write(y_out))
-        self.play(Transform(eq, eq3))
+        self.play(FadeOut(eq2), FadeOut(eq[-2]), FadeOut(eq[-1]))
+        self.play(FadeInFromDown(eq3[3]), FadeInFromDown(eq3[-3:]))
         self.wait()
 
 
