@@ -382,3 +382,91 @@ class Heaviside(Scene):
 
         self.play(Transform(eq, eq2))
         self.wait()
+
+
+class PerceptronTwo(Scene):
+    CONFIG = {
+        "n_color": RED
+    }
+
+    def construct(self):
+        q_width = FRAME_WIDTH/4
+
+        x = ValueTracker(0)
+
+        perc = PerceptronMobject(
+            [2, 1, 1], arrow=True, arrow_tip_size=0.1, size=0.25, neuron_stroke_color=self.n_color)
+        perc.scale(1.5)
+        perc.shift(q_width * LEFT)
+
+        circ = Circle(fill_opacity=0.5, color=self.n_color,
+                      radius=0.25, stroke_opacity=0)
+        circ_on = False
+
+        def circ_updater(circle):
+            new_circle = Circle(
+                fill_opacity=0.5 *
+                heaviside(x.get_value() - 20) if not circ_on else 0.5,
+                color=self.n_color,
+                radius=0.25,
+                stroke_opacity=0
+            )
+            new_circle.scale(1.5)
+            new_circle.shift(q_width * LEFT)
+            circle.become(new_circle)
+
+        circ.add_updater(circ_updater)
+
+        l = NumberLine(x_min=0, x_max=30, numbers_with_elongated_ticks=[], unit_size=0.2, tick_frequency=5,
+                       include_numbers=True, numbers_to_show=list(range(0, 31, 5)))
+        # l.center()
+        l.shift((0.2 * -15 + q_width) * RIGHT)
+
+        y_disp = TexMobject("0")
+
+        def y_disp_updater(y_disp):
+            new_disp = TexMobject(
+                str(heaviside(x.get_value() - 20)) if not circ_on else "1"
+            )
+            new_disp.shift(1 * LEFT)
+            y_disp.become(new_disp)
+
+        y_disp.add_updater(y_disp_updater)
+
+        x_disp1 = TexMobject("0" + r"^{\circ} \text{C}")
+        x_disp1.shift(6.25 * LEFT + 0.65 * UP)
+
+        x_disp2 = TexMobject(r"0\%")
+        x_disp2.shift(6.25 * LEFT + 0.65 * DOWN)
+        """
+        def x_disp_updater(x_disp):
+            new_disp = TexMobject(
+                str(int(x.get_value())) + r"^{\circ} \text{C}"
+            )
+            new_disp.shift(6.25 * LEFT)
+            x_disp.become(new_disp)
+
+        x_disp.add_updater(x_disp_updater)
+        """
+
+        ptr = Triangle(fill_opacity=1)
+
+        def ptr_updater(ptr):
+            new_ptr = Triangle(fill_opacity=1)
+            new_ptr.rotate(180 * DEGREES)
+            new_ptr.scale(0.15)
+            new_ptr.shift(
+                [(x.get_value()) * 0.2 + (0.2 * -15 + q_width), -0.1, 0])
+            ptr.become(new_ptr)
+
+        ptr.add_updater(ptr_updater)
+
+        inp_title = TextMobject(r"Input Space")
+        inp_title.scale(1.5)
+        inp_title.shift(q_width * RIGHT + 3 * UP)
+
+        self.play(Write(circ), Write(perc), Write(x_disp2), Write(x_disp1), Write(y_disp))
+        self.wait()
+
+        self.play(Write(l), Write(ptr), Write(inp_title))
+        self.wait()
