@@ -420,10 +420,10 @@ class PerceptronTwo(Scene):
         y_disp = TexMobject("0")
         y_disp.shift(1 * LEFT)
 
-        x_disp1 = TextMobject("Temp").scale(0.75) 
+        x_disp1 = TextMobject("Temp").scale(0.75)
         x_disp1.shift(6.25 * LEFT + 0.65 * UP)
 
-        x_disp2 = TextMobject(r"Humidity").scale(0.75)  
+        x_disp2 = TextMobject(r"Humidity").scale(0.75)
         x_disp2.shift(6.25 * LEFT + 0.65 * DOWN)
 
         xlbl = TextMobject(r"Temperature (°C)")
@@ -501,4 +501,53 @@ class PerceptronTwo(Scene):
 
         self.play(Write(brect))
         self.play(Write(brect_label))
+        self.wait()
+
+        self.play(Uncreate(temp_grp), Uncreate(Group(brect, brect_label)))
+        self.play(eq.shift, 3.5 * UP)
+        self.wait()
+
+        eq2 = TexMobject(
+            r"\hat{y} = H \left( \begin{bmatrix} w_1 \\ w_2 \end{bmatrix} \cdot ",
+            r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}", r" + b \right)",
+            tex_to_color_map={r"\begin{bmatrix} w_1 \\ w_2 \end{bmatrix}": RED, "H": YELLOW})
+        eq2.scale(1.5)
+        eq2.shift(1.5 * DOWN)
+
+        m = TexMobject(r"\textbf{w}", color=RED)
+        m.scale(1.5)
+        m.shift(1.5 * DOWN + 0.5 * LEFT)
+
+        xtex = TexMobject(r"\textbf{x}")
+        xtex.scale(1.5)
+        xtex.shift(1.5 * DOWN + 1.5 * RIGHT)
+
+        self.play(Write(eq2))
+        self.wait()
+
+        self.play(Transform(eq2[3], m))
+        self.wait()
+
+        self.play(Transform(eq2[5], xtex))
+        self.wait()
+
+        eq3 = TexMobject(
+            r"\hat{y} = H( ",r"\textbf{w} \cdot \textbf{x}",r"+ b )",
+            tex_to_color_map={r"\textbf{w}": RED, "H": YELLOW, " b ": TEAL})
+        eq3.scale(1.5)
+        eq3.shift(1.5 * DOWN)
+
+        eq4 = TexMobject(
+            r" \hat{y} = H( ",r"\textbf{W}^T  \textbf{x}",r" + b )",
+            tex_to_color_map={r"\textbf{W}": RED})
+        eq4.scale(1.3)
+        eq4.shift(1.5 * DOWN)
+
+        temp_grp2 = VGroup(eq2, m, xtex)
+
+        self.play(Transform(temp_grp2, eq3))
+        self.wait()
+
+        self.play(FadeOut(temp_grp2[3:5]))
+        self.play(FadeInFromDown(eq4[1:3]))
         self.wait()
