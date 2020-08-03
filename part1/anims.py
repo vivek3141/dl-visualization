@@ -420,31 +420,11 @@ class PerceptronTwo(Scene):
         y_disp = TexMobject("0")
         y_disp.shift(1 * LEFT)
 
-        def y_disp_updater(y_disp):
-            new_disp = TexMobject(
-                str(heaviside(x.get_value() - 20)) if not circ_on else "1"
-            )
-            new_disp.shift(1 * LEFT)
-            y_disp.become(new_disp)
-
-        # y_disp.add_updater(y_disp_updater)
-
         x_disp1 = TextMobject("Temp").scale(0.75)  # + r"^{\circ} \text{C}")
         x_disp1.shift(6.25 * LEFT + 0.65 * UP)
 
         x_disp2 = TextMobject(r"Humidity").scale(0.75)  # 0\%")
         x_disp2.shift(6.25 * LEFT + 0.65 * DOWN)
-
-        """
-        def x_disp_updater(x_disp):
-            new_disp = TexMobject(
-                str(int(x.get_value())) + r"^{\circ} \text{C}"
-            )
-            new_disp.shift(6.25 * LEFT)
-            x_disp.become(new_disp)
-
-        x_disp.add_updater(x_disp_updater)
-        """
 
         xlbl = TextMobject(r"Temperature (°C)")
         xlbl.shift(3 * DOWN + q_width * RIGHT)
@@ -457,11 +437,8 @@ class PerceptronTwo(Scene):
 
         points = []
         colors = []
-        # c1 = "#99EDCC"
-        # c2 = "#B85C8C"
         c1 = WHITE
         c2 = RED
-        # y = -x + 6
 
         for _ in range(n):
             point = np.random.random(2) * 5.5 + 0.25
@@ -509,12 +486,13 @@ class PerceptronTwo(Scene):
         self.play(ApplyMethod(temp_grp.shift, -temp_grp.get_center() + 1 * UP))
         self.wait()
 
-        eq = TexMobject(r"\hat{y} = H(",r"m_1 x_1 + m_2 x_2 + b",r")",
+        eq = TexMobject(r"\hat{y} = H(", r"m_1 x_1 + m_2 x_2 + b", r")",
                         tex_to_color_map={"m_1": RED, "m_2": RED, "b": TEAL, "H": YELLOW})
         eq.scale(1.5)
         eq.shift(2 * DOWN)
 
-        brect = BackgroundRectangle(eq[3:-1], buff=0.1, fill_opacity=0, stroke_opacity=1, color=PURPLE, stroke_width=4)
+        brect = BackgroundRectangle(
+            eq[3:-1], buff=0.1, fill_opacity=0, stroke_opacity=1, color=PURPLE, stroke_width=4)
         brect_label = TextMobject("Equation for Line", color=PURPLE)
         brect_label.shift(1 * DOWN + 1 * RIGHT)
 
