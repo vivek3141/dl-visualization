@@ -486,8 +486,8 @@ class PerceptronTwo(Scene):
         self.play(ApplyMethod(temp_grp.shift, -temp_grp.get_center() + 1 * UP))
         self.wait()
 
-        eq = TexMobject(r"\hat{y} = H(", r"m_1 x_1 + m_2 x_2 + b", r")",
-                        tex_to_color_map={"m_1": RED, "m_2": RED, "b": TEAL, "H": YELLOW})
+        eq = TexMobject(r"\hat{y} = H(", r"w_1 x_1 + w_2 x_2 + b", r")",
+                        tex_to_color_map={"w_1": RED, "w_2": RED, "b": TEAL, "H": YELLOW})
         eq.scale(1.5)
         eq.shift(2 * DOWN)
 
