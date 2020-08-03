@@ -6,6 +6,15 @@ import torch.nn as nn
 from manimlib.imports import *
 import torch.nn.functional as F
 
+"""
+Hi!
+
+For those familiar with manim, this code won't work in the master branch. Instead, you're gonna have to
+use the shaders branch. It has some extra dependencies, so it could be a bit tricky to setup, but if
+you're on mac or linux, using a package manager to install them and pip worked for me
+
+-Vivek
+"""
 
 class Model(nn.Module):
     def __init__(self, D_in, H, D_out):

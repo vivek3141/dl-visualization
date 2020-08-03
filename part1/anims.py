@@ -563,4 +563,6 @@ class PerceptronTwo(Scene):
         self.wait()
 
 
-
+class PerceptronThree(Scene):
+    def construct(self):
+        pass
