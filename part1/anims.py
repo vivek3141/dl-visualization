@@ -420,10 +420,10 @@ class PerceptronTwo(Scene):
         y_disp = TexMobject("0")
         y_disp.shift(1 * LEFT)
 
-        x_disp1 = TextMobject("Temp").scale(0.75)  # + r"^{\circ} \text{C}")
+        x_disp1 = TextMobject("Temp").scale(0.75) 
         x_disp1.shift(6.25 * LEFT + 0.65 * UP)
 
-        x_disp2 = TextMobject(r"Humidity").scale(0.75)  # 0\%")
+        x_disp2 = TextMobject(r"Humidity").scale(0.75)  
         x_disp2.shift(6.25 * LEFT + 0.65 * DOWN)
 
         xlbl = TextMobject(r"Temperature (°C)")
