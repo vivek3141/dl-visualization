@@ -167,7 +167,7 @@ def heaviside(x):
 
 class PerceptronOne(Scene):
     CONFIG = {
-        "n_color": RED
+        "n_color": BLUE
     }
 
     def construct(self):
@@ -386,7 +386,7 @@ class Heaviside(Scene):
 
 class PerceptronTwo(Scene):
     CONFIG = {
-        "n_color": RED
+        "n_color": BLUE
     }
 
     def construct(self):
@@ -418,6 +418,7 @@ class PerceptronTwo(Scene):
         circ.add_updater(circ_updater)
 
         y_disp = TexMobject("0")
+        y_disp.shift(1 * LEFT)
 
         def y_disp_updater(y_disp):
             new_disp = TexMobject(
@@ -426,13 +427,14 @@ class PerceptronTwo(Scene):
             new_disp.shift(1 * LEFT)
             y_disp.become(new_disp)
 
-        y_disp.add_updater(y_disp_updater)
+        # y_disp.add_updater(y_disp_updater)
 
-        x_disp1 = TexMobject("0" + r"^{\circ} \text{C}")
+        x_disp1 = TextMobject("Temp").scale(0.75)  # + r"^{\circ} \text{C}")
         x_disp1.shift(6.25 * LEFT + 0.65 * UP)
 
-        x_disp2 = TexMobject(r"0\%")
+        x_disp2 = TextMobject(r"Humidity").scale(0.75)  # 0\%")
         x_disp2.shift(6.25 * LEFT + 0.65 * DOWN)
+
         """
         def x_disp_updater(x_disp):
             new_disp = TexMobject(
@@ -444,19 +446,30 @@ class PerceptronTwo(Scene):
         x_disp.add_updater(x_disp_updater)
         """
 
+        xlbl = TextMobject(r"Temperature (°C)")
+        xlbl.shift(3 * DOWN + q_width * RIGHT)
+
+        ylbl = TextMobject(r"Humidity (\%)")
+        ylbl.rotate(PI/2)
+        ylbl.shift(3.5 * LEFT + 0.5 * UP + q_width * RIGHT)
+
         n = 100
+
         points = []
         colors = []
-        c1 = "#99EDCC"
-        c2 = "#B85C8C"
+        # c1 = "#99EDCC"
+        # c2 = "#B85C8C"
+        c1 = WHITE
+        c2 = RED
+        # y = -x + 6
 
         for _ in range(n):
             point = np.random.random(2) * 5.5 + 0.25
             points.append(point)
-            colors.append(1 if point[0] > point[1] else 0)
+            colors.append(1 if -point[0] + 6 > point[1] else 0)
 
         pointg = VGroup(
-            *[Dot([points[i][0], points[i][1], 0], color=c1 if colors[i] else c2) for i in range(len(colors))]
+            *[Dot([points[i][0], points[i][1], 0], color=c1 if colors[i] else c2) for i in range(n)]
         )
         axes = Axes(
             x_min=0,
@@ -467,16 +480,47 @@ class PerceptronTwo(Scene):
                 "include_tip": False
             }
         )
-        line = FunctionGraph(lambda x: x, x_min=0, x_max=6)
+
+        line = FunctionGraph(lambda x: -x+6, x_min=0, x_max=6)
         grp = VGroup(axes, pointg, line)
         grp.center()
+        grp.shift(0.5 * UP + q_width * RIGHT)
 
         inp_title = TextMobject(r"Input Space")
         inp_title.scale(1.5)
         inp_title.shift(q_width * RIGHT + 3 * UP)
 
-        self.play(Write(circ), Write(perc), Write(x_disp2), Write(x_disp1), Write(y_disp))
+        self.play(Write(circ), Write(perc), Write(
+            x_disp2), Write(x_disp1), Write(y_disp))
         self.wait()
 
-        self.play(Write(l), Write(ptr), Write(inp_title))
+        self.play(Write(axes))
+        self.play(Write(pointg))
+        self.play(FadeInFromDown(xlbl), FadeInFromDown(ylbl))
+        self.wait()
+
+        self.play(ApplyMethod(pointg.set_opacity, 0.5), Write(line))
+        self.wait()
+
+        self.play(Uncreate(Group(grp, xlbl, ylbl)))
+
+        temp_grp = VGroup(*self.mobjects)
+
+        self.play(ApplyMethod(temp_grp.shift, -temp_grp.get_center() + 1 * UP))
+        self.wait()
+
+        eq = TexMobject(r"\hat{y} = H(",r"m_1 x_1 + m_2 x_2 + b",r")",
+                        tex_to_color_map={"m_1": RED, "m_2": RED, "b": TEAL, "H": YELLOW})
+        eq.scale(1.5)
+        eq.shift(2 * DOWN)
+
+        brect = BackgroundRectangle(eq[3:-1], buff=0.1, fill_opacity=0, stroke_opacity=1, color=PURPLE, stroke_width=4)
+        brect_label = TextMobject("Equation for Line", color=PURPLE)
+        brect_label.shift(1 * DOWN + 1 * RIGHT)
+
+        self.play(Write(eq))
+        self.wait()
+
+        self.play(Write(brect))
+        self.play(Write(brect_label))
         self.wait()
