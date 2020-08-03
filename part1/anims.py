@@ -532,16 +532,22 @@ class PerceptronTwo(Scene):
         self.wait()
 
         eq3 = TexMobject(
-            r"\hat{y} = H( ",r"\textbf{w} \cdot \textbf{x}",r"+ b )",
-            tex_to_color_map={r"\textbf{w}": RED, "H": YELLOW, " b ": TEAL})
+            r"\hat{y} = H( ",r"\textbf{w} \cdot \textbf{x}",r"+ {b} )",
+            tex_to_color_map={r"\textbf{w}": RED, "H": YELLOW, r"{b}": TEAL})
         eq3.scale(1.5)
         eq3.shift(1.5 * DOWN)
 
         eq4 = TexMobject(
-            r" \hat{y} = H( ",r"\textbf{W}^T  \textbf{x}",r" + b )",
-            tex_to_color_map={r"\textbf{W}": RED})
+            r" \hat{y} = H( ",r"\textbf{W}^T  \textbf{x}",r" + {b} )",
+            tex_to_color_map={r"\textbf{W}": RED, r"{b}": TEAL})
         eq4.scale(1.3)
         eq4.shift(1.5 * DOWN)
+
+        w_lbl = TextMobject("Weights", color=RED)
+        w_lbl.shift(0.5 * DOWN + 0 * RIGHT)
+
+        b_lbl = TextMobject("Bias", color=TEAL)
+        b_lbl.shift(2.5 * DOWN + 2.5 * RIGHT)
 
         temp_grp2 = VGroup(eq2, m, xtex)
 
@@ -550,6 +556,10 @@ class PerceptronTwo(Scene):
 
         self.play(FadeOut(temp_grp2[3:5]))
         self.play(FadeInFromDown(eq4[1:3]))
+        self.wait()
+
+        self.play(Write(w_lbl))
+        self.play(Write(b_lbl))
         self.wait()
 
 
