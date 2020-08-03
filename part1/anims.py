@@ -551,3 +551,6 @@ class PerceptronTwo(Scene):
         self.play(FadeOut(temp_grp2[3:5]))
         self.play(FadeInFromDown(eq4[1:3]))
         self.wait()
+
+
+
