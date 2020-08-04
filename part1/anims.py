@@ -576,22 +576,28 @@ class PerceptronThree(Scene):
                 r"H": YELLOW, r"\begin{bmatrix} w_1 \ w_2 \ w_3 \end{bmatrix}": RED, r"{b}": BLUE}
         )
 
-        # eq = TexMobject(
-        #     r"\hat{y} = H \left( ",r"\begin{bmatrix} w_1 \ w_2 \ w_3 \end{bmatrix}",
-        #     r"\begin{bmatrix} x_1 \\ x_2 \\ x_3 \end{bmatrix}", r" + {b} \right)")
-        # )
         eq.scale(1.25)
-        eq.shift(1.5 * DOWN)
+        eq.shift(2 * DOWN)
 
         m = TexMobject(r"\textbf{W}", color=RED)
         m.scale(1.5)
-        m.shift(1.5 * DOWN + 0.5 * LEFT)
+        m.shift(2 * DOWN + 0.5 * LEFT)
 
         xtex = TexMobject(r"\textbf{x}")
         xtex.scale(1.5)
-        xtex.shift(1.5 * DOWN + 1.5 * RIGHT)
+        xtex.shift(2 * DOWN + 1.5 * RIGHT)
+
+        x_disp1 = TextMobject("Temp").scale(0.75)
+        x_disp1.shift(4 * LEFT + 2.75 * UP)
+
+        x_disp2 = TextMobject(r"Humidity").scale(0.75)
+        x_disp2.shift(4 * LEFT + 1.5 * UP)
+
+        x_disp3 = TextMobject("Wind Speed").scale(0.75)
+        x_disp3.shift(4 * LEFT + 0.25 * UP)
 
         self.play(Write(perc))
+        self.play(Write(x_disp1), Write(x_disp2), Write(x_disp3))
         self.wait()
 
         self.play(Write(eq))
