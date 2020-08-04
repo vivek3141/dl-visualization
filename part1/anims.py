@@ -493,7 +493,7 @@ class PerceptronTwo(Scene):
 
         brect = BackgroundRectangle(
             eq[3:-1], buff=0.1, fill_opacity=0, stroke_opacity=1, color=PURPLE, stroke_width=4)
-        brect_label = TextMobject("Equation for Line", color=PURPLE)
+        brect_label = TextMobject("Line", color=PURPLE)
         brect_label.shift(1 * DOWN + 1 * RIGHT)
 
         self.play(Write(eq))
@@ -508,13 +508,13 @@ class PerceptronTwo(Scene):
         self.wait()
 
         eq2 = TexMobject(
-            r"\hat{y} = H \left( \begin{bmatrix} w_1 \\ w_2 \end{bmatrix} \cdot ",
-            r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}", r" + b \right)",
-            tex_to_color_map={r"\begin{bmatrix} w_1 \\ w_2 \end{bmatrix}": RED, "H": YELLOW})
+            r"\hat{y} = H \left( \begin{bmatrix} w_1 \ w_2 \end{bmatrix} ",
+            r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}", r" + {b} \right)",
+            tex_to_color_map={r"\begin{bmatrix} w_1 \ w_2 \end{bmatrix}": RED, "H": YELLOW, "{b}": BLUE})
         eq2.scale(1.5)
         eq2.shift(1.5 * DOWN)
 
-        m = TexMobject(r"\textbf{w}", color=RED)
+        m = TexMobject(r"\textbf{W}", color=RED)
         m.scale(1.5)
         m.shift(1.5 * DOWN + 0.5 * LEFT)
 
@@ -528,18 +528,18 @@ class PerceptronTwo(Scene):
         self.play(Transform(eq2[3], m))
         self.wait()
 
-        self.play(Transform(eq2[5], xtex))
+        self.play(Transform(eq2[4], xtex))
         self.wait()
 
-        eq3 = TexMobject(
-            r"\hat{y} = H( ",r"\textbf{w} \cdot \textbf{x}",r"+ {b} )",
-            tex_to_color_map={r"\textbf{w}": RED, "H": YELLOW, r"{b}": TEAL})
-        eq3.scale(1.5)
-        eq3.shift(1.5 * DOWN)
+        # eq3 = TexMobject(
+        #     r"\hat{y} = H( ",r"\textbf{w} \cdot \textbf{x}",r"+ {b} )",
+        #     tex_to_color_map={r"\textbf{w}": RED, "H": YELLOW, r"{b}": TEAL})
+        # eq3.scale(1.5)
+        # eq3.shift(1.5 * DOWN)
 
         eq4 = TexMobject(
-            r" \hat{y} = H( ",r"\textbf{W}^T  \textbf{x}",r" + {b} )",
-            tex_to_color_map={r"\textbf{W}": RED, r"{b}": TEAL})
+            r" \hat{y} = H( ", r"\textbf{W}  \textbf{x}", r" + {b} )",
+            tex_to_color_map={r"\textbf{W}": RED, r"{b}": TEAL, r"H": YELLOW})
         eq4.scale(1.3)
         eq4.shift(1.5 * DOWN)
 
@@ -551,12 +551,12 @@ class PerceptronTwo(Scene):
 
         temp_grp2 = VGroup(eq2, m, xtex)
 
-        self.play(Transform(temp_grp2, eq3))
+        self.play(Transform(temp_grp2, eq4))
         self.wait()
 
-        self.play(FadeOut(temp_grp2[3:5]))
-        self.play(FadeInFromDown(eq4[1:3]))
-        self.wait()
+        # self.play(FadeOut(temp_grp2[3:5]))
+        # self.play(FadeInFromDown(eq4[1:3]))
+        # self.wait()
 
         self.play(Write(w_lbl))
         self.play(Write(b_lbl))
@@ -565,4 +565,40 @@ class PerceptronTwo(Scene):
 
 class PerceptronThree(Scene):
     def construct(self):
-        pass
+        perc = PerceptronMobject([3, 1, 1])
+        perc.scale(2.5)
+        perc.shift(1.5 * UP)
+
+        eq = TexMobject(
+            r"\hat{y} = H \Bigg( \begin{bmatrix} w_1 \ w_2 \ w_3 \end{bmatrix} ",
+            r"\begin{bmatrix} x_1 \\ x_2 \\ x_3 \end{bmatrix}", r"+ {b} \Bigg)",
+            tex_to_color_map={
+                r"H": YELLOW, r"\begin{bmatrix} w_1 \ w_2 \ w_3 \end{bmatrix}": RED, r"{b}": BLUE}
+        )
+
+        # eq = TexMobject(
+        #     r"\hat{y} = H \left( ",r"\begin{bmatrix} w_1 \ w_2 \ w_3 \end{bmatrix}",
+        #     r"\begin{bmatrix} x_1 \\ x_2 \\ x_3 \end{bmatrix}", r" + {b} \right)")
+        # )
+        eq.scale(1.25)
+        eq.shift(1.5 * DOWN)
+
+        m = TexMobject(r"\textbf{W}", color=RED)
+        m.scale(1.5)
+        m.shift(1.5 * DOWN + 0.5 * LEFT)
+
+        xtex = TexMobject(r"\textbf{x}")
+        xtex.scale(1.5)
+        xtex.shift(1.5 * DOWN + 1.5 * RIGHT)
+
+        self.play(Write(perc))
+        self.wait()
+
+        self.play(Write(eq))
+        self.wait()
+
+        self.play(Transform(eq[3], m))
+        self.wait()
+
+        self.play(Transform(eq[4], xtex))
+        self.wait()

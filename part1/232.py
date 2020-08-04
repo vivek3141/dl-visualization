@@ -11,7 +11,7 @@ Hi!
 
 For those familiar with manim, this code won't work in the master branch. Instead, you're gonna have to
 use the shaders branch. It has some extra dependencies, so it could be a bit tricky to setup, but if
-you're on mac or linux, using a package manager to install them and pip worked for me
+you're on mac or linux, using a package manager to install them and pip worked for me.
 
 -Vivek
 """
