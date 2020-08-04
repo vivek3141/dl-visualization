@@ -531,12 +531,6 @@ class PerceptronTwo(Scene):
         self.play(Transform(eq2[4], xtex))
         self.wait()
 
-        # eq3 = TexMobject(
-        #     r"\hat{y} = H( ",r"\textbf{w} \cdot \textbf{x}",r"+ {b} )",
-        #     tex_to_color_map={r"\textbf{w}": RED, "H": YELLOW, r"{b}": TEAL})
-        # eq3.scale(1.5)
-        # eq3.shift(1.5 * DOWN)
-
         eq4 = TexMobject(
             r" \hat{y} = H( ", r"\textbf{W}  \textbf{x}", r" + {b} )",
             tex_to_color_map={r"\textbf{W}": RED, r"{b}": TEAL, r"H": YELLOW})
@@ -553,10 +547,6 @@ class PerceptronTwo(Scene):
 
         self.play(Transform(temp_grp2, eq4))
         self.wait()
-
-        # self.play(FadeOut(temp_grp2[3:5]))
-        # self.play(FadeInFromDown(eq4[1:3]))
-        # self.wait()
 
         self.play(Write(w_lbl))
         self.play(Write(b_lbl))
