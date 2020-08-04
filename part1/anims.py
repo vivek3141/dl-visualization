@@ -598,3 +598,8 @@ class PerceptronThree(Scene):
 
         self.play(Transform(eq[4], xtex))
         self.wait()
+
+
+class LinearlySeparable(Scene):
+    def construct(self):
+        
