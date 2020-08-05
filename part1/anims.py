@@ -600,6 +600,53 @@ class PerceptronThree(Scene):
         self.wait()
 
 
+class SigmoidIntro(Scene):
+    def construct(self):
+        axes = Axes(
+            x_min=-3,
+            x_max=3,
+            y_min=0,
+            y_max=2,
+            axis_config={
+                "include_tip": False
+            }
+        )
+        f = VGroup(FunctionGraph(lambda x: 0, x_min=-3, x_max=0),
+                   FunctionGraph(lambda x: 2, x_min=0, x_max=3))
+        f2 = FunctionGraph(
+            lambda x: 2/(1+np.exp(-2*x)),
+            x_min=-3, x_max=3, color=GOLD)
+
+        func = VGroup(axes, f, f2)
+        func.center()
+        func.scale(1.5)
+        func.shift(DOWN)
+
+        eq = PieceWiseTwo(r"x \geq 0", r"x < 0", "x")
+        eq.shift(2.5 * UP)
+
+        self.play(Write(axes), Write(f))
+        self.play(Write(eq))
+        self.wait()
+
+        eq2 = TexMobject(
+            r"\sigma ( x ) = \frac{1}{1 + e^{-x}}", tex_to_color_map={r"\sigma": YELLOW})
+        eq2.scale(1.5)
+        eq2.shift(2.75 * UP)
+
+        lbls = VGroup(
+            TexMobject("0.5").shift(DOWN),
+            TexMobject("1.0").shift(0.5 * UP)
+        ).shift(0.75 * LEFT + 0.2 * UP)
+
+        self.play(Transform(f, f2))
+        self.wait()
+
+        self.play(Transform(eq, eq2))
+        self.play(Write(lbls))
+        self.wait()
+
+
 class LinearlyS(Scene):
     def construct(self):
         n = 100
