@@ -600,6 +600,45 @@ class PerceptronThree(Scene):
         self.wait()
 
 
-class LinearlySeparable(Scene):
+class LinearlyS(Scene):
     def construct(self):
-        
+        n = 100
+        points = []
+        colors = []
+        c1 = "#99EDCC"
+        c2 = "#B85C8C"
+
+        for _ in range(n):
+            point = np.random.random(2) * 5.5 + 0.25
+            points.append(point)
+            colors.append(1 if point[0] > point[1] else 0)
+
+        pointg = VGroup(
+            *[Dot([points[i][0], points[i][1], 0], color=c1 if colors[i] else c2) for i in range(len(colors))]
+        )
+        axes = Axes(
+            x_min=0,
+            x_max=6,
+            y_min=0,
+            y_max=6,
+            axis_config={
+                "include_tip": False
+            }
+        )
+        line = FunctionGraph(lambda x: x, x_min=0, x_max=6)
+        grp = VGroup(axes, pointg, line)
+        grp.center()
+
+        self.play(Write(axes))
+        self.play(Write(pointg))
+        self.wait()
+
+        self.play(ApplyMethod(pointg.set_opacity, 0.5), Write(line))
+        self.wait()
+
+        title = TextMobject("Linearly Separable")
+        title.scale(2.5)
+        title.add_background_rectangle()
+
+        self.play(Write(title))
+        self.wait()
