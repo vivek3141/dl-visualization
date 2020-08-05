@@ -731,3 +731,23 @@ class LinearlyS(Scene):
 
         self.play(Write(title))
         self.wait()
+
+
+class HardDataset(Scene):
+    def construct(self):
+        n = 100
+        points = []
+        colors = []
+        c1 = "#99EDCC"
+        c2 = "#B85C8C"
+
+        for _ in range(n):
+            point = np.random.random(2) * 10 + 0
+            points.append(point)
+            colors.append(1 if point[0] > point[1] else 0)
+
+        pointg = VGroup(
+            *[Dot([points[i][0], points[i][1], 0], color=c1 if colors[i] else c2) for i in range(len(colors))]
+        )
+
+        self.add(pointg)
