@@ -131,7 +131,7 @@ class NeuralNetworkMobject(VGroup):
     def add_y(self):
         self.output_labels = VGroup()
         for n, neuron in enumerate(self.layers[-1].neurons):
-            label = TexMobject("y")
+            label = TexMobject(f"y_{n + 1}")
             label.set_height(0.3 * neuron.get_height())
             label.move_to(neuron)
             self.output_labels.add(label)
@@ -765,4 +765,41 @@ class NeuralNetwork(Scene):
         n.scale(3)
 
         self.play(Write(n))
+        self.wait()
+
+
+class NN22(Scene):
+    def construct(self):
+        n = NeuralNetworkMobject([2, 2])
+        n.scale(3)
+        n.shift(1.5 * UP)
+
+        n.add_input_labels()
+        n.add_y()
+
+        eq1 = TexMobject(
+            r"y_1 = ", r"\sigma (w_{11} x_1 + w_{12} x_2 + b_1)",
+            tex_to_color_map={
+                r"\sigma": YELLOW,
+                r"w_{11}": RED, r"w_{12}": RED, r"b_1": BLUE}
+        )
+        eq1.scale(1.5)
+        eq1.shift(1 * DOWN)
+
+        eq2 = TexMobject(
+            r"y_2 = ", r"\sigma (w_{21} x_1 + w_{22} x_2 + b_2)",
+            tex_to_color_map={
+                r"\sigma": YELLOW,
+                r"w_{21}": RED, r"w_{22}": RED, r"b_2": BLUE}
+        )
+        eq2.scale(1.5)
+        eq2.shift(2.5 * DOWN)
+
+        self.play(Write(n))
+        self.wait()
+
+        self.play(Write(eq1))
+        self.wait()
+
+        self.play(Write(eq2))
         self.wait()
