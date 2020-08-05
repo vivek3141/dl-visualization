@@ -647,6 +647,48 @@ class SigmoidIntro(Scene):
         self.wait()
 
 
+class ReluIntro(Scene):
+    def construct(self):
+        axes = Axes(
+            x_min=-3,
+            x_max=3,
+            y_min=-1,
+            y_max=3,
+            axis_config={
+                "include_tip": False
+            }
+        )
+        f = FunctionGraph(lambda x: max(0, x), x_min=-3, x_max=3)
+
+        grp = VGroup(axes, f)
+        grp.shift(1.5 * DOWN)
+
+        eq = TexMobject(
+            r"\text{ReLU}(x) = \text{max}(0, x)",
+            tex_to_color_map={r"\text{ReLU}": BLUE, r"\text{max}": GOLD}
+        )
+        eq.scale(1.25)
+        eq.shift(3 * UP)
+
+        t1 = TexMobject(r"y=0", color=YELLOW)
+        t1.shift(1.5 * LEFT + 1 * DOWN)
+
+        t2 = TexMobject(r"y=x", color=YELLOW)
+        t2.rotate(45 * DEGREES)
+        t2.shift((np.sqrt(3) - 1.5) * UP + 1 * RIGHT)
+
+        self.play(Write(axes))
+        self.play(Write(f))
+        self.wait()
+
+        self.play(Write(t1))
+        self.play(Write(t2))
+        self.wait()
+
+        self.play(Write(eq))
+        self.wait()
+
+
 class LinearlyS(Scene):
     def construct(self):
         n = 100
