@@ -795,11 +795,42 @@ class NN22(Scene):
         eq2.scale(1.5)
         eq2.shift(2.5 * DOWN)
 
+        eq = TexMobject(
+            r"\begin{bmatrix} w_{11} \ w_{12} \\ w_{21} \ w_{22} \end{bmatrix}",
+            r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix} + \begin{bmatrix} {b_1} \\ {b_2} \end{bmatrix}= ",
+            r"\begin{bmatrix} {w_{11}} x_1 + {w_{12}} x_2 + b_1 \\ {w_{21}} x_1 + {w_{22}} x_2 + b_2 \end{bmatrix}",
+            tex_to_color_map={
+                r"\begin{bmatrix} w_{11} \ w_{12} \\ w_{21} \ w_{22} \end{bmatrix}": RED,
+                r"\begin{bmatrix} {b_1} \\ {b_2} \end{bmatrix}": TEAL}
+        )
+        eq.scale(1.25)
+        eq.shift(2 * DOWN)
+
+        eqw1 = TexMobject(
+            r"w_{11} x_1 + w_{12} x_2 + b_1",
+            tex_to_color_map={
+                r"\sigma": YELLOW,
+                r"w_{11}": RED, r"w_{12}": RED, r"b_1": BLUE})
+        eqw1.scale(1.25)
+        eqw1.move_to(eq[-1])
+        eqw1.shift(0.39 * UP)
+
+        eqw2 = TexMobject(
+            r"w_{21} x_1 + w_{22} x_2 + b_2",
+            tex_to_color_map={
+                r"\sigma": YELLOW,
+                r"w_{21}": RED, r"w_{22}": RED, r"b_2": BLUE})
+        eqw2.scale(1.25)
+        eqw2.move_to(eq[-1])
+        eqw2.shift(0.36 * DOWN)
+
         self.play(Write(n))
         self.wait()
 
-        self.play(Write(eq1))
-        self.wait()
+        self.add(eq, eqw1, eqw2)
 
-        self.play(Write(eq2))
-        self.wait()
+        # self.play(Write(eq1))
+        # self.wait()
+
+        # self.play(Write(eq2))
+        # self.wait()
