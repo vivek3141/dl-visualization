@@ -7,6 +7,61 @@ def heaviside(x):
 # NeuralNetworkMobject is not my code, from 3b1b/manim
 
 
+class Intro(Scene):
+    def construct(self):
+        w_width = FRAME_WIDTH/4
+        h_height = FRAME_HEIGHT/4
+        buff = 0.5
+
+        s = VGroup()
+        t = VGroup()
+
+        for i, coors in enumerate([[-i * (w_width + buff), i * (h_height - 0.25)] for i in range(-1, 2)]):
+            s.add(
+                ScreenRectangle(height=2).shift([*coors, 0])
+            )
+            t.add(
+                TextMobject(
+                    f"Part {3-i}").shift([coors[0], coors[1]+1.5, 0]).scale(1.5)
+            )
+
+        for i in range(3):
+            self.play(GrowFromCenter(s[2-i]))
+            self.play(FadeInFromDown(t[2-i]))
+
+        tbc = TextMobject("To be continued...")
+        tbc.scale(2)
+        tbc.shift(3 * DOWN + 2.5 * LEFT)
+
+        self.play(Write(tbc))
+        self.wait()
+
+
+class Helpers(Scene):
+    def construct(self):
+        alf = ImageMobject("./img/alfredo.jpg")
+        alf.scale(2)
+        alf.shift(3 * LEFT + UP)
+
+        yann = ImageMobject("./img/yann.jpg")
+        yann.scale(2)
+        yann.shift(3 * RIGHT + UP)
+
+        t1 = TextMobject("Alfredo Canziani")
+        t1.scale(1.5)
+        t1.shift(3 * LEFT + 2.5 * DOWN)
+
+        t2 = TextMobject("Yann LeCun")
+        t2.scale(1.5)
+        t2.shift(3 * RIGHT + 2.5 * DOWN)
+
+        self.play(FadeInFromDown(alf))
+        self.play(FadeInFromDown(t1))
+        self.play(FadeInFromDown(yann))
+        self.play(FadeInFromDown(t2))
+        self.wait()
+
+
 class NeuralNetworkMobject(VGroup):
     CONFIG = {
         "neuron_radius": 0.15,
@@ -161,10 +216,6 @@ class PerceptronMobject(NeuralNetworkMobject):
             self.add_output_labels()
 
 
-def heaviside(x):
-    return int(x >= 0)
-
-
 class PerceptronOne(Scene):
     CONFIG = {
         "n_color": BLUE
@@ -200,7 +251,6 @@ class PerceptronOne(Scene):
 
         l = NumberLine(x_min=0, x_max=30, numbers_with_elongated_ticks=[], unit_size=0.2, tick_frequency=5,
                        include_numbers=True, numbers_to_show=list(range(0, 31, 5)))
-        # l.center()
         l.shift((0.2 * -15 + q_width) * RIGHT)
 
         y_disp = TexMobject("0")
