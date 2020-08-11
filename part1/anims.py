@@ -1,4 +1,15 @@
 from manimlib.imports import *
+import pickle
+import gzip
+
+
+def load_data():
+    f = gzip.open('../mnist/mnist.pkl.gz', 'rb')
+    u = pickle._Unpickler(f)
+    u.encoding = 'latin1'
+    training_data, validation_data, test_data = u.load()
+    f.close()
+    return (training_data, validation_data, test_data)
 
 
 def heaviside(x):
@@ -59,6 +70,39 @@ class Helpers(Scene):
         self.play(FadeInFromDown(t1))
         self.play(FadeInFromDown(yann))
         self.play(FadeInFromDown(t2))
+        self.wait()
+
+
+class MNISTImageMobject(VGroup):
+    def __init__(self, data, *args, **kwargs):
+        VGroup.__init__(self, *args, **kwargs)
+        for x, xpos in enumerate(np.arange(-3, 3, 6/28)):
+            for y, ypos in enumerate(np.arange(-3, 3, 6/28)):
+                self.add(
+                    Rectangle(
+                        height=6/28,
+                        width=6/28,
+                        stroke_width=1,
+                        stroke_opacity=0.5,
+                        fill_opacity=data[abs(y - 27) * 28 + x]
+                    ).shift([xpos, ypos, 0])
+                )
+
+
+class MNISTIntro(Scene):
+    def construct(self):
+        data = load_data()[0]
+        imgs = VGroup()
+
+        ptr = 0
+        for x in range(-4, 5, 4):
+            for y in [-FRAME_HEIGHT/4, FRAME_HEIGHT/4]:
+                imgs.add(
+                    MNISTImageMobject(data[0][ptr]).shift([x, y, 0]).scale(0.5)
+                )
+                ptr += 1
+        #obj = MNISTImageMobject(data[0][92])
+        self.play(Write(imgs), run_time=6)
         self.wait()
 
 
