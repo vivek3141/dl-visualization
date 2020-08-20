@@ -355,7 +355,7 @@ class NeuralNetworkMobject(VGroup):
         if index == 0:
             return PINK
         elif index == len(self.layer_sizes) - 1:
-            return BLUEE
+            return BLUE
         else:
             return GREEN
 
@@ -1163,8 +1163,8 @@ class NN22(Scene):
         eq1 = TexMobject(
             r"y_1 = ", r"\sigma (", r"w_{11} x_1 + w_{12} x_2 + b_1", r")",
             tex_to_color_map={
-                r"\sigma": YELLOW,
-                r"w_{11}": RED, r"w_{12}": RED, r"b_1": BLUE}
+                r"\sigma": AQUA,
+                r"x_1": PINK, r"x_2": PINK, r"b_1": BLUE, r"y_1": BLUE}
         )
         eq1.scale(1.5)
         eq1.shift(1 * DOWN)
@@ -1172,8 +1172,8 @@ class NN22(Scene):
         eq2 = TexMobject(
             r"y_2 = ", r"\sigma (", r"w_{21} x_1 + w_{22} x_2 + b_2", r")",
             tex_to_color_map={
-                r"\sigma": YELLOW,
-                r"w_{21}": RED, r"w_{22}": RED, r"b_2": BLUE}
+                r"\sigma": AQUA,
+                r"x_1": PINK, r"x_2": PINK, r"b_2": BLUE, r"y_2": BLUE}
         )
         eq2.scale(1.5)
         eq2.shift(2.5 * DOWN)
@@ -1189,12 +1189,14 @@ class NN22(Scene):
 
         eq = TexMobject(
             r"\begin{bmatrix} w_{11} \ w_{12} \\ w_{21} \ w_{22} \end{bmatrix}",
-            r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix} + \begin{bmatrix} {b_1} \\ {b_2} \end{bmatrix}= ",
+            r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}", r" + ",
+            r"\begin{bmatrix} {b_1} \\ {b_2} \end{bmatrix}",
+            r"= ",
             r"\Bigg[ " + "\ " * 26 + r" \Bigg]",
-            tex_to_color_map={
-                r"\begin{bmatrix} w_{11} \ w_{12} \\ w_{21} \ w_{22} \end{bmatrix}": RED,
-                r"\begin{bmatrix} {b_1} \\ {b_2} \end{bmatrix}": TEAL}
+            
         )
+        eq[1].set_color(PINK)
+        eq[3].set_color(BLUE)
         eq.scale(1.25)
         eq.shift(2 * DOWN)
 
@@ -1205,8 +1207,8 @@ class NN22(Scene):
         eqw1 = TexMobject(
             r"w_{11} x_1 + w_{12} x_2 + b_1",
             tex_to_color_map={
-                r"\sigma": YELLOW,
-                r"w_{11}": RED, r"w_{12}": RED, r"b_1": BLUE})
+                r"\sigma": AQUA,
+                r"x_1": PINK, r"x_2": PINK, r"b_1": BLUE})
         eqw1.scale(1.25)
         eqw1.move_to(eq_c[-1])
         eqw1.shift(0.39 * UP)
@@ -1214,8 +1216,8 @@ class NN22(Scene):
         eqw2 = TexMobject(
             r"w_{21} x_1 + w_{22} x_2 + b_2",
             tex_to_color_map={
-                r"\sigma": YELLOW,
-                r"w_{21}": RED, r"w_{22}": RED, r"b_2": BLUE})
+                r"\sigma": AQUA,
+                r"x_1": PINK, r"x_2": PINK, r"b_2": BLUE})
         eqw2.scale(1.25)
         eqw2.move_to(eq_c[-1])
         eqw2.shift(0.36 * DOWN)
@@ -1231,15 +1233,15 @@ class NN22(Scene):
         self.play(Write(eq2))
         self.wait()
 
-        self.play(FadeOut(eq1[:3]), FadeOut(eq1[-1:]),
-                  FadeOut(eq2[:3]), FadeOut(eq2[-1:]))
-        self.play(Transform(eq1[3:-1], eqw1), Transform(eq2[3:-1], eqw2))
+        self.play(FadeOut(eq1[:4]), FadeOut(eq1[-1:]),
+                  FadeOut(eq2[:4]), FadeOut(eq2[-1:]))
+        self.play(Transform(eq1[4:-1], eqw1), Transform(eq2[4:-1], eqw2))
         self.wait()
 
         self.play(Write(eq[-1]))
         self.wait()
 
-        self.play(Write(eq[2:4]))
+        self.play(Write(eq[2:5]))
         self.play(Write(eq[1]))
         self.wait()
 
@@ -1260,19 +1262,19 @@ class NN22(Scene):
         self.wait()
 
         eq1 = TexMobject(
-            r"a^{(2)} = \text{ReLU}(W^{(1)}x + b^{(1)})",
+            r"\bm{a^{(2)}} = (\bm{W^{(1)}}{x} + \bm{b^{(1)}})^+",
             tex_to_color_map={
-                r"\text{ReLU}": YELLOW,
-                r"W^{(1)}": RED, r"b^{(1)}": BLUE}
+                r"^+": AQUA,
+                r"{x}": PINK, r"\bm{b^{(1)}}": GREEN, r"\bm{a^{(2)}}": GREEN}
         )
         eq1.scale(1.5)
         eq1.shift(1 * DOWN)
 
         eq2 = TexMobject(
-            r"\hat{y} = \sigma(W^{(2)}x + b^{(2)})",
+            r"\bm{\hat{y}} = \sigma(\bm{W^{(2)}}{x} + \bm{b^{(2)}})",
             tex_to_color_map={
-                r"\sigma": YELLOW,
-                r"W^{(2)}": RED, r"b^{(2)}": BLUE}
+                r"\sigma": AQUA,
+                r"{x}": PINK, r"\bm{b^{(2)}}": BLUE, r"\bm{\hat{y}}": BLUE}
         )
         eq2.scale(1.5)
         eq2.shift(2.5 * DOWN)
