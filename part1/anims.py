@@ -2,6 +2,19 @@ from manimlib.imports import *
 import pickle
 import gzip
 
+AQUA = "#8dd3c7"
+YELLOW = "#ffffb3"
+LAVENDER = "#bebada"
+RED = "#fb8072"
+BLUE = "#80b1d3"
+ORANGE = "#fdb462"
+GREEN = "#b3de69"
+PINK = "#fccde5"
+GREY = "#d9d9d9"
+VIOLET = "#bc80bd"
+UNKA = "#ccebc5"
+UNKB = "#ffed6f"
+
 
 def load_data():
     f = gzip.open('../mnist/mnist.pkl.gz', 'rb')
@@ -16,6 +29,7 @@ def heaviside(x):
     return int(x >= 0)
 
 # NeuralNetworkMobject is not my code, from 3b1b/manim
+# number of layers change
 
 
 class Intro(Scene):
@@ -46,6 +60,9 @@ class Intro(Scene):
 
         self.play(Write(tbc))
         self.wait()
+
+
+# BG Color - #200f21
 
 
 class Helpers(Scene):
@@ -265,6 +282,8 @@ mnist_example = np.array(
      0., 0., 0., 0., 0.,
      0., 0., 0., 0.], dtype=np.float32)
 
+# pink, green, blue
+
 
 class MNISTNN(Scene):
     def construct(self):
@@ -321,8 +340,8 @@ class NeuralNetworkMobject(VGroup):
 
     def add_neurons(self):
         layers = VGroup(*[
-            self.get_layer(size)
-            for size in self.layer_sizes
+            self.get_layer(size, index)
+            for index, size in enumerate(self.layer_sizes)
         ])
         layers.arrange_submobjects(RIGHT, buff=self.layer_to_layer_buff)
         self.layers = layers
@@ -330,7 +349,17 @@ class NeuralNetworkMobject(VGroup):
         if self.include_output_labels:
             self.add_output_labels()
 
-    def get_layer(self, size):
+    def get_nn_fill_color(self, index):
+        if index == -1:
+            return self.neuron_stroke_color
+        if index == 0:
+            return PINK
+        elif index == len(self.layer_sizes) - 1:
+            return BLUEE
+        else:
+            return GREEN
+
+    def get_layer(self, size, index=-1):
         layer = VGroup()
         n_neurons = size
         if n_neurons > self.max_shown_neurons:
@@ -338,9 +367,9 @@ class NeuralNetworkMobject(VGroup):
         neurons = VGroup(*[
             Circle(
                 radius=self.neuron_radius,
-                stroke_color=self.neuron_stroke_color,
+                stroke_color=self.get_nn_fill_color(index),
                 stroke_width=self.neuron_stroke_width,
-                fill_color=self.neuron_fill_color,
+                fill_color=self.get_nn_fill_color(index),
                 fill_opacity=0,
             )
             for x in range(n_neurons)
@@ -442,6 +471,16 @@ class NeuralNetworkMobject(VGroup):
             self.output_labels.add(label)
         self.add(self.output_labels)
 
+    def add_middle_a(self):
+        self.output_labels = VGroup()
+        for layer in self.layers[1:-1]:
+            for n, neuron in enumerate(layer.neurons):
+                label = TexMobject(f"a_{n + 1}")
+                label.set_height(0.3 * neuron.get_height())
+                label.move_to(neuron)
+                self.output_labels.add(label)
+        self.add(self.output_labels)
+
 
 class PerceptronMobject(NeuralNetworkMobject):
     def add_neurons(self):
@@ -458,7 +497,7 @@ class PerceptronMobject(NeuralNetworkMobject):
 
 class PerceptronOne(Scene):
     CONFIG = {
-        "n_color": BLUE
+        "n_color": GREEN
     }
 
     def construct(self):
@@ -467,7 +506,7 @@ class PerceptronOne(Scene):
         x = ValueTracker(0)
 
         perc = PerceptronMobject(
-            [1, 1, 1], arrow=True, arrow_tip_size=0.1, neuron_radiu=0.25, neuron_stroke_color=self.n_color)
+            [1, 1, 1], arrow=True, arrow_tip_size=0.1, neuron_radius=0.25, neuron_stroke_color=self.n_color)
         perc.scale(1.5)
         perc.shift(q_width * LEFT)
 
@@ -560,8 +599,8 @@ class PerceptronOne(Scene):
         self.play(x.increment_value, -30, rate_func=linear, run_time=4)
         self.wait()
 
-        eq = TexMobject(r"\hat{y} = H(", r" x", r" - 20 ", r")",
-                        tex_to_color_map={r"H": YELLOW})
+        eq = TexMobject(r"\hat{y} = H(", r"{x}", r" -", r" 20 ", r")",
+                        tex_to_color_map={r"H": AQUA, r"\hat{y}": BLUE, r"{x}": PINK})
         eq.scale(1.75)
         eq.shift(2.75 * DOWN)
 
@@ -575,6 +614,10 @@ class PerceptronOne(Scene):
         eq2.scale(1.75)
         eq2.shift(2.75 * DOWN + 0.4 * LEFT)
 
+        eq22 = TexMobject(r"+", color=RED)
+        eq22.scale(1.75)
+        eq22.shift(2.75 * DOWN + 1 * RIGHT)
+
         circ_on = True
 
         self.play(
@@ -583,10 +626,11 @@ class PerceptronOne(Scene):
             ApplyMethod(inactive_lbl.shift, 0.2 * 15 * RIGHT),
             ApplyMethod(circ.set_opacity, 1)
         )
-        self.play(ApplyMethod(eq[:3].shift, 0.75 * LEFT), FadeInFromDown(eq2))
+        self.play(ApplyMethod(eq[:4].shift, 0.75 * LEFT), FadeInFromDown(eq2))
+        self.play(FadeOut(eq[-3]), FadeInFromDown(eq22))
         self.wait()
 
-        list_of_ok = [perc, eq2, eq[:3], eq[3:]]
+        list_of_ok = [perc, eq2, eq[:3], eq[3:], eq22]
 
         grp = Group(rect, rect2, inactive_lbl, active_lbl, line,
                     l, circ, x_disp, y_disp, inp_title, ptr)
@@ -595,22 +639,22 @@ class PerceptronOne(Scene):
 
         to_move = False
 
-        eq3 = TexMobject(r"\hat{y} = H( mx", r" + b )",
-                         tex_to_color_map={r"H": YELLOW, "m": RED, "b": TEAL})
+        eq3 = TexMobject(r"\hat{y} = H( w ", r"x", r" + b )",
+                         tex_to_color_map={r"H": AQUA, r"x": PINK, r"\hat{y}": BLUE, r"b": BLUE})
         eq3.scale(1.75)
         eq3.shift(2.75 * DOWN + 0.7 * LEFT)
 
-        x_inp = TexMobject("x")
+        x_inp = TexMobject("x", color=PINK)
         x_inp.scale(1.5)
         x_inp.shift(2.5 * LEFT)
 
-        y_out = TexMobject(r"\hat{y}")
+        y_out = TexMobject(r"\hat{y}", color=BLUE)
         y_out.scale(1.5)
         y_out.shift(2.5 * RIGHT)
 
         self.play(perc.shift, q_width * RIGHT)
         self.play(Write(x_inp), Write(y_out))
-        self.play(FadeOut(eq2), FadeOut(eq[-2]), FadeOut(eq[-1]))
+        self.play(FadeOut(eq2), FadeOut(eq22), FadeOut(eq[-3:]))
         self.play(FadeInFromDown(eq3[3]), FadeInFromDown(eq3[-3:]))
         self.wait()
 
@@ -623,8 +667,10 @@ class PieceWiseTwo(VGroup):
 
         eq1.align_to(eq2, LEFT)
 
-        t1 = TexMobject(r"\text{if }" + cond1).shift(1 * UP + 2 * RIGHT)
-        t2 = TexMobject(r"\text{if }" + cond2).shift(0 * UP + 2 * RIGHT)
+        t1 = TexMobject(
+            r"\text{if }" + cond1, tex_to_color_map={"{x}": PINK}).shift(1 * UP + 2 * RIGHT)
+        t2 = TexMobject(
+            r"\text{if }" + cond2,  tex_to_color_map={"{x}": PINK}).shift(0 * UP + 2 * RIGHT)
 
         t1.align_to(t2, LEFT)
 
@@ -633,7 +679,8 @@ class PieceWiseTwo(VGroup):
         et = VGroup(e, t)
 
         b = Brace(et, LEFT)
-        bt = b.get_tex(r"H("+cond3+") = ", tex_to_color_map={"H": YELLOW})
+        bt = b.get_tex(r"H("+cond3+") = ",
+                       tex_to_color_map={"H": AQUA, "x": PINK})
         eq = VGroup(et, b, bt)
 
         eq.center()
@@ -659,7 +706,7 @@ class Heaviside(Scene):
         func.scale(1.5)
         func.shift(DOWN)
 
-        eq = PieceWiseTwo(r"x \geq 0", r"x < 0", "x")
+        eq = PieceWiseTwo(r"{x} \geq 0", r"{x} < 0", "{x}")
         eq.shift(2.5 * UP)
 
         self.play(Write(func), Write(eq))
@@ -667,16 +714,19 @@ class Heaviside(Scene):
 
         self.play(Uncreate(func), ApplyMethod(eq.shift, 2.5 * DOWN))
 
-        eq2 = PieceWiseTwo(r"x-20 \geq 0", "x-20 < 0", "x-20")
+        eq2 = PieceWiseTwo(r"{x} -20 \geq 0", "{x} -20 < 0", "{x} -20")
         eq2.scale(1.5)
 
         self.play(Transform(eq, eq2))
         self.wait()
 
+# activation function aqua, y hat should be blue x should be pink b should be blue
+# fix trnasform
+
 
 class PerceptronTwo(Scene):
     CONFIG = {
-        "n_color": BLUE
+        "n_color": GREEN
     }
 
     def construct(self):
@@ -777,13 +827,13 @@ class PerceptronTwo(Scene):
         self.wait()
 
         eq = TexMobject(r"\hat{y} = H(", r"w_1 x_1 + w_2 x_2 + b", r")",
-                        tex_to_color_map={"w_1": RED, "w_2": RED, "b": TEAL, "H": YELLOW})
+                        tex_to_color_map={r"\hat{y}": BLUE, "x_1": PINK, "x_2": PINK, "b": BLUE, "H": AQUA})
         eq.scale(1.5)
         eq.shift(2 * DOWN)
 
         brect = BackgroundRectangle(
-            eq[3:-1], buff=0.1, fill_opacity=0, stroke_opacity=1, color=PURPLE, stroke_width=4)
-        brect_label = TextMobject("Line", color=PURPLE)
+            eq[4:-1], buff=0.1, fill_opacity=0, stroke_opacity=1, color=PURPLE, stroke_width=4)
+        brect_label = TextMobject("Plane", color=PURPLE)
         brect_label.shift(1 * DOWN + 1 * RIGHT)
 
         self.play(Write(eq))
@@ -798,44 +848,44 @@ class PerceptronTwo(Scene):
         self.wait()
 
         eq2 = TexMobject(
-            r"\hat{y} = H \left( \begin{bmatrix} w_1 \ w_2 \end{bmatrix} ",
+            r"\hat{y} = H \left( ", r"\begin{bmatrix} w_1 \ w_2 \end{bmatrix} ",
             r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}", r" + {b} \right)",
-            tex_to_color_map={r"\begin{bmatrix} w_1 \ w_2 \end{bmatrix}": RED, "H": YELLOW, "{b}": BLUE})
+            tex_to_color_map={r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix}": PINK, "H": AQUA, "{b}": BLUE, r"\hat{y}": BLUE})
         eq2.scale(1.5)
         eq2.shift(1.5 * DOWN)
 
-        m = TexMobject(r"\textbf{W}", color=RED)
+        m = TexMobject(r"\bm{W}")
         m.scale(1.5)
         m.shift(1.5 * DOWN + 0.5 * LEFT)
 
-        xtex = TexMobject(r"\textbf{x}")
+        xtex = TexMobject(r"\bm{x}", color=PINK)
         xtex.scale(1.5)
         xtex.shift(1.5 * DOWN + 1.5 * RIGHT)
 
         self.play(Write(eq2))
         self.wait()
 
-        self.play(Transform(eq2[3], m))
+        self.play(Transform(eq2[4], m))
         self.wait()
 
-        self.play(Transform(eq2[4], xtex))
+        self.play(Transform(eq2[5], xtex))
         self.wait()
 
         eq4 = TexMobject(
-            r" \hat{y} = H( ", r"\textbf{W}  \textbf{x}", r" + {b} )",
-            tex_to_color_map={r"\textbf{W}": RED, r"{b}": TEAL, r"H": YELLOW})
+            r" \hat{y} = H( ", r"\bm{W}  \bm{x}", r" + {b} )",
+            tex_to_color_map={r"\bm{x}": PINK, r"{b}": BLUE, r"H": AQUA, r"\hat{y}": BLUE})
         eq4.scale(1.3)
         eq4.shift(1.5 * DOWN)
 
-        w_lbl = TextMobject("Weights", color=RED)
+        w_lbl = TextMobject("Weights", color=WHITE)
         w_lbl.shift(0.5 * DOWN + 0 * RIGHT)
 
-        b_lbl = TextMobject("Bias", color=TEAL)
+        b_lbl = TextMobject("Bias", color=BLUE)
         b_lbl.shift(2.5 * DOWN + 2.5 * RIGHT)
 
         temp_grp2 = VGroup(eq2, m, xtex)
 
-        self.play(Transform(temp_grp2, eq4))
+        self.play(*[Transform(eq2[i], eq4[i]) for i in range(0, len(eq2))])
         self.wait()
 
         self.play(Write(w_lbl))
@@ -845,25 +895,28 @@ class PerceptronTwo(Scene):
 
 class PerceptronThree(Scene):
     def construct(self):
-        perc = PerceptronMobject([3, 1, 1])
+        perc = PerceptronMobject([3, 1, 1], neuron_stroke_color=GREEN)
         perc.scale(2.5)
         perc.shift(1.5 * UP)
 
         eq = TexMobject(
-            r"\hat{y} = H \Bigg( \begin{bmatrix} w_1 \ w_2 \ w_3 \end{bmatrix} ",
+            r"\hat{y} = H \Bigg( ", r"\begin{bmatrix} w_1 \ w_2 \ w_3 \end{bmatrix} ",
             r"\begin{bmatrix} x_1 \\ x_2 \\ x_3 \end{bmatrix}", r"+ {b} \Bigg)",
             tex_to_color_map={
-                r"H": YELLOW, r"\begin{bmatrix} w_1 \ w_2 \ w_3 \end{bmatrix}": RED, r"{b}": BLUE}
+                r"\hat{y}": BLUE,
+                r"H": AQUA,
+                r"\begin{bmatrix} x_1 \\ x_2 \\ x_3 \end{bmatrix}": PINK,
+                r"{b}": BLUE}
         )
 
         eq.scale(1.25)
         eq.shift(2 * DOWN)
 
-        m = TexMobject(r"\textbf{W}", color=RED)
+        m = TexMobject(r"\bm{W}")
         m.scale(1.5)
         m.shift(2 * DOWN + 0.5 * LEFT)
 
-        xtex = TexMobject(r"\textbf{x}")
+        xtex = TexMobject(r"\bm{x}", color=PINK)
         xtex.scale(1.5)
         xtex.shift(2 * DOWN + 1.5 * RIGHT)
 
@@ -876,6 +929,12 @@ class PerceptronThree(Scene):
         x_disp3 = TextMobject("Wind Speed").scale(0.75)
         x_disp3.shift(4 * LEFT + 0.25 * UP)
 
+        eq2 = TexMobject(
+            r"\bm{\hat{y}} = H( ", r"\bm{W}  \bm{x}", r" + \nm{b} )",
+            tex_to_color_map={r"\bm{x}": PINK, r"\bm{b}": BLUE, r"H": AQUA, r"\bm{\hat{y}}": BLUE})
+        eq2.scale(2)
+        eq2.shift(2 * DOWN)
+
         self.play(Write(perc))
         self.play(Write(x_disp1), Write(x_disp2), Write(x_disp3))
         self.wait()
@@ -883,10 +942,13 @@ class PerceptronThree(Scene):
         self.play(Write(eq))
         self.wait()
 
-        self.play(Transform(eq[3], m))
+        self.play(Transform(eq[4], m))
         self.wait()
 
-        self.play(Transform(eq[4], xtex))
+        self.play(Transform(eq[5], xtex))
+        self.wait()
+
+        self.play(*[Transform(eq[i], eq2[i]) for i in range(0, len(eq2))])
         self.wait()
 
 
@@ -898,21 +960,44 @@ class SigmoidIntro(Scene):
             y_min=0,
             y_max=2,
             axis_config={
-                "include_tip": False
-            }
+                "include_tip": False,
+                "include_ticks": False
+            },
         )
+        x_axis, y_axis = axes.get_axes()
+        x_axis.add_tick_marks_without_end()
+        y_axis.add_tick_marks_without_end()
+
+        tip_scale_factor = 0.15
+        tip = VGroup(
+            *[Line(
+                [3, 0, 0],
+                np.array([3, 0, 0]) + tip_scale_factor *
+                np.array([- np.sqrt(2)/2, i * np.sqrt(2)/2, 0]),
+                color=LIGHT_GRAY) for i in [-1, 1]],
+            *[Line(
+                [0, 2, 0],
+                np.array([0, 2, 0]) + tip_scale_factor *
+                np.array([i * np.sqrt(2)/2,  - np.sqrt(2)/2, 0]),
+                color=LIGHT_GRAY) for i in [-1, 1]],
+        )
+
         f = VGroup(FunctionGraph(lambda x: 0, x_min=-3, x_max=0),
                    FunctionGraph(lambda x: 2, x_min=0, x_max=3))
-        f2 = FunctionGraph(
+        f2 = VGroup(FunctionGraph(
             lambda x: 2/(1+np.exp(-2*x)),
-            x_min=-3, x_max=3, color=GOLD)
+            x_min=-3, x_max=0, color=GOLD),
+            FunctionGraph(
+            lambda x: 2/(1+np.exp(-2*x)),
+            x_min=0, x_max=3, color=GOLD))
+        axes.add(tip)
 
         func = VGroup(axes, f, f2)
         func.center()
         func.scale(1.5)
         func.shift(DOWN)
 
-        eq = PieceWiseTwo(r"x \geq 0", r"x < 0", "x")
+        eq = PieceWiseTwo(r"{x} \geq 0", r"{x} < 0", "{x}")
         eq.shift(2.5 * UP)
 
         self.play(Write(axes), Write(f))
@@ -920,7 +1005,8 @@ class SigmoidIntro(Scene):
         self.wait()
 
         eq2 = TexMobject(
-            r"\sigma ( x ) = \frac{1}{1 + e^{-x}}", tex_to_color_map={r"\sigma": YELLOW})
+            r"\sigma ({x}) = {{1} \over {1 - \text{exp} ({x})}",
+            tex_to_color_map={r"\sigma": AQUA, r"{x}": PINK})
         eq2.scale(1.5)
         eq2.shift(2.75 * UP)
 
@@ -929,7 +1015,7 @@ class SigmoidIntro(Scene):
             TexMobject("1.0").shift(0.5 * UP)
         ).shift(0.75 * LEFT + 0.2 * UP)
 
-        self.play(Transform(f, f2))
+        self.play(Transform(f[0], f2[0]), Transform(f[1], f2[1]))
         self.wait()
 
         self.play(Transform(eq, eq2))
@@ -954,8 +1040,8 @@ class ReluIntro(Scene):
         grp.shift(1.5 * DOWN)
 
         eq = TexMobject(
-            r"\text{ReLU}(x) = \text{max}(0, x)",
-            tex_to_color_map={r"\text{ReLU}": BLUE, r"\text{max}": GOLD}
+            r"\texttt{ReLU}(x) = \max(0, {x}) = ({x})^+",
+            tex_to_color_map={r"\texttt{ReLU}": AQUA, r"{x}": PINK}
         )
         eq.scale(1.25)
         eq.shift(3 * UP)
@@ -1068,7 +1154,7 @@ class NN22(Scene):
         n.add_y()
 
         eq1 = TexMobject(
-            r"y_1 = ", r"\sigma (w_{11} x_1 + w_{12} x_2 + b_1)",
+            r"y_1 = ", r"\sigma (", r"w_{11} x_1 + w_{12} x_2 + b_1", r")",
             tex_to_color_map={
                 r"\sigma": YELLOW,
                 r"w_{11}": RED, r"w_{12}": RED, r"b_1": BLUE}
@@ -1077,7 +1163,7 @@ class NN22(Scene):
         eq1.shift(1 * DOWN)
 
         eq2 = TexMobject(
-            r"y_2 = ", r"\sigma (w_{21} x_1 + w_{22} x_2 + b_2)",
+            r"y_2 = ", r"\sigma (", r"w_{21} x_1 + w_{22} x_2 + b_2", r")",
             tex_to_color_map={
                 r"\sigma": YELLOW,
                 r"w_{21}": RED, r"w_{22}": RED, r"b_2": BLUE}
@@ -1085,10 +1171,19 @@ class NN22(Scene):
         eq2.scale(1.5)
         eq2.shift(2.5 * DOWN)
 
-        eq = TexMobject(
+        eq_c = TexMobject(
             r"\begin{bmatrix} w_{11} \ w_{12} \\ w_{21} \ w_{22} \end{bmatrix}",
             r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix} + \begin{bmatrix} {b_1} \\ {b_2} \end{bmatrix}= ",
             r"\begin{bmatrix} {w_{11}} x_1 + {w_{12}} x_2 + b_1 \\ {w_{21}} x_1 + {w_{22}} x_2 + b_2 \end{bmatrix}",
+
+        )
+        eq_c.scale(1.25)
+        eq_c.shift(2 * DOWN)
+
+        eq = TexMobject(
+            r"\begin{bmatrix} w_{11} \ w_{12} \\ w_{21} \ w_{22} \end{bmatrix}",
+            r"\begin{bmatrix} x_1 \\ x_2 \end{bmatrix} + \begin{bmatrix} {b_1} \\ {b_2} \end{bmatrix}= ",
+            r"\Bigg[ " + "\ " * 26 + r" \Bigg]",
             tex_to_color_map={
                 r"\begin{bmatrix} w_{11} \ w_{12} \\ w_{21} \ w_{22} \end{bmatrix}": RED,
                 r"\begin{bmatrix} {b_1} \\ {b_2} \end{bmatrix}": TEAL}
@@ -1096,13 +1191,17 @@ class NN22(Scene):
         eq.scale(1.25)
         eq.shift(2 * DOWN)
 
+        #rect = Rectangle(width=5.5, height=1.35, fill_opacity=1, color=BLACK)
+        #rect.shift(2 * DOWN + 3.5 * RIGHT)
+        # eq.add(rect)
+
         eqw1 = TexMobject(
             r"w_{11} x_1 + w_{12} x_2 + b_1",
             tex_to_color_map={
                 r"\sigma": YELLOW,
                 r"w_{11}": RED, r"w_{12}": RED, r"b_1": BLUE})
         eqw1.scale(1.25)
-        eqw1.move_to(eq[-1])
+        eqw1.move_to(eq_c[-1])
         eqw1.shift(0.39 * UP)
 
         eqw2 = TexMobject(
@@ -1111,16 +1210,119 @@ class NN22(Scene):
                 r"\sigma": YELLOW,
                 r"w_{21}": RED, r"w_{22}": RED, r"b_2": BLUE})
         eqw2.scale(1.25)
-        eqw2.move_to(eq[-1])
+        eqw2.move_to(eq_c[-1])
         eqw2.shift(0.36 * DOWN)
 
         self.play(Write(n))
         self.wait()
 
-        self.add(eq, eqw1, eqw2)
+        # self.add(eq) #, eqw1, eqw2
 
-        # self.play(Write(eq1))
-        # self.wait()
+        self.play(Write(eq1))
+        self.wait()
 
-        # self.play(Write(eq2))
-        # self.wait()
+        self.play(Write(eq2))
+        self.wait()
+
+        self.play(FadeOut(eq1[:3]), FadeOut(eq1[-1:]),
+                  FadeOut(eq2[:3]), FadeOut(eq2[-1:]))
+        self.play(Transform(eq1[3:-1], eqw1), Transform(eq2[3:-1], eqw2))
+        self.wait()
+
+        self.play(Write(eq[-1]))
+        self.wait()
+
+        self.play(Write(eq[2:4]))
+        self.play(Write(eq[1]))
+        self.wait()
+
+        self.play(Write(eq[0]))
+        self.wait()
+
+        n2 = NeuralNetworkMobject([2, 2, 2])
+        n2.scale(3)
+        n2.shift(1.5 * UP)
+
+        n2.add_input_labels()
+        n2.add_y()
+        n2.add_middle_a()
+
+        self.play(Transform(n, n2))
+        self.play(
+            FadeOut(VGroup(*[i for i in self.mobjects if i not in [n, n2]])))
+        self.wait()
+
+        eq1 = TexMobject(
+            r"a^{(2)} = \text{ReLU}(W^{(1)}x + b^{(1)})",
+            tex_to_color_map={
+                r"\text{ReLU}": YELLOW,
+                r"W^{(1)}": RED, r"b^{(1)}": BLUE}
+        )
+        eq1.scale(1.5)
+        eq1.shift(1 * DOWN)
+
+        eq2 = TexMobject(
+            r"\hat{y} = \sigma(W^{(2)}x + b^{(2)})",
+            tex_to_color_map={
+                r"\sigma": YELLOW,
+                r"W^{(2)}": RED, r"b^{(2)}": BLUE}
+        )
+        eq2.scale(1.5)
+        eq2.shift(2.5 * DOWN)
+
+        self.play(Write(eq1))
+        self.wait()
+
+        self.play(Write(eq2))
+        self.wait()
+
+
+class LinTDemo(LinearTransformationScene):
+    def construct(self):
+        self.setup()
+
+        matrix = np.array([[1, 2], [2, 1]]).transpose()
+        matrix_mob = Matrix(matrix)
+        matrix_mob.to_corner(UP+LEFT)
+        matrix_mob.add_background_to_entries()
+        matrix_mob.add_background_rectangle()
+
+        col1 = Matrix(matrix[:, 0])
+        col1.set_color(X_COLOR)
+        col1.add_background_rectangle()
+        col1.shift([1, 3, 0])
+
+        col2 = Matrix(matrix[:, 1])
+        col2.set_color(Y_COLOR)
+        col2.add_background_rectangle()
+        col2.shift([3, 1, 0])
+
+        transform_matrix1 = np.array(matrix)
+        transform_matrix1[:, 1] = [0, 1]
+        transform_matrix2 = np.dot(
+            matrix,
+            np.linalg.inv(transform_matrix1)
+        )
+
+        self.play(Write(matrix_mob))
+        self.wait()
+
+        self.apply_matrix(transform_matrix1, added_anims=[
+                          TransformFromCopy(matrix_mob, col1)])
+        self.wait()
+
+        self.apply_matrix(transform_matrix2, added_anims=[
+                          TransformFromCopy(matrix_mob, col2)])
+        self.wait()
+
+
+class NN232(Scene):
+    def construct(self):
+        n = NeuralNetworkMobject([2, 3, 2])
+        n.scale(2)
+        n.add_input_labels()
+        n.add_middle_a()
+        n.add_y()
+
+        self.play(Write(n))
+        self.wait()

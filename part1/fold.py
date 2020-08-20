@@ -72,6 +72,9 @@ class RandomTransform(LinearTransformationScene):
         self.apply_nonlinear_transformation(self.func, run_time=6)
         self.wait()
 
+        self.apply_nonlinear_transformation(lambda point: np.array(point) + np.array([*model.linear1.bias.data.numpy(), 0]), run_time=3)
+        self.wait()
+
         if self.relu:
 
             self.apply_nonlinear_transformation(lambda point: list(
@@ -88,8 +91,8 @@ class FoldTransform(RandomTransform):
     def func(self, point):
         x, y, z = point
         inp = torch.tensor(point[:2], dtype=torch.float32)
-        y, h, z = model(inp)
-        x, y = z.detach().numpy()
+        y, h, z = model(inp) 
+        x, y = z.detach().numpy() - model.linear1.bias.data.numpy()
         return 2 * (x * RIGHT + y * UP)
 
     def func2(self, point):
