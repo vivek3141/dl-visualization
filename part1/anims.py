@@ -1193,7 +1193,7 @@ class NN22(Scene):
             r"\begin{bmatrix} {b_1} \\ {b_2} \end{bmatrix}",
             r"= ",
             r"\Bigg[ " + "\ " * 26 + r" \Bigg]",
-            
+
         )
         eq[1].set_color(PINK)
         eq[3].set_color(BLUE)
@@ -1316,12 +1316,14 @@ class LinTDemo(LinearTransformationScene):
         self.play(Write(matrix_mob))
         self.wait()
 
-        self.apply_matrix(transform_matrix1, added_anims=[
-                          TransformFromCopy(matrix_mob, col1)])
+        self.apply_matrix(
+            transform_matrix1,
+            added_anims=[TransformFromCopy(matrix_mob, col1)])
         self.wait()
 
-        self.apply_matrix(transform_matrix2, added_anims=[
-                          TransformFromCopy(matrix_mob, col2)])
+        self.apply_matrix(
+            transform_matrix2,
+            added_anims=[TransformFromCopy(matrix_mob, col2)])
         self.wait()
 
 
