@@ -8,13 +8,12 @@ import torch.nn.functional as F
 
 """
 Hi!
-
 For those familiar with manim, this code won't work ona the master branch. Instead, you're gonna have to
 use the shaders branch. It has some extra dependencies, so it could be a bit tricky to setup, but if
 you're on mac or linux, using a package manager (brew, apt, pacman, etc.) and pip to install them worked for me.
-
 -Vivek
 """
+
 
 class Model(nn.Module):
     def __init__(self, D_in, H, D_out):
@@ -150,6 +149,36 @@ class FoldTransform(Scene):
         return 1 * np.array([x, y, 1*z])
 
     def func3(self, x, y):
+        inp = torch.tensor([x, y], dtype=torch.float32)
+        y, h, z = model(inp)
+        x, y = y.detach().numpy()
+        return 1 * np.array([x, y, 0])
+
+
+class FoldTransform2(Scene):
+    def construct(self):
+        points = VGroup()
+
+        for index, point in enumerate(H):
+            d = Dot(list(2*point) + [0], color=rgb2hex(colors[index]),
+                    radius=0.75*DEFAULT_DOT_RADIUS)
+            points.add(d)
+
+        plane = NumberPlane()
+
+        self.play(Write(plane))
+        self.play(Write(points))
+        self.wait()
+
+        points2 = VGroup(
+            *[Dot(self.func(*point), color=rgb2hex(colors[index]),
+                  radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)]
+        )
+
+        self.play(Transform(points, points2), run_time=6)
+        self.wait()
+
+    def func(self, x, y):
         inp = torch.tensor([x, y], dtype=torch.float32)
         y, h, z = model(inp)
         x, y = y.detach().numpy()

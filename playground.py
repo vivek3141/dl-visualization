@@ -120,3 +120,22 @@ class NNTest(Scene):
         inp = torch.tensor([x, y], dtype=torch.float32)
         x, y = model[:3].forward(inp).detach().numpy()
         return 0.5 * (x * RIGHT + y * UP)
+
+
+s = r"""\newcommand\aqua[1]{\textcolor[HTML]{8dd3c7}{#1}}
+\newcommand\yellow[1]{\textcolor[HTML]{ffffb3}{#1}}
+\newcommand\lavender[1]{\textcolor[HTML]{bebada}{#1}}
+\newcommand\red[1]{\textcolor[HTML]{fb8072}{#1}}
+\newcommand\blue[1]{\textcolor[HTML]{80b1d3}{#1}}
+\newcommand\orange[1]{\textcolor[HTML]{fdb462}{#1}}
+\newcommand\green[1]{\textcolor[HTML]{b3de69}{#1}}
+\newcommand\pink[1]{\textcolor[HTML]{fccde5}{#1}}
+\newcommand\grey[1]{\textcolor[HTML]{d9d9d9}{#1}}
+\newcommand\violet[1]{\textcolor[HTML]{bc80bd}{#1}}
+\newcommand\unka[1]{\textcolor[HTML]{ccebc5}{#1}}
+\newcommand\unkb[1]{\textcolor[HTML]{ffed6f}{#1}}"""
+
+for i in s.split("\n"):
+    color = i[i[2:].index("\\")+3:i.index("[")]
+    h = i[-12:-6]
+    print(color.upper() + " = \"#"+h+"\"")
