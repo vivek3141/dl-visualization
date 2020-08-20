@@ -317,7 +317,7 @@ class NeuralNetworkMobject(VGroup):
         "neuron_to_neuron_buff": MED_SMALL_BUFF,
         "layer_to_layer_buff": LARGE_BUFF,
         "neuron_stroke_color": BLUE,
-        "neuron_stroke_width": 3,
+        "neuron_stroke_width": 6,
         "neuron_fill_color": GREEN,
         "edge_color": LIGHT_GREY,
         "edge_stroke_width": 2,
@@ -445,8 +445,8 @@ class NeuralNetworkMobject(VGroup):
     def add_y(self):
         self.output_labels = VGroup()
         for n, neuron in enumerate(self.layers[-1].neurons):
-            label = TexMobject(f"y_{n + 1}")
-            label.set_height(0.3 * neuron.get_height())
+            label = TexMobject(r"\hat{y_{"+f"{n + 1}"+"}")
+            label.set_height(0.4 * neuron.get_height())
             label.move_to(neuron)
             self.output_labels.add(label)
         self.add(self.output_labels)
@@ -1262,19 +1262,19 @@ class NN22(Scene):
         self.wait()
 
         eq1 = TexMobject(
-            r"\bm{a^{(2)}} = (\bm{W^{(1)}}{x} + \bm{b^{(1)}})^+",
+            r"\bm{a^{(2)}} = (\bm{W^{(1)}}\bm{x} + \bm{b^{(1)}})^+",
             tex_to_color_map={
                 r"^+": AQUA,
-                r"{x}": PINK, r"\bm{b^{(1)}}": GREEN, r"\bm{a^{(2)}}": GREEN}
+                r"\bm{x}": PINK, r"\bm{b^{(1)}}": GREEN, r"\bm{a^{(2)}}": GREEN}
         )
         eq1.scale(1.5)
         eq1.shift(1 * DOWN)
 
         eq2 = TexMobject(
-            r"\bm{\hat{y}} = \sigma(\bm{W^{(2)}}{x} + \bm{b^{(2)}})",
+            r"\bm{\hat{y}} = \sigma(\bm{W^{(2)}}\bm{a^{(2)}} + \bm{b^{(2)}})",
             tex_to_color_map={
                 r"\sigma": AQUA,
-                r"{x}": PINK, r"\bm{b^{(2)}}": BLUE, r"\bm{\hat{y}}": BLUE}
+                r"\bm{a^{(2)}}": GREEN, r"\bm{b^{(2)}}": BLUE, r"\bm{\hat{y}}": BLUE}
         )
         eq2.scale(1.5)
         eq2.shift(2.5 * DOWN)
@@ -1297,12 +1297,12 @@ class LinTDemo(LinearTransformationScene):
         matrix_mob.add_background_rectangle()
 
         col1 = Matrix(matrix[:, 0])
-        col1.set_color(X_COLOR)
+        col1.set_color(Y_COLOR)
         col1.add_background_rectangle()
         col1.shift([1, 3, 0])
 
         col2 = Matrix(matrix[:, 1])
-        col2.set_color(Y_COLOR)
+        col2.set_color(X_COLOR)
         col2.add_background_rectangle()
         col2.shift([3, 1, 0])
 
