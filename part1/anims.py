@@ -984,11 +984,12 @@ class SigmoidIntro(Scene):
 
         f = VGroup(FunctionGraph(lambda x: 0, x_min=-3, x_max=0),
                    FunctionGraph(lambda x: 2, x_min=0, x_max=3))
+        scale = 2
         f2 = VGroup(FunctionGraph(
-            lambda x: 2/(1+np.exp(-2*x)),
+            lambda x: scale/(1+np.exp(-scale*x)),
             x_min=-3, x_max=0, color=GOLD),
             FunctionGraph(
-            lambda x: 2/(1+np.exp(-2*x)),
+            lambda x: scale/(1+np.exp(-scale*x)),
             x_min=0, x_max=3, color=GOLD))
         axes.add(tip)
 
@@ -1005,7 +1006,7 @@ class SigmoidIntro(Scene):
         self.wait()
 
         eq2 = TexMobject(
-            r"\sigma ({x}) = {{1} \over {1 - \text{exp} ({x})}",
+            r"\sigma ({x}) = {{1} \over {1 + \text{exp} (-{x})}",
             tex_to_color_map={r"\sigma": AQUA, r"{x}": PINK})
         eq2.scale(1.5)
         eq2.shift(2.75 * UP)
@@ -1015,11 +1016,17 @@ class SigmoidIntro(Scene):
             TexMobject("1.0").shift(0.5 * UP)
         ).shift(0.75 * LEFT + 0.2 * UP)
 
+        y_lbl = VGroup(
+            TexMobject("-5").shift(2.5 * 1.5 * LEFT),
+            TexMobject("5").shift(2.5 * 1.5 * RIGHT)
+        ).shift(2.85 * DOWN)
+
         self.play(Transform(f[0], f2[0]), Transform(f[1], f2[1]))
         self.wait()
 
         self.play(Transform(eq, eq2))
         self.play(Write(lbls))
+        self.play(Write(y_lbl))
         self.wait()
 
 
