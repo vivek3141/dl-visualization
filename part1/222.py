@@ -27,6 +27,7 @@ class Model(nn.Module):
 
 torch.manual_seed(8)
 model = Model(2, 2, 2)
+model.linear1.bias.data.fill_(0.75)
 
 
 def rgb2hex(r, g, b):
@@ -60,31 +61,19 @@ class RandomTransform(LinearTransformationScene):
 
     def construct(self):
         points = VGroup(*[
-            Dot(2*np.array([point[0], point[1], 0]), color=rgb_to_hex(colors[index]),
+            Dot(2*np.array([point[0], point[1], 0]), color=rgb2hex(*colors[index]),
                 radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(H)
         ])
-
-        lines = VGroup()
-        colors2 = [RED, BLUE]
-
-        for i in range(2):
-            w1, w2 = model.linear1.weight.data[i]
-            b = model.linear1.bias.data[i]
-            xin = np.linspace(-1.5, 1.5)
-            lines.add(FunctionGraph(
-                lambda x: (-1/w2) * (w1 * x + b),
-                stroke_width=1.5 * DEFAULT_STROKE_WIDTH,
-                color=colors2[i]
-            ))
-
         self.setup()
         self.play(Write(points))
-        self.play(Write(lines))
         self.wait()
 
         self.moving_mobjects += [*points]
 
         self.apply_nonlinear_transformation(self.func, run_time=6)
+        self.wait()
+
+        self.apply_nonlinear_transformation(lambda point: np.array(point) + np.array([*model.linear1.bias.data.numpy(), 0]), run_time=3)
         self.wait()
 
         if self.relu:
@@ -96,13 +85,24 @@ class RandomTransform(LinearTransformationScene):
             self.apply_nonlinear_transformation(self.func2, run_time=6)
             self.wait()
 
+            self.apply_nonlinear_transformation(lambda point: list(
+                map(lambda x: 1 /(1+np.exp(-x)), point)))
+            self.wait()
+
 
 class FoldTransform(RandomTransform):
-    CONFIG = {"relu": False}
+    CONFIG = {"relu": True}
 
     def func(self, point):
         x, y, z = point
         inp = torch.tensor(point[:2], dtype=torch.float32)
-        y, h, z = model(inp)
-        x, y = z.detach().numpy()
-        return (x * RIGHT + y * UP)
+        y, h, z = model(inp) 
+        x, y = z.detach().numpy() - model.linear1.bias.data.numpy()
+        return 2 * (x * RIGHT + y * UP)
+
+    def func2(self, point):
+        x, y, z = point
+        inp = torch.tensor(point[:2], dtype=torch.float32)
+        y = model.linear2(inp)
+        x, y = y.detach().numpy()
+        return 2.5 * (x * RIGHT + y * UP)

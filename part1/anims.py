@@ -299,15 +299,25 @@ class MNISTNN(Scene):
             neuron_stroke_color=RED,
             edge_stroke_width=1,
             include_output_labels=True,
-
+            neuron_stroke_width=3
         )
 
         nn.shift(2 * RIGHT)
 
-        self.play(Write(nn))
+        lbl1 = TextMobject(r"28").shift(4 * LEFT + 2 * UP)
+        lbl2 = TextMobject(r"28").shift(6.25 * LEFT)
+
+        self.play(Write(img), Write(lbl1), Write(lbl2))
         self.wait()
 
-        self.play(Write(img))
+        self.play(TransformFromCopy(img, nn.layers[0]))
+
+        for i in range(3):
+            self.bring_to_back(nn.edge_groups[i])
+            self.play(Write(nn.edge_groups[i]))
+            if i + 1 < 4:
+                self.play(Write(nn.layers[i+1]))
+
         self.wait()
 
 
@@ -337,6 +347,7 @@ class NeuralNetworkMobject(VGroup):
         self.layer_sizes = neural_network
         self.add_neurons()
         self.add_edges()
+        self.add_to_back(self.layers)
 
     def add_neurons(self):
         layers = VGroup(*[
@@ -345,7 +356,7 @@ class NeuralNetworkMobject(VGroup):
         ])
         layers.arrange_submobjects(RIGHT, buff=self.layer_to_layer_buff)
         self.layers = layers
-        self.add(self.layers)
+        # self.add(self.layers)
         if self.include_output_labels:
             self.add_output_labels()
 
@@ -369,8 +380,8 @@ class NeuralNetworkMobject(VGroup):
                 radius=self.neuron_radius,
                 stroke_color=self.get_nn_fill_color(index),
                 stroke_width=self.neuron_stroke_width,
-                fill_color=self.get_nn_fill_color(index),
-                fill_opacity=0,
+                fill_color=BLACK,
+                fill_opacity=1,
             )
             for x in range(n_neurons)
         ])
@@ -445,7 +456,7 @@ class NeuralNetworkMobject(VGroup):
     def add_y(self):
         self.output_labels = VGroup()
         for n, neuron in enumerate(self.layers[-1].neurons):
-            label = TexMobject(r"\hat{y_{"+f"{n + 1}"+"}")
+            label = TexMobject(r"\hat{y}_"+"{"+f"{n + 1}"+"}")
             label.set_height(0.4 * neuron.get_height())
             label.move_to(neuron)
             self.output_labels.add(label)
@@ -475,7 +486,7 @@ class NeuralNetworkMobject(VGroup):
         self.output_labels = VGroup()
         for layer in self.layers[1:-1]:
             for n, neuron in enumerate(layer.neurons):
-                label = TexMobject(f"a_{n + 1}")
+                label = TexMobject(f"h_{n + 1}")
                 label.set_height(0.3 * neuron.get_height())
                 label.move_to(neuron)
                 self.output_labels.add(label)
@@ -695,9 +706,28 @@ class Heaviside(Scene):
             y_min=0,
             y_max=2,
             axis_config={
-                "include_tip": False
+                "include_tip": False,
+                "include_ticks": False,
             }
         )
+        x_axis, y_axis = axes.get_axes()
+        x_axis.add_tick_marks_without_end()
+        y_axis.add_tick_marks_without_end()
+
+        tip_scale_factor = 0.15
+        tip = VGroup(
+            *[Line(
+                [3, 0, 0],
+                np.array([3, 0, 0]) + tip_scale_factor *
+                np.array([- np.sqrt(2)/2, i * np.sqrt(2)/2, 0]),
+                color=LIGHT_GRAY) for i in [-1, 1]],
+            *[Line(
+                [0, 2, 0],
+                np.array([0, 2, 0]) + tip_scale_factor *
+                np.array([i * np.sqrt(2)/2,  - np.sqrt(2)/2, 0]),
+                color=LIGHT_GRAY) for i in [-1, 1]],
+        )
+        axes
         f = VGroup(FunctionGraph(lambda x: 0, x_min=-3, x_max=0),
                    FunctionGraph(lambda x: 1, x_min=0, x_max=3))
 
@@ -895,7 +925,7 @@ class PerceptronTwo(Scene):
 
 class PerceptronThree(Scene):
     def construct(self):
-        perc = PerceptronMobject([3, 1, 1], neuron_stroke_color=GREEN)
+        perc = PerceptronMobject([3, 1, 1], neuron_stroke_color=GREEN, arrow=True)
         perc.scale(2.5)
         perc.shift(1.5 * UP)
 
@@ -921,16 +951,16 @@ class PerceptronThree(Scene):
         xtex.shift(2 * DOWN + 1.5 * RIGHT)
 
         x_disp1 = TextMobject("Temp").scale(0.75)
-        x_disp1.shift(4 * LEFT + 2.75 * UP)
+        x_disp1.shift(5 * LEFT + 2.75 * UP)
 
         x_disp2 = TextMobject(r"Humidity").scale(0.75)
-        x_disp2.shift(4 * LEFT + 1.5 * UP)
+        x_disp2.shift(5 * LEFT + 1.5 * UP)
 
         x_disp3 = TextMobject("Wind Speed").scale(0.75)
-        x_disp3.shift(4 * LEFT + 0.25 * UP)
+        x_disp3.shift(5 * LEFT + 0.25 * UP)
 
         eq2 = TexMobject(
-            r"\bm{\hat{y}} = H( ", r"\bm{W}  \bm{x}", r" + \nm{b} )",
+            r"\bm{\hat{y}} = H( ", r"\bm{W}  \bm{x}", r" + \bm{b} )",
             tex_to_color_map={r"\bm{x}": PINK, r"\bm{b}": BLUE, r"H": AQUA, r"\bm{\hat{y}}": BLUE})
         eq2.scale(2)
         eq2.shift(2 * DOWN)
@@ -954,16 +984,109 @@ class PerceptronThree(Scene):
 
 class SigmoidIntro(Scene):
     def construct(self):
+        NumberLine
+        axes = Axes(
+            x_min=-3.5,
+            x_max=3.5,
+            y_min=0,
+            y_max=2.5,
+            axis_config={
+                "include_tip": False,
+                "include_ticks": True,
+            },
+            x_axis_config={
+                # "include_numbers": True,
+                "tick_frequency": 1.5,
+                "decimal_number_config": {
+                    "num_decimal_places": 1,
+                }
+            }
+        )
+
+        x_axis, y_axis = axes.get_axes()
+        x_axis.add_tick_marks_without_end()
+        y_axis.add_tick_marks_without_end()
+
+        tip_scale_factor = 0.15
+        tip = VGroup(
+            *[Line(
+                [3.5, 0, 0],
+                np.array([3.5, 0, 0]) + tip_scale_factor *
+                np.array([- np.sqrt(2)/2, i * np.sqrt(2)/2, 0]),
+                color=LIGHT_GRAY) for i in [-1, 1]],
+            *[Line(
+                [0, 2.5, 0],
+                np.array([0, 2.5, 0]) + tip_scale_factor *
+                np.array([i * np.sqrt(2)/2,  - np.sqrt(2)/2, 0]),
+                color=LIGHT_GRAY) for i in [-1, 1]],
+        )
+
+        f = VGroup(FunctionGraph(lambda x: 0, x_min=-3, x_max=0),
+                   FunctionGraph(lambda x: 2, x_min=0, x_max=3))
+        scale = 2
+        f2 = VGroup(FunctionGraph(
+            lambda x: scale/(1+np.exp(-scale*x)),
+            x_min=-2.5, x_max=0, color=GOLD),
+            FunctionGraph(
+            lambda x: scale/(1+np.exp(-scale*x)),
+            x_min=0, x_max=2.5, color=GOLD))
+        axes.add(tip)
+
+        func = VGroup(axes, f, f2)
+        func.center()
+
+        f2.stretch_to_fit_width(6)
+        grp = VGroup()
+        grp.add(
+            axes.x_axis.get_number_mobject(-2.5).move_to([-1.65, -3, 0]),
+            axes.x_axis.get_number_mobject(2.5).move_to([1.5, -3, 0]),
+            axes.x_axis.get_number_mobject(-5).move_to([-3.15, -3, 0]),
+            axes.x_axis.get_number_mobject(5).move_to([3, -3, 0]),
+        )
+        grp.scale(1.5)
+
+        func.scale(1.5)
+        func.shift(0.7 * DOWN)
+
+        eq = PieceWiseTwo(r"{x} \geq 0", r"{x} < 0", "{x}")
+        eq.shift(2.5 * UP)
+
+        lbls = VGroup(
+            TexMobject("0.5").shift(DOWN),
+            TexMobject("1.0").shift(0.5 * UP)
+        ).shift(0.75 * LEFT + 0.1 * UP)
+
+        self.play(Write(axes), Write(lbls), Write(grp))
+        self.play(Write(f))
+        self.play(Write(eq))
+        self.wait()
+
+        eq2 = TexMobject(
+            r"\sigma ({x}) = {{1} \over {1 + \text{exp} (-{x})}",
+            tex_to_color_map={r"\sigma": AQUA, r"{x}": PINK})
+        eq2.scale(1.5)
+        eq2.shift(2.75 * UP)
+
+        self.play(Transform(f[0], f2[0]), Transform(f[1], f2[1]))
+        self.wait()
+
+        self.play(Transform(eq, eq2))
+        self.wait()
+
+
+class ReluIntro(Scene):
+    def construct(self):
         axes = Axes(
             x_min=-3,
             x_max=3,
-            y_min=0,
-            y_max=2,
+            y_min=-1,
+            y_max=3,
             axis_config={
                 "include_tip": False,
                 "include_ticks": False
-            },
+            }
         )
+
         x_axis, y_axis = axes.get_axes()
         x_axis.add_tick_marks_without_end()
         y_axis.add_tick_marks_without_end()
@@ -976,71 +1099,13 @@ class SigmoidIntro(Scene):
                 np.array([- np.sqrt(2)/2, i * np.sqrt(2)/2, 0]),
                 color=LIGHT_GRAY) for i in [-1, 1]],
             *[Line(
-                [0, 2, 0],
-                np.array([0, 2, 0]) + tip_scale_factor *
+                [0, 3, 0],
+                np.array([0, 3, 0]) + tip_scale_factor *
                 np.array([i * np.sqrt(2)/2,  - np.sqrt(2)/2, 0]),
                 color=LIGHT_GRAY) for i in [-1, 1]],
         )
-
-        f = VGroup(FunctionGraph(lambda x: 0, x_min=-3, x_max=0),
-                   FunctionGraph(lambda x: 2, x_min=0, x_max=3))
-        scale = 2
-        f2 = VGroup(FunctionGraph(
-            lambda x: scale/(1+np.exp(-scale*x)),
-            x_min=-3, x_max=0, color=GOLD),
-            FunctionGraph(
-            lambda x: scale/(1+np.exp(-scale*x)),
-            x_min=0, x_max=3, color=GOLD))
         axes.add(tip)
 
-        func = VGroup(axes, f, f2)
-        func.center()
-        func.scale(1.5)
-        func.shift(DOWN)
-
-        eq = PieceWiseTwo(r"{x} \geq 0", r"{x} < 0", "{x}")
-        eq.shift(2.5 * UP)
-
-        self.play(Write(axes), Write(f))
-        self.play(Write(eq))
-        self.wait()
-
-        eq2 = TexMobject(
-            r"\sigma ({x}) = {{1} \over {1 + \text{exp} (-{x})}",
-            tex_to_color_map={r"\sigma": AQUA, r"{x}": PINK})
-        eq2.scale(1.5)
-        eq2.shift(2.75 * UP)
-
-        lbls = VGroup(
-            TexMobject("0.5").shift(DOWN),
-            TexMobject("1.0").shift(0.5 * UP)
-        ).shift(0.75 * LEFT + 0.2 * UP)
-
-        y_lbl = VGroup(
-            TexMobject("-5").shift(2.5 * 1.5 * LEFT),
-            TexMobject("5").shift(2.5 * 1.5 * RIGHT)
-        ).shift(2.85 * DOWN)
-
-        self.play(Transform(f[0], f2[0]), Transform(f[1], f2[1]))
-        self.wait()
-
-        self.play(Transform(eq, eq2))
-        self.play(Write(lbls))
-        self.play(Write(y_lbl))
-        self.wait()
-
-
-class ReluIntro(Scene):
-    def construct(self):
-        axes = Axes(
-            x_min=-3,
-            x_max=3,
-            y_min=-1,
-            y_max=3,
-            axis_config={
-                "include_tip": False
-            }
-        )
         f = FunctionGraph(lambda x: max(0, x), x_min=-3, x_max=3)
 
         grp = VGroup(axes, f)
@@ -1262,19 +1327,19 @@ class NN22(Scene):
         self.wait()
 
         eq1 = TexMobject(
-            r"\bm{a^{(2)}} = (\bm{W^{(1)}}\bm{x} + \bm{b^{(1)}})^+",
+            r"\bm{a}^{(2)} = ( \bm{W}^{(1)} \bm{x} + \bm{b}^{(1)} )^+",
             tex_to_color_map={
                 r"^+": AQUA,
-                r"\bm{x}": PINK, r"\bm{b^{(1)}}": GREEN, r"\bm{a^{(2)}}": GREEN}
+                r"\bm{x}": PINK, r"\bm{b}^{(1)}": GREEN, r"\bm{a}^{(2)}": GREEN}
         )
         eq1.scale(1.5)
         eq1.shift(1 * DOWN)
 
         eq2 = TexMobject(
-            r"\bm{\hat{y}} = \sigma(\bm{W^{(2)}}\bm{a^{(2)}} + \bm{b^{(2)}})",
+            r"\bm{\hat{y}} = \sigma( \bm{W}^{(2)} \bm{a}^{(2)} + \bm{b}^{(2)} )",
             tex_to_color_map={
                 r"\sigma": AQUA,
-                r"\bm{a^{(2)}}": GREEN, r"\bm{b^{(2)}}": BLUE, r"\bm{\hat{y}}": BLUE}
+                r"\bm{a}^{(2)}": GREEN, r"\bm{b}^{(2)}": BLUE, r"\bm{\hat{y}}": BLUE}
         )
         eq2.scale(1.5)
         eq2.shift(2.5 * DOWN)
@@ -1330,7 +1395,7 @@ class LinTDemo(LinearTransformationScene):
 class NN232(Scene):
     def construct(self):
         n = NeuralNetworkMobject([2, 3, 2])
-        n.scale(2)
+        n.scale(3.5)
         n.add_input_labels()
         n.add_middle_a()
         n.add_y()
