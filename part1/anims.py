@@ -339,7 +339,8 @@ class NeuralNetworkMobject(VGroup):
         "include_output_labels": False,
         "arrow": False,
         "arrow_tip_size": 0.1,
-        "left_size": 1
+        "left_size": 1,
+        "neuron_fill_opacity": 1
     }
 
     def __init__(self, neural_network, *args, **kwargs):
@@ -381,7 +382,7 @@ class NeuralNetworkMobject(VGroup):
                 stroke_color=self.get_nn_fill_color(index),
                 stroke_width=self.neuron_stroke_width,
                 fill_color=BLACK,
-                fill_opacity=1,
+                fill_opacity=self.neuron_fill_opacity,
             )
             for x in range(n_neurons)
         ])
@@ -487,13 +488,19 @@ class NeuralNetworkMobject(VGroup):
         for layer in self.layers[1:-1]:
             for n, neuron in enumerate(layer.neurons):
                 label = TexMobject(f"h_{n + 1}")
-                label.set_height(0.3 * neuron.get_height())
+                label.set_height(0.4 * neuron.get_height())
                 label.move_to(neuron)
                 self.output_labels.add(label)
         self.add(self.output_labels)
 
 
 class PerceptronMobject(NeuralNetworkMobject):
+    def __init__(self, neural_network, *args, **kwargs):
+        VGroup.__init__(self, *args, **kwargs)
+        self.layer_sizes = neural_network
+        self.add_neurons()
+        self.add_edges()
+
     def add_neurons(self):
         layers = VGroup(*[
             self.get_layer(size)
@@ -517,7 +524,9 @@ class PerceptronOne(Scene):
         x = ValueTracker(0)
 
         perc = PerceptronMobject(
-            [1, 1, 1], arrow=True, arrow_tip_size=0.1, neuron_radius=0.25, neuron_stroke_color=self.n_color)
+            [1, 1, 1], arrow=True, arrow_tip_size=0.1, 
+            neuron_radius=0.25, neuron_stroke_color=self.n_color,
+            neuron_fill_opacity=0)
         perc.scale(1.5)
         perc.shift(q_width * LEFT)
 
@@ -925,7 +934,8 @@ class PerceptronTwo(Scene):
 
 class PerceptronThree(Scene):
     def construct(self):
-        perc = PerceptronMobject([3, 1, 1], neuron_stroke_color=GREEN, arrow=True)
+        perc = PerceptronMobject(
+            [3, 1, 1], neuron_stroke_color=GREEN, arrow=True)
         perc.scale(2.5)
         perc.shift(1.5 * UP)
 
@@ -951,13 +961,13 @@ class PerceptronThree(Scene):
         xtex.shift(2 * DOWN + 1.5 * RIGHT)
 
         x_disp1 = TextMobject("Temp").scale(0.75)
-        x_disp1.shift(5 * LEFT + 2.75 * UP)
+        x_disp1.shift(4 * LEFT + 2.75 * UP)
 
         x_disp2 = TextMobject(r"Humidity").scale(0.75)
-        x_disp2.shift(5 * LEFT + 1.5 * UP)
+        x_disp2.shift(4 * LEFT + 1.5 * UP)
 
         x_disp3 = TextMobject("Wind Speed").scale(0.75)
-        x_disp3.shift(5 * LEFT + 0.25 * UP)
+        x_disp3.shift(4 * LEFT + 0.25 * UP)
 
         eq2 = TexMobject(
             r"\bm{\hat{y}} = H( ", r"\bm{W}  \bm{x}", r" + \bm{b} )",
@@ -995,7 +1005,6 @@ class SigmoidIntro(Scene):
                 "include_ticks": True,
             },
             x_axis_config={
-                # "include_numbers": True,
                 "tick_frequency": 1.5,
                 "decimal_number_config": {
                     "num_decimal_places": 1,
@@ -1045,6 +1054,11 @@ class SigmoidIntro(Scene):
         )
         grp.scale(1.5)
 
+        xy = VGroup(
+            TexMobject("x", color=PINK).shift(2.7 * DOWN + 5.75 * RIGHT),
+            TexMobject(r"\hat{y}", color=BLUE).shift(0.55 * RIGHT + 1.3 * UP)
+        )
+
         func.scale(1.5)
         func.shift(0.7 * DOWN)
 
@@ -1056,7 +1070,7 @@ class SigmoidIntro(Scene):
             TexMobject("1.0").shift(0.5 * UP)
         ).shift(0.75 * LEFT + 0.1 * UP)
 
-        self.play(Write(axes), Write(lbls), Write(grp))
+        self.play(Write(axes), Write(lbls), Write(grp), Write(xy))
         self.play(Write(f))
         self.play(Write(eq))
         self.wait()
@@ -1226,19 +1240,19 @@ class NN22(Scene):
         n.add_y()
 
         eq1 = TexMobject(
-            r"y_1 = ", r"\sigma (", r"w_{11} x_1 + w_{12} x_2 + b_1", r")",
+            r"\hat{y}_1 = ", r"\sigma (", r"w_{11} x_1 + w_{12} x_2 + b_1", r")",
             tex_to_color_map={
                 r"\sigma": AQUA,
-                r"x_1": PINK, r"x_2": PINK, r"b_1": BLUE, r"y_1": BLUE}
+                r"x_1": PINK, r"x_2": PINK, r"b_1": BLUE, r"\hat{y}_1": BLUE}
         )
         eq1.scale(1.5)
         eq1.shift(1 * DOWN)
 
         eq2 = TexMobject(
-            r"y_2 = ", r"\sigma (", r"w_{21} x_1 + w_{22} x_2 + b_2", r")",
+            r"\hat{y}_2 = ", r"\sigma (", r"w_{21} x_1 + w_{22} x_2 + b_2", r")",
             tex_to_color_map={
                 r"\sigma": AQUA,
-                r"x_1": PINK, r"x_2": PINK, r"b_2": BLUE, r"y_2": BLUE}
+                r"x_1": PINK, r"x_2": PINK, r"b_2": BLUE, r"\hat{y}_2": BLUE}
         )
         eq2.scale(1.5)
         eq2.shift(2.5 * DOWN)
@@ -1327,19 +1341,19 @@ class NN22(Scene):
         self.wait()
 
         eq1 = TexMobject(
-            r"\bm{a}^{(2)} = ( \bm{W}^{(1)} \bm{x} + \bm{b}^{(1)} )^+",
+            r"{{\bm{h}}} = ( \bm{W}_{\bm{h}} \bm{x} + \bm{b}_{\bm{h}} )^+",
             tex_to_color_map={
                 r"^+": AQUA,
-                r"\bm{x}": PINK, r"\bm{b}^{(1)}": GREEN, r"\bm{a}^{(2)}": GREEN}
+                r"\bm{x}": PINK, r"\bm{b}_{\bm{h}}": GREEN, r"{{\bm{h}}}": GREEN}
         )
         eq1.scale(1.5)
         eq1.shift(1 * DOWN)
 
         eq2 = TexMobject(
-            r"\bm{\hat{y}} = \sigma( \bm{W}^{(2)} \bm{a}^{(2)} + \bm{b}^{(2)} )",
+            r"\bm{\hat{y}} = \sigma( \bm{W}_{\bm{y}} \bm{h} + \bm{b}_{\bm{y}})",
             tex_to_color_map={
                 r"\sigma": AQUA,
-                r"\bm{a}^{(2)}": GREEN, r"\bm{b}^{(2)}": BLUE, r"\bm{\hat{y}}": BLUE}
+                r"\bm{h}": GREEN, r"\bm{b}_{\bm{y}}": BLUE, r"\bm{\hat{y}}": BLUE}
         )
         eq2.scale(1.5)
         eq2.shift(2.5 * DOWN)
@@ -1394,7 +1408,7 @@ class LinTDemo(LinearTransformationScene):
 
 class NN232(Scene):
     def construct(self):
-        n = NeuralNetworkMobject([2, 3, 2])
+        n = NeuralNetworkMobject([2, 3, 2], edge_stroke_width=8)
         n.scale(3.5)
         n.add_input_labels()
         n.add_middle_a()
