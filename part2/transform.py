@@ -32,7 +32,7 @@ X, Y = get_data(c=5)
 colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
 
 
-class DecisionContour(VGroup):
+class ContourGroup(VGroup):
     CONFIG = {
         "u_min": -FRAME_WIDTH/2,
         "u_max": FRAME_WIDTH/2,
@@ -78,7 +78,7 @@ class DecisionContour(VGroup):
                     [u1, v1, 0],
                 ])
                 inp = torch.tensor([(u1+u2)/2, (v1+v2)/2], dtype=torch.float32)
-                c = colors[np.argmax(model[3:].forward(inp).detach().numpy())]
+                c = self.get_color(inp)
                 face.set_color(c)
                 faces.add(face)
         faces.set_fill(
@@ -88,6 +88,19 @@ class DecisionContour(VGroup):
             width=0,
         )
         self.add(*faces)
+
+    def get_color(self, inp):
+        return NotImplementedError
+
+
+class DecisionContour(ContourGroup):
+    def get_color(self, inp):
+        return colors[np.argmax(model[3:].forward(inp).detach().numpy())]
+
+
+class InputContour(ContourGroup):
+    def get_color(self, inp):
+        return colors[np.argmax(model.forward(inp).detach().numpy())]
 
 
 class NNTransform(LinearTransformationScene):
@@ -112,14 +125,20 @@ class NNTransform(LinearTransformationScene):
                     radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
             ]
         )
+        i = InputContour()
         d = DecisionContour()
 
         self.setup()
         self.add(init_dots)
         self.wait()
+
+        self.play(FadeIn(i))
+        self.wait()
+
         self.apply_nonlinear_transformation(
             self.function, added_anims=[Transform(init_dots, final_dots)], run_time=8)
         self.wait()
+        
         self.play(FadeIn(d))
         self.wait()
 
