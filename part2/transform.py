@@ -134,11 +134,12 @@ class NNTransform(LinearTransformationScene):
 
         self.play(FadeIn(i))
         self.wait()
+        self.play(FadeOut(i))
 
         self.apply_nonlinear_transformation(
             self.function, added_anims=[Transform(init_dots, final_dots)], run_time=8)
         self.wait()
-        
+
         self.play(FadeIn(d))
         self.wait()
 
@@ -147,3 +148,43 @@ class NNTransform(LinearTransformationScene):
         inp = torch.tensor([x, y], dtype=torch.float32)
         x, y = model[:3].forward(inp).detach().numpy()
         return 0.5 * (x * RIGHT + y * UP)
+
+
+class DrawDots(Scene):
+    CONFIG = {
+        "background_plane_kwargs": {
+            "color": GREY,
+            "axis_config": {
+                "stroke_color": LIGHT_GREY,
+            },
+            "axis_config": {
+                "color": GREY,
+            },
+            "background_line_style": {
+                "stroke_color": GREY,
+                "stroke_width": 1,
+            },
+        },
+        "foreground_plane_kwargs": {
+            "x_max": FRAME_WIDTH / 2,
+            "x_min": -FRAME_WIDTH / 2,
+            "y_max": FRAME_WIDTH / 2,
+            "y_min": -FRAME_WIDTH / 2,
+            "faded_line_ratio": 0,
+            "x_line_frequency": 0.5,
+            "y_line_frequency": 0.5,
+        }
+    }
+
+    def construct(self):
+        init_dots = VGroup(
+            *[
+                Dot([point[0], point[1], 0], color=colors[Y[index]],
+                    radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
+            ]
+        )
+
+        self.play(Write(NumberPlane(**self.background_plane_kwargs)),
+                  Write(NumberPlane(**self.foreground_plane_kwargs)))
+        self.play(Write(init_dots))
+        self.wait()

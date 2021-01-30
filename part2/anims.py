@@ -77,3 +77,8 @@ class LastVideo(Scene):
             Write(rect)
         )
         self.wait(2)
+
+
+class NNDiagram(Scene):
+    def construct(self):
+        
