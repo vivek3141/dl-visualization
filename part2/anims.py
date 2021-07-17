@@ -79,7 +79,7 @@ class LastVideo(Scene):
         self.wait(2)
 
 
-lass NeuralNetworkMobject(VGroup):
+class NeuralNetworkMobject(VGroup):
     CONFIG = {
         "neuron_radius": 0.15,
         "neuron_to_neuron_buff": MED_SMALL_BUFF,
@@ -234,7 +234,7 @@ lass NeuralNetworkMobject(VGroup):
     def add_output_labels(self):
         self.output_labels = VGroup()
         for n, neuron in enumerate(self.layers[-1].neurons):
-            label = TexMobject(str(n))
+            label = TexMobject(str(n ))
             label.set_height(0.75*neuron.get_height())
             label.move_to(neuron)
             label.shift(neuron.get_width()*RIGHT)
@@ -264,3 +264,25 @@ class NNDiagram(Scene):
             include_output_labels=True,
             neuron_stroke_width=3
         )
+
+        for i in range(2):
+            self.play(Write(nn.layers[i]))
+            self.bring_to_back(nn.edge_groups[i])
+            self.play(Write(nn.edge_groups[i]))
+        
+        self.play(Write(nn.layers[-1]), Write(nn.output_labels))
+        self.wait()
+
+        nn2 = NeuralNetworkMobject(
+            [2, 100, 2, 5],
+            neuron_radius=0.15,
+            neuron_to_neuron_buff=SMALL_BUFF,
+            layer_to_layer_buff=1.5,
+            neuron_stroke_color=RED,
+            edge_stroke_width=1,
+            include_output_labels=True,
+            neuron_stroke_width=3
+        )
+
+        self.play(Transform(nn, nn2))
+        self.wait()
