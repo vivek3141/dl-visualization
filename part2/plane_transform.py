@@ -1,4 +1,4 @@
-from manimlib.imports import *
+from manimlib import *
 import torch
 
 path = './model/model.pth'
@@ -103,7 +103,29 @@ class InputContour(ContourGroup):
         return colors[np.argmax(model.forward(inp).detach().numpy())]
 
 
-class NNTransformPlane(LinearTransformationScene):
+class Test(Scene):
+    def construct(self):
+        n = NumberPlane()
+        n.prepare_for_nonlinear_transform()
+        n.apply_complex_function(lambda z: z**2)
+        self.add(n)
+
+
+class NNTransformPlane(Scene):
+    def construct(self):
+        n = NumberPlane()
+        n.prepare_for_nonlinear_transform()
+        n.apply_complex_function(self.function)
+        self.add(n)
+
+    def function(self, z):
+        x, y = z.real, z.imag
+        inp = torch.tensor([x, y], dtype=torch.float32)
+        x, y = model[:3].forward(inp).detach().numpy()
+        return x + y*1j
+
+
+class NNTransformPlane(Scene):
     CONFIG = {
         "show_basis_vectors": False,
         "foreground_plane_kwargs": {
@@ -140,43 +162,3 @@ class NNTransformPlane(LinearTransformationScene):
         inp = torch.tensor([x, y], dtype=torch.float32)
         x, y = model[:3].forward(inp).detach().numpy()
         return 0.5 * (x * RIGHT + y * UP)
-
-
-class DrawDots(Scene):
-    CONFIG = {
-        "background_plane_kwargs": {
-            "color": GREY,
-            "axis_config": {
-                "stroke_color": LIGHT_GREY,
-            },
-            "axis_config": {
-                "color": GREY,
-            },
-            "background_line_style": {
-                "stroke_color": GREY,
-                "stroke_width": 1,
-            },
-        },
-        "foreground_plane_kwargs": {
-            "x_max": FRAME_WIDTH / 2,
-            "x_min": -FRAME_WIDTH / 2,
-            "y_max": FRAME_WIDTH / 2,
-            "y_min": -FRAME_WIDTH / 2,
-            "faded_line_ratio": 0,
-            "x_line_frequency": 0.5,
-            "y_line_frequency": 0.5,
-        }
-    }
-
-    def construct(self):
-        init_dots = VGroup(
-            *[
-                Dot([point[0], point[1], 0], color=colors[Y[index]],
-                    radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
-            ]
-        )
-
-        self.play(Write(NumberPlane(**self.background_plane_kwargs)),
-                  Write(NumberPlane(**self.foreground_plane_kwargs)))
-        self.play(Write(init_dots))
-        self.wait()
