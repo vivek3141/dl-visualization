@@ -103,7 +103,7 @@ class InputContour(ContourGroup):
         return colors[np.argmax(model.forward(inp).detach().numpy())]
 
 
-class NNTransform(LinearTransformationScene):
+class NNTransformPlane(LinearTransformationScene):
     CONFIG = {
         "show_basis_vectors": False,
         "foreground_plane_kwargs": {
@@ -113,13 +113,7 @@ class NNTransform(LinearTransformationScene):
     }
 
     def construct(self):
-        init_dots = VGroup(
-            *[
-                Dot([point[0], point[1], 0], color=colors[Y[index]],
-                    radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
-            ]
-        )
-        final_dots = VGroup(
+        dots = VGroup(
             *[
                 Dot(self.function([point[0], point[1], 0]), color=colors[Y[index]],
                     radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
@@ -129,8 +123,6 @@ class NNTransform(LinearTransformationScene):
         d = DecisionContour()
 
         self.setup()
-        self.add(init_dots)
-        self.wait()
 
         self.play(FadeIn(i))
         self.wait()
