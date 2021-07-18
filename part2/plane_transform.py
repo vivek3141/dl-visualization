@@ -32,6 +32,15 @@ X, Y = get_data(c=5)
 colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
 
 
+def tuplify(obj):
+    if isinstance(obj, str):
+        return (obj,)
+    try:
+        return tuple(obj)
+    except TypeError:
+        return (obj,)
+
+
 class ContourGroup(VGroup):
     CONFIG = {
         "u_min": -FRAME_WIDTH/2,
@@ -112,20 +121,54 @@ class Test(Scene):
 
 
 class NNTransformPlane(Scene):
+    CONFIG = {
+        "foreground_plane_kwargs": {
+            "faded_line_ratio": 1,
+        },
+        "background_plane_kwargs": {
+            "color": GREY,
+            "axis_config": {
+                "stroke_color": GREY_B,
+            },
+            "axis_config": {
+                "color": GREY,
+            },
+            "background_line_style": {
+                "stroke_color": GREY,
+                "stroke_width": 1,
+            },
+        }
+    }
+
     def construct(self):
-        n = NumberPlane()
-        n.prepare_for_nonlinear_transform()
-        n.apply_complex_function(self.function)
-        self.add(n)
+        f_plane = NumberPlane(**self.foreground_plane_kwargs)
+        f_plane.prepare_for_nonlinear_transform()
+        f_plane.apply_complex_function(self.func_complex)
 
-    def function(self, z):
-        x, y = z.real, z.imag
-        inp = torch.tensor([x, y], dtype=torch.float32)
+        b_plane = NumberPlane(**self.background_plane_kwargs)
+
+        dots = VGroup(
+            *[
+                Dot(self.func_real([point[0], point[1]]), color=colors[Y[index]],
+                    radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
+            ]
+        )
+
+        d = DecisionContour()
+        self.add(b_plane, f_plane, dots, d)
+
+    def func_complex(self, z):
+        inp = torch.tensor([z.real, z.imag], dtype=torch.float32)
         x, y = model[:3].forward(inp).detach().numpy()
-        return x + y*1j
+        return 0.5 * (x + y*1j)
+
+    def func_real(self, point):
+        inp = torch.tensor(point, dtype=torch.float32)
+        x, y = model[:3].forward(inp).detach().numpy()
+        return 0.5 * (x * RIGHT + y * UP)
 
 
-class NNTransformPlane(Scene):
+class NNTransformPlane2(Scene):
     CONFIG = {
         "show_basis_vectors": False,
         "foreground_plane_kwargs": {
