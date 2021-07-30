@@ -154,8 +154,13 @@ class NNTransformPlane(Scene):
             ]
         )
 
-        d = DecisionContour()
-        self.add(b_plane, f_plane, dots, d)
+        frame = self.camera.frame
+
+        #d = DecisionContour()
+        self.add(b_plane, f_plane, dots)
+
+        self.play(frame.set_phi, 0.35*PI)
+        self.embed()
 
     def func_complex(self, z):
         inp = torch.tensor([z.real, z.imag], dtype=torch.float32)

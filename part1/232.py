@@ -101,7 +101,7 @@ class FoldTransform(Scene):
 
         rotate = True
         frame.add_updater(
-            lambda m, dt: m.become(m.rotate(-0.2 * dt)) if rotate else None
+            lambda m, dt: m.increment_theta(-0.2 * dt) if rotate else None
         )
 
         points2 = SGroup(
@@ -117,12 +117,22 @@ class FoldTransform(Scene):
         )
 
         self.play(Transform(points, points3), run_time=5)
+        p = Polygon([3.85, 0, 0], [0, 3.85, 0], [0, 0, 1.9],
+                    fill_opacity=0.5, color=WHITE)
+        p2 = Polygon([3.85, 0, 0], [4.15, 0, 0], [5, 0.5, 0], [0.5, 5.25, 0], [
+                     0, 4.15, 0], [0, 3.85, 0], fill_opacity=0.5, color=WHITE)
+        p3 = Polygon([3.85, 0, 0], [0, 0, 1.9], [0, 0, 2.75], [
+                     1.5, 0, 2.75], [4.15, 0, 0], fill_opacity=0.5, color=WHITE)
+        p4 = Polygon([0, 0, 1.9], [0, 0, 2.75], [0, 1.5, 2.75], [
+                     0, 4.15, 0], [0, 3.85, 0], fill_opacity=0.5, color=WHITE)
+        ps = VGroup(p, p2, p3, p4)
+        self.play(Write(ps))
         self.wait(self.wait_duration)
 
         points4 = SGroup(
             *[get_sphere(shift=self.func3(*point), color=rgb2hex(colors[index])) for index, point in enumerate(H)]
         )
-
+        self.play(Uncreate(ps))
         self.play(Transform(points, points4), run_time=5)
         self.wait(2)
 
