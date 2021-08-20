@@ -160,6 +160,26 @@ class NNTransformPlane(Scene):
         self.add(b_plane, f_plane, dots)
 
         self.play(frame.set_phi, 0.35*PI)
+
+        def get_plane(w0, w1, b):
+            return lambda u, v: [u, v, w0*u+w1*v+b]
+
+        rotate = True
+        frame.add_updater(
+            lambda m, dt: m.increment_theta(-0.2 * dt)
+            if rotate else None
+        )
+
+        w = model[3].weight.detach().numpy()
+        b = model[3].bias.detach().numpy()
+
+        planes = Group()
+
+        for i in range(5):
+            p1 = get_plane(w[i][0], w[i][1], b[i])
+            p = ParametricSurface(p1, u_range=(-3,3), v_range=(-3,3), color=WHITE, opacity=0.5)
+            planes.add(p)
+
         self.embed()
 
     def func_complex(self, z):
