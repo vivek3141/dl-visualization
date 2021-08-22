@@ -161,9 +161,6 @@ class NNTransformPlane(Scene):
 
         self.play(frame.set_phi, 0.35*PI)
 
-        def get_plane(w0, w1, b):
-            return lambda u, v: [u, v, w0*u+w1*v+b]
-
         rotate = True
         frame.add_updater(
             lambda m, dt: m.increment_theta(-0.2 * dt)
@@ -173,14 +170,30 @@ class NNTransformPlane(Scene):
         w = model[3].weight.detach().numpy()
         b = model[3].bias.detach().numpy()
 
-        planes = Group()
+        Rectangle
+
+        planes = SGroup()
 
         for i in range(5):
-            p1 = get_plane(w[i][0], w[i][1], b[i])
-            p = ParametricSurface(p1, u_range=(-3,3), v_range=(-3,3), color=WHITE, opacity=0.5)
+            p1 = self.get_plane_func(w[i][0], w[i][1], b[i])
+            p = self.get_plane(p1, stroke_color=WHITE, fill_color=BLACK, fill_opacity=0.5)
             planes.add(p)
 
         self.embed()
+    
+    @staticmethod
+    def get_plane_func(w0, w1, b):
+            return lambda u, v: [u, v, w0*u+w1*v+b]
+    
+    def get_plane(self, func, u_max=3, v_max=3, **kwargs):
+        vertices = []
+
+        for x in range(-1, 2, 2):
+            for y in range(-1, 2, 2):
+                if x > 0: y *= -1
+                vertices.append(func(u_max*x, v_max*y))
+        
+        return Polygon(vertices, **kwargs)
 
     def func_complex(self, z):
         inp = torch.tensor([z.real, z.imag], dtype=torch.float32)
@@ -191,6 +204,15 @@ class NNTransformPlane(Scene):
         inp = torch.tensor(point, dtype=torch.float32)
         x, y = model[:3].forward(inp).detach().numpy()
         return 0.5 * (x * RIGHT + y * UP)
+
+    def interact(self):
+        self.quit_interaction = False
+        self.lock_static_mobject_data()
+        try:
+            while True:
+                self.update_frame()
+        except KeyboardInterrupt:
+            self.unlock_mobject_data()
 
 
 class NNTransformPlane2(Scene):
