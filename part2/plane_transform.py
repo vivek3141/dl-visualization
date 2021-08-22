@@ -176,7 +176,8 @@ class NNTransformPlane(Scene):
         planes = self.get_planes_cut(z_max=1, y_max=3, stroke_color=WHITE,
                                      fill_color=BLACK, fill_opacity=0.5)
 
-        lines = self.get_lines()
+        lines = self.get_lines(
+            t_min=-4, t_max=4, stroke_width=6, stroke_color=PINK)
 
         self.embed()
 
@@ -220,8 +221,6 @@ class NNTransformPlane(Scene):
                         z *= -1
 
                     vertices.append(func(y * y_max, z * z_max))
-
-            print(vertices)
 
             planes.add(Polygon(*vertices, **kwargs))
 
