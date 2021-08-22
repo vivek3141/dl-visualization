@@ -173,8 +173,6 @@ class NNTransformPlane(Scene):
         self.w = w
         self.b = b
 
-        Rectangle
-
         planes = self.get_planes(u_max=3, v_max=3, stroke_color=WHITE,
                                  fill_color=BLACK, fill_opacity=0.5)
         self.embed()
