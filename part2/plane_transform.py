@@ -176,24 +176,26 @@ class NNTransformPlane(Scene):
 
         for i in range(5):
             p1 = self.get_plane_func(w[i][0], w[i][1], b[i])
-            p = self.get_plane(p1, stroke_color=WHITE, fill_color=BLACK, fill_opacity=0.5)
+            p = self.get_plane(p1, stroke_color=WHITE,
+                               fill_color=BLACK, fill_opacity=0.5)
             planes.add(p)
 
         self.embed()
-    
+
     @staticmethod
     def get_plane_func(w0, w1, b):
-            return lambda u, v: [u, v, w0*u+w1*v+b]
-    
+        return lambda u, v: [u, v, w0*u+w1*v+b]
+
     def get_plane(self, func, u_max=3, v_max=3, **kwargs):
         vertices = []
 
         for x in range(-1, 2, 2):
             for y in range(-1, 2, 2):
-                if x > 0: y *= -1
+                if x > 0:
+                    y *= -1
                 vertices.append(func(u_max*x, v_max*y))
-        
-        return Polygon(vertices, **kwargs)
+
+        return Polygon(*vertices, **kwargs)
 
     def func_complex(self, z):
         inp = torch.tensor([z.real, z.imag], dtype=torch.float32)
