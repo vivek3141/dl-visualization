@@ -183,15 +183,16 @@ class NNTransformPlane(Scene):
     @staticmethod
     def get_plane_func(w0, w1, b):
         return lambda u, v: [u, v, w0*u+w1*v+b]
-    
+
     def get_lines(self, **kwargs):
         lines = VGroup()
 
         for i in range(5):
             lines.add(
-                ParametricCurve(lambda t: [t, -(self.w[i][0] * t + self.b[i])/self.w[i][1], 0], **kwargs)
+                ParametricCurve(
+                    lambda t: [t, -(self.w[i][0] * t + self.b[i])/self.w[i][1], 0], **kwargs)
             )
-        
+
         return lines
 
     def get_planes(self, **kwargs):
