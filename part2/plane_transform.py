@@ -173,7 +173,7 @@ class NNTransformPlane(Scene):
         self.w = w
         self.b = b
 
-        planes = self.get_planes_cut(z=1, y=3, stroke_color=WHITE,
+        planes = self.get_planes_cut(z_max=1, y_max=3, stroke_color=WHITE,
                                  fill_color=BLACK, fill_opacity=0.5)
         self.embed()
 
@@ -200,10 +200,10 @@ class NNTransformPlane(Scene):
 
             vertices = list()
 
-            for x in range(-1, 2, 2):
-                for y in range(-1, 2, 2):
-                    if x > 0:
-                        y *= -1
+            for y in range(-1, 2, 2):
+                for z in range(-1, 2, 2):
+                    if y > 0:
+                        z *= -1
 
                     vertices.append(func(y * y_max, z * z_max))
             
