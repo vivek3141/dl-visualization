@@ -170,21 +170,29 @@ class NNTransformPlane(Scene):
         w = model[3].weight.detach().numpy()
         b = model[3].bias.detach().numpy()
 
+        self.w = w
+        self.b = b
+
         Rectangle
 
-        planes = SGroup()
-
-        for i in range(5):
-            p1 = self.get_plane_func(w[i][0], w[i][1], b[i])
-            p = self.get_plane(p1, stroke_color=WHITE,
+        planes = self.get_planes(u_max=3, v_max=3, stroke_color=WHITE,
                                fill_color=BLACK, fill_opacity=0.5)
-            planes.add(p)
-
         self.embed()
 
     @staticmethod
     def get_plane_func(w0, w1, b):
         return lambda u, v: [u, v, w0*u+w1*v+b]
+    
+    def get_planes(self, **kwargs):
+        planes = SGroup()
+
+        for i in range(5):
+            p1 = self.get_plane_func(self.w[i][0], self.w[i][1], self.b[i])
+            p = self.get_plane(p1, **kwargs)
+            planes.add(p)
+        
+        return planes
+
 
     def get_plane(self, func, u_max=3, v_max=3, **kwargs):
         vertices = []
