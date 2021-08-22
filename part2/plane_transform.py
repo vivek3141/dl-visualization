@@ -174,12 +174,25 @@ class NNTransformPlane(Scene):
         self.b = b
 
         planes = self.get_planes_cut(z_max=1, y_max=3, stroke_color=WHITE,
-                                 fill_color=BLACK, fill_opacity=0.5)
+                                     fill_color=BLACK, fill_opacity=0.5)
+
+        lines = self.get_lines()
+
         self.embed()
 
     @staticmethod
     def get_plane_func(w0, w1, b):
         return lambda u, v: [u, v, w0*u+w1*v+b]
+    
+    def get_lines(self, **kwargs):
+        lines = VGroup()
+
+        for i in range(5):
+            lines.add(
+                ParametricCurve(lambda t: [t, -(self.w[i][0] * t + self.b[i])/self.w[i][1], 0], **kwargs)
+            )
+        
+        return lines
 
     def get_planes(self, **kwargs):
         planes = SGroup()
@@ -195,7 +208,7 @@ class NNTransformPlane(Scene):
         planes = SGroup()
 
         for i in range(5):
-            def func(y, z): 
+            def func(y, z):
                 return [(z - (self.w[i][1] * y + self.b[i])) / self.w[i][0], y, z]
 
             vertices = list()
@@ -206,7 +219,7 @@ class NNTransformPlane(Scene):
                         z *= -1
 
                     vertices.append(func(y * y_max, z * z_max))
-            
+
             print(vertices)
 
             planes.add(Polygon(*vertices, **kwargs))
