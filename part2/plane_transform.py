@@ -173,7 +173,7 @@ class NNTransformPlane(Scene):
         self.w = w
         self.b = b
 
-        planes = self.get_planes(u_max=3, v_max=3, stroke_color=WHITE,
+        planes = self.get_planes_cut(z=1, y=3, stroke_color=WHITE,
                                  fill_color=BLACK, fill_opacity=0.5)
         self.embed()
 
@@ -191,12 +191,12 @@ class NNTransformPlane(Scene):
 
         return planes
 
-    def get_planes_cut(self, z=1, y=3, **kwargs):
+    def get_planes_cut(self, z_max=1, y_max=3, **kwargs):
         planes = SGroup()
 
         for i in range(5):
-            def func(y, z): return [
-                (z - (self.w[i][1] * y + self.b[i])) / self.w[i][0], y, z]
+            def func(y, z): 
+                return [(z - (self.w[i][1] * y + self.b[i])) / self.w[i][0], y, z]
 
             vertices = list()
 
@@ -205,7 +205,9 @@ class NNTransformPlane(Scene):
                     if x > 0:
                         y *= -1
 
-                    vertices.append(func(y, z))
+                    vertices.append(func(y * y_max, z * z_max))
+            
+            print(vertices)
 
             planes.add(Polygon(*vertices, **kwargs))
 
