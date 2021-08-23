@@ -107,27 +107,49 @@ class ContourGroup(VGroup):
         return NotImplementedError
 
 
-class DecisionContourT(VGroup):
+class ContourGroupGL(SGroup):
     CONFIG = {
-        "resolution": 100
+        "count": 2,
+        "opacity": 0.45,
+        "x_min": -FRAME_WIDTH/2,
+        "x_max": FRAME_WIDTH/2,
+        "y_min": -FRAME_HEIGHT/2,
+        "y_max": FRAME_HEIGHT/2,
     }
 
     def __init__(self, *args, **kwargs):
-        VGroup.__init__(self, *args, **kwargs)
+        SGroup.__init__(self, *args, **kwargs)
         self.setup()
 
     def setup(self):
-        print(self.resolution)
+        dx = FRAME_WIDTH / self.count
+        dy = FRAME_HEIGHT / self.count
+
+        self.dx = dx
+        self.dy = dy
+
+        for x in np.linspace(self.x_min, self.x_max, self.count):
+            for y in np.linspace(self.y_min, self.y_max, self.count):
+                inp = torch.tensor([x, y], dtype=torch.float32)
+                c = self.get_color(inp)
+                face = Surface(u_range=(0, 1.5*dx), v_range=(0, 1.5*dy), color=c, opacity=0.45)
+                face.move_to([x, y, 0])
+                self.add(face)
+
+    def get_color(self, inp):
+        return NotImplementedError
 
 
-class TestScene(Scene):
-    def construst(self):
-        a = Text("HELLO how are you.")
-        self.play(Write(a))
-        self.wait()
+class DecisionContourGL(ContourGroupGL):
+    def get_color(self, inp):
+        return colors[np.argmax(model[3:].forward(inp).detach().numpy())]
 
-       # d = DecisionContourT()
-        # self.add(d)
+
+class DecisionTest(Scene):
+    def construct(self):
+        d = DecisionContourGL()
+        self.add(d)
+        self.embed()
 
 
 class DecisionContour(ContourGroup):
@@ -185,9 +207,9 @@ class NNTransformPlane(Scene):
 
         frame = self.camera.frame
 
-        d = DecisionContour()
+        #d = DecisionContour()
         self.add(b_plane, f_plane, dots)
-        self.add(d)
+        # self.add(d)
 
         self.play(frame.set_phi, 0.35*PI)
 
