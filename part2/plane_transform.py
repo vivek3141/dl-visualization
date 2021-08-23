@@ -107,6 +107,29 @@ class ContourGroup(VGroup):
         return NotImplementedError
 
 
+class DecisionContourT(VGroup):
+    CONFIG = {
+        "resolution": 100
+    }
+
+    def __init__(self, *args, **kwargs):
+        VGroup.__init__(self, *args, **kwargs)
+        self.setup()
+
+    def setup(self):
+        print(self.resolution)
+
+
+class TestScene(Scene):
+    def construst(self):
+        a = Text("HELLO how are you.")
+        self.play(Write(a))
+        self.wait()
+
+       # d = DecisionContourT()
+        # self.add(d)
+
+
 class DecisionContour(ContourGroup):
     def get_color(self, inp):
         return colors[np.argmax(model[3:].forward(inp).detach().numpy())]
@@ -162,8 +185,9 @@ class NNTransformPlane(Scene):
 
         frame = self.camera.frame
 
-        #d = DecisionContour()
+        d = DecisionContour()
         self.add(b_plane, f_plane, dots)
+        self.add(d)
 
         self.play(frame.set_phi, 0.35*PI)
 
@@ -184,23 +208,24 @@ class NNTransformPlane(Scene):
 
         # lines = self.get_lines(
         #     t_min=-4, t_max=4, stroke_width=6, stroke_color=PINK)
-        
+
         s = SGroup()
 
         for i in range(5):
-            surf = self.surface_func_softmax(i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
+            surf = self.surface_func_softmax(
+                i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
             s.add(surf)
-        
+
         self.play(ShowCreation(s[0]))
-        
+
         for i in range(5):
             self.wait(5)
             self.play(Transform(s[0], s[i]))
 
         self.wait(5)
 
-        #self.embed()
-    
+        # self.embed()
+
     def surface_func_softmax(self, i=0, scale=3, **kwargs):
         return ParametricSurface(lambda u, v: [u, v, scale * softmax(self.w.dot(np.array([[u], [v]]) + self.b[0]))[i]], **kwargs)
 
