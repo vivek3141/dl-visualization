@@ -190,14 +190,14 @@ class NNTransformPlane(Scene):
             surf = self.surface_func_softmax(i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
             s.add(surf)
         
-        self.play(Write(s[0]))
+        self.play(ShowCreation(s[0]))
         
         for i in range(5):
             self.wait(5)
             self.play(Transform(s[0], s[i]))
 
-        self.wait()
-        
+        self.wait(5)
+
         #self.embed()
     
     def surface_func_softmax(self, i=0, scale=3, **kwargs):
