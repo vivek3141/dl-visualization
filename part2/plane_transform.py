@@ -6,6 +6,11 @@ model = torch.load(path)
 torch.manual_seed(231)
 
 
+def softmax(x):
+    e = np.exp(x)
+    return e / np.sum(e)
+
+
 def get_data(n=100, d=2, c=3, std=0.2):
     X = torch.zeros(n * c, d)
     y = torch.zeros(n * c, dtype=torch.long)
@@ -180,6 +185,9 @@ class NNTransformPlane(Scene):
             t_min=-4, t_max=4, stroke_width=6, stroke_color=PINK)
 
         self.embed()
+
+    def surface_func(self, i=0, scale=3, activation=softmax, **kwargs):
+        return ParametricSurface(lambda u, v: [u, v, scale * activation(self.w[0][0] * u + self.w[0][1] * v + self.b[0])], **kwargs)
 
     @staticmethod
     def get_plane_func(w0, w1, b):
