@@ -178,15 +178,31 @@ class NNTransformPlane(Scene):
         self.w = w
         self.b = b
 
-        planes = self.get_planes_cut(z_max=1, y_max=3, stroke_color=WHITE,
-                                     fill_color=BLACK, fill_opacity=0.5)
+        # planes = self.get_planes_cut(z_max=1, y_max=3, stroke_color=WHITE,
+        #                              fill_color=BLACK, fill_opacity=0.5)
 
-        lines = self.get_lines(
-            t_min=-4, t_max=4, stroke_width=6, stroke_color=PINK)
+        # lines = self.get_lines(
+        #     t_min=-4, t_max=4, stroke_width=6, stroke_color=PINK)
+        
+        s = SGroup()
 
-        self.embed()
+        for i in range(5):
+            surf = self.surface_func_softmax(i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
+            s.add(surf)
+        
+        self.play(Write(s[0]))
+        
+        for i in range(5):
+            self.wait(5)
+            self.play(Transform(s[0], s[i]))
 
-    def surface_func(self, i=0, scale=3, activation=softmax, **kwargs):
+        self.wait()
+        #self.embed()
+    
+    def surface_func_softmax(self, i=0, scale=3, **kwargs):
+        return ParametricSurface(lambda u, v: [u, v, scale * softmax(self.w.dot(np.array([[u], [v]]) + self.b[0]))[i]], **kwargs)
+
+    def surface_func(self, i=0, scale=3, activation=sigmoid, **kwargs):
         return ParametricSurface(lambda u, v: [u, v, scale * activation(self.w[0][0] * u + self.w[0][1] * v + self.b[0])], **kwargs)
 
     @staticmethod
