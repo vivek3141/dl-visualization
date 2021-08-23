@@ -142,6 +142,7 @@ class NNTransformPlane(Scene):
                 "stroke_color": GREY,
                 "stroke_width": 1,
             },
+            "faded_line_ratio": 1
         }
     }
 
