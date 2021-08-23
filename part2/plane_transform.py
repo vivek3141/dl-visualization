@@ -197,6 +197,7 @@ class NNTransformPlane(Scene):
             self.play(Transform(s[0], s[i]))
 
         self.wait()
+        
         #self.embed()
     
     def surface_func_softmax(self, i=0, scale=3, **kwargs):
