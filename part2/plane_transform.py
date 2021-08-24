@@ -109,7 +109,7 @@ class ContourGroup(VGroup):
 
 class ContourGroupGL(SGroup):
     CONFIG = {
-        "count": 2,
+        "count": 5,
         "opacity": 0.45,
         "x_min": -FRAME_WIDTH/2,
         "x_max": FRAME_WIDTH/2,
@@ -132,8 +132,29 @@ class ContourGroupGL(SGroup):
             for y in np.linspace(self.y_min, self.y_max, self.count):
                 inp = torch.tensor([x, y], dtype=torch.float32)
                 c = self.get_color(inp)
-                face = Surface(u_range=(0, 1.5*dx), v_range=(0, 1.5*dy), color=c, opacity=0.45)
+                # face = Surface(
+                #     u_range=(0, dx),
+                #     v_range=(0, dy),
+                #     color=c,
+                #     opacity=0.45,
+                #     gloss=0,
+                #     shadow=0,
+                # )
+                face = Rectangle(
+                    width=dx,
+                    height=dy,
+                    color=c,
+                    fill_opacity=0.45,
+                    stroke_width=0,
+                    stroke_opactiy=0,
+                )
+
+                xdx = dx/2 * (1 if x > 0 else -1) * (1 if x != 0 else 0)
+                ydy = dy/2 * (1 if y > 0 else -1) * (1 if y != 0 else 0)
+
                 face.move_to([x, y, 0])
+                face.shift(xdx * RIGHT + ydy * UP)
+
                 self.add(face)
 
     def get_color(self, inp):
