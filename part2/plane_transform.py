@@ -46,13 +46,24 @@ def tuplify(obj):
         return (obj,)
 
 
+class InteractiveScene(Scene):
+    def interact(self):
+        self.quit_interaction = False
+        self.lock_static_mobject_data()
+        try:
+            while True:
+                self.update_frame()
+        except KeyboardInterrupt:
+            self.unlock_mobject_data()
+
+
 class ContourGroup(VGroup):
     CONFIG = {
         "u_min": -FRAME_WIDTH/2,
         "u_max": FRAME_WIDTH/2,
         "v_min": -FRAME_HEIGHT/2,
         "v_max": FRAME_HEIGHT/2,
-        "resolution": 256,
+        "resolution": 10,
         "fill_opacity": 0.45,
     }
 
@@ -107,10 +118,10 @@ class ContourGroup(VGroup):
         return NotImplementedError
 
 
-class ContourGroupGL(SGroup):
+class ContourGroupGL(VGroup):
     CONFIG = {
         "count": 5,
-        "opacity": 0.45,
+        "fill_opacity": 0.45,
         "x_min": -FRAME_WIDTH/2,
         "x_max": FRAME_WIDTH/2,
         "y_min": -FRAME_HEIGHT/2,
@@ -118,20 +129,41 @@ class ContourGroupGL(SGroup):
     }
 
     def __init__(self, *args, **kwargs):
-        SGroup.__init__(self, *args, **kwargs)
+        VGroup.__init__(self, *args, **kwargs)
         self.setup()
+        # self.set_opacity(self.fill_opacity)
 
     def setup(self):
-        dx = FRAME_WIDTH / self.count
-        dy = FRAME_HEIGHT / self.count
+        x_values = np.linspace(self.x_min, self.x_max, self.count + 1)
+        y_values = np.linspace(self.y_min, self.y_max, self.count + 1)
 
-        self.dx = dx
-        self.dy = dy
+        for i in range(len(x_values) - 1):
+            for j in range(len(y_values) - 1):
+                x1, x2 = x_values[i:i + 2]
+                y1, y2 = y_values[j:j + 2]
 
-        for x in np.linspace(self.x_min, self.x_max, self.count):
-            for y in np.linspace(self.y_min, self.y_max, self.count):
-                inp = torch.tensor([x, y], dtype=torch.float32)
+                inp = torch.tensor(
+                    [(x1 + x2)/2, (y1 + y2)/2], dtype=torch.float32)
                 c = self.get_color(inp)
+
+                Mobject
+
+                face = VMobject(
+                    color=c,
+                    stroke_width=0,
+                    fill_opacity=self.fill_opacity,
+                )
+                face.set_points_as_corners([
+                    [x1, y1, 0],
+                    [x2, y1, 0],
+                    [x2, y2, 0],
+                    [x1, y2, 0],
+                    [x1, y1, 0],
+                ])
+                # face.scale(0.999)
+
+                self.add(face)
+
                 # face = Surface(
                 #     u_range=(0, dx),
                 #     v_range=(0, dy),
@@ -140,22 +172,20 @@ class ContourGroupGL(SGroup):
                 #     gloss=0,
                 #     shadow=0,
                 # )
-                face = Rectangle(
-                    width=dx,
-                    height=dy,
-                    color=c,
-                    fill_opacity=0.45,
-                    stroke_width=0,
-                    stroke_opactiy=0,
-                )
+                # face = Rectangle(
+                #     width=dx,
+                #     height=dy,
+                #     color=c,
+                #     fill_opacity=0.45,
+                #     stroke_width=0,
+                #     stroke_opactiy=0,
+                # )
 
-                xdx = dx/2 * (1 if x > 0 else -1) * (1 if x != 0 else 0)
-                ydy = dy/2 * (1 if y > 0 else -1) * (1 if y != 0 else 0)
+                # xdx = dx/4 * (1 if x < 0 else -1) * (1 if x != 0 else 0)
+                # ydy = dy/4 * (1 if y < 0 else -1) * (1 if y != 0 else 0)
 
-                face.move_to([x, y, 0])
-                face.shift(xdx * RIGHT + ydy * UP)
-
-                self.add(face)
+                # face.move_to([x, y, 0])
+                # face.shift(xdx * RIGHT + ydy * UP)
 
     def get_color(self, inp):
         return NotImplementedError
@@ -166,7 +196,7 @@ class DecisionContourGL(ContourGroupGL):
         return colors[np.argmax(model[3:].forward(inp).detach().numpy())]
 
 
-class DecisionTest(Scene):
+class DecisionTest(InteractiveScene):
     def construct(self):
         d = DecisionContourGL()
         self.add(d)
