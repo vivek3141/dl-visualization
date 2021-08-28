@@ -223,7 +223,6 @@ class NNTransformPlane(Scene):
 
     def construct(self):
         f_plane = NumberPlane(**self.foreground_plane_kwargs)
-
         b_plane = NumberPlane(**self.background_plane_kwargs)
 
         init_dots = VGroup(
@@ -267,8 +266,6 @@ class NNTransformPlane(Scene):
         self.wait()
 
         self.play(frame.set_phi, 0.35*PI)
-
-        self.embed()
 
         rotate = True
         frame.add_updater(
