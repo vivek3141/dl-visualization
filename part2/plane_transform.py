@@ -57,71 +57,71 @@ class InteractiveScene(Scene):
             self.unlock_mobject_data()
 
 
+# class ContourGroup(VGroup):
+#     CONFIG = {
+#         "u_min": -FRAME_WIDTH/2,
+#         "u_max": FRAME_WIDTH/2,
+#         "v_min": -FRAME_HEIGHT/2,
+#         "v_max": FRAME_HEIGHT/2,
+#         "resolution": 10,
+#         "fill_opacity": 0.45,
+#     }
+
+#     def __init__(self, **kwargs):
+#         VGroup.__init__(self, **kwargs)
+#         self.setup()
+
+#     def get_u_values_and_v_values(self):
+#         res = tuplify(self.resolution)
+#         if len(res) == 1:
+#             u_res = v_res = res[0]
+#         else:
+#             u_res, v_res = res
+#         u_min = self.u_min
+#         u_max = self.u_max
+#         v_min = self.v_min
+#         v_max = self.v_max
+
+#         u_values = np.linspace(u_min, u_max, u_res + 1)
+#         v_values = np.linspace(v_min, v_max, v_res + 1)
+
+#         return u_values, v_values
+
+#     def setup(self):
+#         u_values, v_values = self.get_u_values_and_v_values()
+#         faces = VGroup()
+#         for i in range(len(u_values) - 1):
+#             for j in range(len(v_values) - 1):
+#                 u1, u2 = u_values[i:i + 2]
+#                 v1, v2 = v_values[j:j + 2]
+#                 face = VMobject()
+#                 face.set_points_as_corners([
+#                     [u1, v1, 0],
+#                     [u2, v1, 0],
+#                     [u2, v2, 0],
+#                     [u1, v2, 0],
+#                     [u1, v1, 0],
+#                 ])
+#                 inp = torch.tensor([(u1+u2)/2, (v1+v2)/2], dtype=torch.float32)
+#                 c = self.get_color(inp)
+#                 face.set_color(c)
+#                 faces.add(face)
+#         faces.set_fill(
+#             opacity=self.fill_opacity
+#         )
+#         faces.set_stroke(
+#             width=0,
+#         )
+#         self.add(*faces)
+
+#     def get_color(self, inp):
+#         return NotImplementedError
+
+
 class ContourGroup(VGroup):
     CONFIG = {
-        "u_min": -FRAME_WIDTH/2,
-        "u_max": FRAME_WIDTH/2,
-        "v_min": -FRAME_HEIGHT/2,
-        "v_max": FRAME_HEIGHT/2,
-        "resolution": 10,
-        "fill_opacity": 0.45,
-    }
-
-    def __init__(self, **kwargs):
-        VGroup.__init__(self, **kwargs)
-        self.setup()
-
-    def get_u_values_and_v_values(self):
-        res = tuplify(self.resolution)
-        if len(res) == 1:
-            u_res = v_res = res[0]
-        else:
-            u_res, v_res = res
-        u_min = self.u_min
-        u_max = self.u_max
-        v_min = self.v_min
-        v_max = self.v_max
-
-        u_values = np.linspace(u_min, u_max, u_res + 1)
-        v_values = np.linspace(v_min, v_max, v_res + 1)
-
-        return u_values, v_values
-
-    def setup(self):
-        u_values, v_values = self.get_u_values_and_v_values()
-        faces = VGroup()
-        for i in range(len(u_values) - 1):
-            for j in range(len(v_values) - 1):
-                u1, u2 = u_values[i:i + 2]
-                v1, v2 = v_values[j:j + 2]
-                face = VMobject()
-                face.set_points_as_corners([
-                    [u1, v1, 0],
-                    [u2, v1, 0],
-                    [u2, v2, 0],
-                    [u1, v2, 0],
-                    [u1, v1, 0],
-                ])
-                inp = torch.tensor([(u1+u2)/2, (v1+v2)/2], dtype=torch.float32)
-                c = self.get_color(inp)
-                face.set_color(c)
-                faces.add(face)
-        faces.set_fill(
-            opacity=self.fill_opacity
-        )
-        faces.set_stroke(
-            width=0,
-        )
-        self.add(*faces)
-
-    def get_color(self, inp):
-        return NotImplementedError
-
-
-class ContourGroupGL(VGroup):
-    CONFIG = {
         "count": 5,
-        "fill_opacity": 0.45,
+        "fill_opacity": 0.5,
         "x_min": -FRAME_WIDTH/2,
         "x_max": FRAME_WIDTH/2,
         "y_min": -FRAME_HEIGHT/2,
@@ -131,7 +131,6 @@ class ContourGroupGL(VGroup):
     def __init__(self, *args, **kwargs):
         VGroup.__init__(self, *args, **kwargs)
         self.setup()
-        # self.set_opacity(self.fill_opacity)
 
     def setup(self):
         x_values = np.linspace(self.x_min, self.x_max, self.count + 1)
@@ -146,59 +145,38 @@ class ContourGroupGL(VGroup):
                     [(x1 + x2)/2, (y1 + y2)/2], dtype=torch.float32)
                 c = self.get_color(inp)
 
-                Mobject
-
-                face = VMobject(
-                    color=c,
-                    stroke_width=0,
-                    fill_opacity=self.fill_opacity,
-                )
-                face.set_points_as_corners([
+                face = Polygon(
                     [x1, y1, 0],
                     [x2, y1, 0],
                     [x2, y2, 0],
                     [x1, y2, 0],
-                    [x1, y1, 0],
-                ])
-                # face.scale(0.999)
+                    color=c,
+                    stroke_width=0,
+                    fill_opacity=self.fill_opacity,
+                )
+
+                # face = VMobject(
+                #     color=c,
+                #     stroke_width=0,
+                #     fill_opacity=self.fill_opacity,
+                # )
+                # face.set_points_as_corners([
+                #     [x1, y1, 0],
+                #     [x2, y1, 0],
+                #     [x2, y2, 0],
+                #     [x1, y2, 0],
+                #     [x1, y1, 0],
+                # ])
 
                 self.add(face)
-
-                # face = Surface(
-                #     u_range=(0, dx),
-                #     v_range=(0, dy),
-                #     color=c,
-                #     opacity=0.45,
-                #     gloss=0,
-                #     shadow=0,
-                # )
-                # face = Rectangle(
-                #     width=dx,
-                #     height=dy,
-                #     color=c,
-                #     fill_opacity=0.45,
-                #     stroke_width=0,
-                #     stroke_opactiy=0,
-                # )
-
-                # xdx = dx/4 * (1 if x < 0 else -1) * (1 if x != 0 else 0)
-                # ydy = dy/4 * (1 if y < 0 else -1) * (1 if y != 0 else 0)
-
-                # face.move_to([x, y, 0])
-                # face.shift(xdx * RIGHT + ydy * UP)
 
     def get_color(self, inp):
         return NotImplementedError
 
 
-class DecisionContourGL(ContourGroupGL):
-    def get_color(self, inp):
-        return colors[np.argmax(model[3:].forward(inp).detach().numpy())]
-
-
 class DecisionTest(InteractiveScene):
     def construct(self):
-        d = DecisionContourGL()
+        d = DecisionContour()
         self.add(d)
         self.embed()
 
