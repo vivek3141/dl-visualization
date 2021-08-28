@@ -176,7 +176,8 @@ class ContourGroup(VGroup):
 
 class DecisionTest(InteractiveScene):
     def construct(self):
-        d = DecisionContour()
+        d = ImageMobject("output_decisions.png", height=FRAME_HEIGHT)
+        d.set_opacity(0.5)
         self.add(d)
         self.embed()
 
@@ -222,12 +223,17 @@ class NNTransformPlane(Scene):
 
     def construct(self):
         f_plane = NumberPlane(**self.foreground_plane_kwargs)
-        f_plane.prepare_for_nonlinear_transform()
-        f_plane.apply_complex_function(self.func_complex)
 
         b_plane = NumberPlane(**self.background_plane_kwargs)
 
-        dots = VGroup(
+        init_dots = VGroup(
+            *[
+                Dot([point[0], point[1], 0], color=colors[Y[index]],
+                    radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
+            ]
+        )
+
+        final_dots = VGroup(
             *[
                 Dot(self.func_real([point[0], point[1]]), color=colors[Y[index]],
                     radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
@@ -236,11 +242,33 @@ class NNTransformPlane(Scene):
 
         frame = self.camera.frame
 
-        #d = DecisionContour()
-        self.add(b_plane, f_plane, dots)
-        # self.add(d)
+        d = ImageMobject("output_decisions.png", height=FRAME_HEIGHT)
+        d.set_opacity(0.5)
+
+        self.play(Write(b_plane), Write(f_plane))
+        self.play(Write(init_dots))
+        self.wait()
+
+        #self.add(b_plane, f_plane, init_dots)
+
+        f_plane.prepare_for_nonlinear_transform()
+        # f_plane.apply_complex_function(self.func_complex)
+        # self.add(b_plane, f_plane, final_dots)
+
+        self.play(
+            ApplyMethod(f_plane.apply_complex_function, self.func_complex),
+            Transform(init_dots, final_dots),
+            run_time=8
+        )
+
+        self.wait()
+
+        self.play(FadeIn(d))
+        self.wait()
 
         self.play(frame.set_phi, 0.35*PI)
+
+        self.embed()
 
         rotate = True
         frame.add_updater(
