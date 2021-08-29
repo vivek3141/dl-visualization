@@ -1,12 +1,30 @@
-import torch
 from PIL import Image
 import numpy as np
 import torch
 from torch import nn
-import matplotlib.pyplot as plt
-import time
-import utils
 import torch.nn.functional as F
+from models import ModelSin as Model
+
+
+path = './model2/model.pth'
+model = torch.load(path)
+torch.manual_seed(231)
+
+ASPECT_RATIO = 16.0 / 9.0
+FRAME_HEIGHT = 8.0
+FRAME_WIDTH = FRAME_HEIGHT * ASPECT_RATIO
+
+XRES = 160
+YRES = 90
+
+RED = (252, 98, 85)
+YELLOW = (255, 255, 0)
+GREEN = (131, 193, 103)
+BLUE = (88, 196, 221)
+PURPLE = (154, 114, 172)
+colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
+
+activation = torch.sin
 
 
 class Model(nn.Module):
@@ -18,33 +36,14 @@ class Model(nn.Module):
 
     def forward(self, x, nb_relu_dim=100):
         x = self.linear1(x)
-        x = F.relu(x)
+        x = activation(x)
         return self.linear3(self.linear2(x))
 
     def forward2(self, x, nb_relu_dim=100):
         x = self.linear1(x)
-        x = F.relu(x)
+        x = activation(x)
         return self.linear2(x)
 
-
-path = './model/model.pth'
-model = torch.load(path)
-torch.manual_seed(231)
-
-ASPECT_RATIO = 16.0 / 9.0
-FRAME_HEIGHT = 8.0
-FRAME_WIDTH = FRAME_HEIGHT * ASPECT_RATIO
-
-XRES = 1920
-YRES = 1080
-
-RED = (252, 98, 85)
-YELLOW = (255, 255, 0)
-GREEN = (131, 193, 103)
-BLUE = (88, 196, 221)
-PURPLE = (154, 114, 172)
-
-colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
 
 x_min = -FRAME_WIDTH/2
 x_max = FRAME_WIDTH/2
@@ -71,5 +70,5 @@ for i in range(len(y_values) - 1)[::-1]:
 array = np.array(pixels, dtype=np.uint8)
 
 new_image = Image.fromarray(array)
-new_image.save("relu_inp_decisions.png")
+# new_image.save("relu_inp_decisions.png")
 new_image.show()
