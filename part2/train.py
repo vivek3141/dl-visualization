@@ -42,7 +42,7 @@ model = Model(2, 100, 5)
 acc_hist, loss_hist = utils.train(model, X, y, fig, ax, max_epochs=1500)
 
 # Save model to file
-utils.save_model('model-2', model, (acc_hist, loss_hist))
+utils.save_model('model-3', model, (acc_hist, loss_hist))
 
 # Display classification regions and decesion boundary
 f = plt.figure()

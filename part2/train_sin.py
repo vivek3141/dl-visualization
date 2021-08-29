@@ -5,6 +5,16 @@ import time
 import utils
 import torch.nn.functional as F
 
+# %matplotlib notebook
+utils.set_default(figsize=(5, 5))
+
+X, y = utils.get_data(c=5)
+
+# visualise the data
+f = plt.figure()
+f.add_axes([0, 0, 1, 1])
+utils.plot_data(X, y)
+
 
 # NN model
 class Model(nn.Module):
@@ -16,25 +26,32 @@ class Model(nn.Module):
 
     def forward(self, x, nb_relu_dim=100):
         x = self.linear1(x)
-        x = F.sigmoid(x)
+        x = torch.sin(x)
         #x = torch.cat(torch.sin(x[:nb_relu_dim]), x[nb_relu_dim:])
         return self.linear3(self.linear2(x))
 
     def forward2(self, x, nb_relu_dim=100):
         x = self.linear1(x)
-        x = F.sigmoid(x)
+        x = torch.sin(x)
         #x = torch.cat(torch.sin(x[:nb_relu_dim]), x[nb_relu_dim:])
         return self.linear2(x)
 
 
-path = './model/model.pth'
-model = torch.load(path)
-#torch.manual_seed(231)
+# Show training curves interactively
+fig, ax1 = plt.subplots(figsize=(9, 3))
+ax2 = plt.twinx(ax1)
+ax = ax1, ax2
 
+# Generate and train a model
+model = Model(2, 100, 5)
+acc_hist, loss_hist = utils.train(model, X, y, fig, ax, max_epochs=5000)
+
+# Save model to filed
+utils.save_model('model2', model, (acc_hist, loss_hist))
+
+# Display classification regions and decesion boundary
 f = plt.figure()
 f.add_axes([0, 0, 1.005, 1.005])
 utils.plot_decision(model)
-#utils.plot_decision(model)
-#utils.plot_data(X, y)
+utils.plot_data(X, y)
 plt.savefig(f'decision.png')
-plt.show()

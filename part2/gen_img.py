@@ -1,6 +1,31 @@
 import torch
 from PIL import Image
 import numpy as np
+import torch
+from torch import nn
+import matplotlib.pyplot as plt
+import time
+import utils
+import torch.nn.functional as F
+
+
+class Model(nn.Module):
+    def __init__(self, D_in, H, D_out):
+        super(Model, self).__init__()
+        self.linear1 = torch.nn.Linear(D_in, H)
+        self.linear2 = torch.nn.Linear(H, 2)
+        self.linear3 = torch.nn.Linear(2, D_out)
+
+    def forward(self, x, nb_relu_dim=100):
+        x = self.linear1(x)
+        x = F.relu(x)
+        return self.linear3(self.linear2(x))
+
+    def forward2(self, x, nb_relu_dim=100):
+        x = self.linear1(x)
+        x = F.relu(x)
+        return self.linear2(x)
+
 
 path = './model/model.pth'
 model = torch.load(path)
@@ -39,13 +64,12 @@ for i in range(len(y_values) - 1)[::-1]:
 
         inp = torch.tensor(
             [(x1 + x2)/2, (y1 + y2)/2], dtype=torch.float32)
-        c = colors[np.argmax(model[3:].forward(inp).detach().numpy())]
-
+        c = colors[np.argmax(model(inp).detach().numpy())]
         pixels[-1].append(c)
 
 
 array = np.array(pixels, dtype=np.uint8)
 
 new_image = Image.fromarray(array)
-new_image.save("output_decisions.png")
+new_image.save("relu_inp_decisions.png")
 new_image.show()
