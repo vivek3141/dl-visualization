@@ -47,7 +47,7 @@ class Model(nn.Module):
 
 
 path = './model2/model.pth'
-model = torch.load(path)‰
+model = torch.load(path)
 
 x_values = np.linspace(x_min, x_max, XRES+1)
 y_values = np.linspace(y_min, y_max, YRES+1)
