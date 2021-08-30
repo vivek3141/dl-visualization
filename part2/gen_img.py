@@ -3,11 +3,7 @@ import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
-from models import ModelSin as Model
 
-
-path = './model2/model.pth'
-model = torch.load(path)
 torch.manual_seed(231)
 
 ASPECT_RATIO = 16.0 / 9.0
@@ -23,6 +19,11 @@ GREEN = (131, 193, 103)
 BLUE = (88, 196, 221)
 PURPLE = (154, 114, 172)
 colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
+
+x_min = -FRAME_WIDTH/2
+x_max = FRAME_WIDTH/2
+y_min = -FRAME_HEIGHT/2
+y_max = FRAME_HEIGHT/2
 
 activation = torch.sin
 
@@ -45,10 +46,8 @@ class Model(nn.Module):
         return self.linear2(x)
 
 
-x_min = -FRAME_WIDTH/2
-x_max = FRAME_WIDTH/2
-y_min = -FRAME_HEIGHT/2
-y_max = FRAME_HEIGHT/2
+path = './model2/model.pth'
+model = torch.load(path)‰
 
 x_values = np.linspace(x_min, x_max, XRES+1)
 y_values = np.linspace(y_min, y_max, YRES+1)
