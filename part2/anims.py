@@ -1,6 +1,10 @@
 from manimlib import *
+
+import torch
 import pickle
 import gzip
+
+colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
 
 AQUA = "#8dd3c7"
 YELLOW = "#ffffb3"
@@ -15,6 +19,32 @@ VIOLET = "#bc80bd"
 UNKA = "#ccebc5"
 UNKB = "#ffed6f"
 
+torch.manual_seed(231)
+
+
+def get_data(n=100, d=2, c=3, std=0.2):
+    X = torch.zeros(n * c, d)
+    y = torch.zeros(n * c, dtype=torch.long)
+    for i in range(c):
+        index = 0
+        r = torch.linspace(0.2, 1, n)
+        t = torch.linspace(
+            i * 2 * math.pi / c,
+            (i + 2) * 2 * math.pi / c,
+            n
+        ) + torch.randn(n) * std
+
+        for ix in range(n * i, n * (i + 1)):
+            X[ix] = r[index] * torch.FloatTensor((
+                math.sin(t[index]), math.cos(t[index])
+            ))
+            y[ix] = i
+            index += 1
+    return X.numpy(), y.numpy()
+
+
+X, Y = get_data(c=5)
+
 
 def load_data():
     f = gzip.open('../mnist/mnist.pkl.gz', 'rb')
@@ -28,8 +58,32 @@ def load_data():
 def heaviside(x):
     return int(x >= 0)
 
-# NeuralNetworkMobject is not my code, from 3b1b/manim
-# number of layers change
+
+def get_dots(func):
+    return VGroup(
+        *[
+            Dot(func([point[0], point[1], 0]), color=colors[Y[index]],
+                radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
+        ]
+    )
+
+
+"""
+This is terrible practice, but the reason why I've redefined Scene is because Scene itself has a interact() method that breaks self.embed() after hitting Ctrl + C (KeyboardInterrupt). The better way would be to find a better fix than this and to make a pull request (or I could be using touch() incorrectly!), which I will probably do in the future :)
+
+- Vivek
+"""
+
+
+class Scene(Scene):
+    def interact(self):
+        self.quit_interaction = False
+        self.lock_static_mobject_data()
+        try:
+            while True:
+                self.update_frame()
+        except KeyboardInterrupt:
+            self.unlock_mobject_data()
 
 
 class Intro(Scene):
@@ -235,7 +289,7 @@ class NeuralNetworkMobject(VGroup):
     def add_output_labels(self):
         self.output_labels = VGroup()
         for n, neuron in enumerate(self.layers[-1].neurons):
-            label = TexMobject(str(n ))
+            label = TexMobject(str(n))
             label.set_height(0.75*neuron.get_height())
             label.move_to(neuron)
             label.shift(neuron.get_width()*RIGHT)
@@ -270,7 +324,7 @@ class NNDiagram(Scene):
             self.play(Write(nn.layers[i]))
             self.bring_to_back(nn.edge_groups[i])
             self.play(Write(nn.edge_groups[i]))
-        
+
         self.play(Write(nn.layers[-1]), Write(nn.output_labels))
         self.wait()
 
@@ -287,3 +341,64 @@ class NNDiagram(Scene):
 
         self.play(Transform(nn, nn2))
         self.wait()
+
+
+class IntroPoints(Scene):
+    CONFIG = {
+        "foreground_plane_kwargs": {
+            "faded_line_ratio": 1,
+        },
+        "background_plane_kwargs": {
+            "color": GREY,
+            "axis_config": {
+                "stroke_color": GREY_B,
+            },
+            "axis_config": {
+                "color": GREY,
+            },
+            "background_line_style": {
+                "stroke_color": GREY,
+                "stroke_width": 1,
+            },
+            "faded_line_ratio": 1
+        }
+    }
+
+    def construct(self):
+        f_plane = NumberPlane(**self.foreground_plane_kwargs)
+        b_plane = NumberPlane(**self.background_plane_kwargs)
+
+        points = get_dots(lambda point: point)
+
+        eq = Tex(
+            r"""X_{k}(t)=t\left(\begin{array}{c}
+                \sin \left[\frac{2 \pi}{K}(2 t+k-1+\mathcal{N}(0, \sigma^2) )\right] \\
+                \\ 
+                \cos \left[\frac{2 \pi}{K}(2 t+k-1+\mathcal{N}(0, \sigma^2) )\right]
+                \end{array}\right)"""
+        )
+        eq[0][16].set_color(AQUA)
+        eq[0][41].set_color(AQUA)
+
+        bg = BackgroundRectangle(eq, buff=0.5)
+        eq = VGroup(bg, eq)
+        eq.shift(2.5 * DOWN)
+
+        def check(obj):
+            self.remove(obj)
+            self.wait(0.25)
+            self.add(obj)
+
+        self.play(Write(b_plane), Write(f_plane))
+        self.play(Write(points))
+        self.wait()
+
+        self.play(Write(eq), run_time=4)
+        self.wait()
+
+        self.play(
+            Indicate(eq[1][0][16], scale_factor=2),
+            Indicate(eq[1][0][41], scale_factor=2)
+        )
+
+        self.embed()
