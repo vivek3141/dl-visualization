@@ -200,6 +200,89 @@ class Test(Scene):
         self.add(n)
 
 
+class NNTransform(Scene):
+    CONFIG = {
+        "foreground_plane_kwargs": {
+            "faded_line_ratio": 1,
+        },
+        "background_plane_kwargs": {
+            "color": GREY,
+            "axis_config": {
+                "stroke_color": GREY_B,
+            },
+            "axis_config": {
+                "color": GREY,
+            },
+            "background_line_style": {
+                "stroke_color": GREY,
+                "stroke_width": 1,
+            },
+            "faded_line_ratio": 1
+        }
+    }
+
+    def construct(self):
+        f_plane = NumberPlane(**self.foreground_plane_kwargs)
+        b_plane = NumberPlane(**self.background_plane_kwargs)
+
+        init_dots = VGroup(
+            *[
+                Dot([point[0], point[1], 0], color=colors[Y[index]],
+                    radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
+            ]
+        )
+
+        final_dots = VGroup(
+            *[
+                Dot(self.func_real([point[0], point[1]]), color=colors[Y[index]],
+                    radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
+            ]
+        )
+
+        i = ImageMobject("relu_inp_decisions.png", height=FRAME_HEIGHT)
+        i.set_opacity(0.5)
+
+        d = ImageMobject("output_decisions.png", height=FRAME_HEIGHT)
+        d.set_opacity(0.5)
+
+        self.play(Write(b_plane), Write(f_plane))
+        self.play(Write(init_dots))
+        self.wait()
+
+        self.play(FadeIn(i))
+        self.wait()
+
+        self.play(FadeOut(i))
+        self.wait()
+
+        #self.add(b_plane, f_plane, init_dots)
+
+        f_plane.prepare_for_nonlinear_transform()
+        # f_plane.apply_complex_function(self.func_complex)
+        # self.add(b_plane, f_plane, final_dots)
+
+        self.play(
+            ApplyMethod(f_plane.apply_complex_function, self.func_complex),
+            Transform(init_dots, final_dots),
+            run_time=8
+        )
+
+        self.wait()
+
+        self.play(FadeIn(d))
+        self.wait()
+
+    def func_complex(self, z):
+        inp = torch.tensor([z.real, z.imag], dtype=torch.float32)
+        x, y = model[:3].forward(inp).detach().numpy()
+        return 0.5 * (x + y*1j)
+
+    def func_real(self, point):
+        inp = torch.tensor(point, dtype=torch.float32)
+        x, y = model[:3].forward(inp).detach().numpy()
+        return 0.5 * (x * RIGHT + y * UP)
+
+
 class NNTransformPlane(Scene):
     CONFIG = {
         "foreground_plane_kwargs": {

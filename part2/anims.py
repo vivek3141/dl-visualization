@@ -1,4 +1,4 @@
-from manimlib.imports import *
+from manimlib import *
 import pickle
 import gzip
 
@@ -46,18 +46,19 @@ class Intro(Scene):
                 ScreenRectangle(height=2).shift([*coors, 0])
             )
             t.add(
-                TextMobject(
-                    f"Part {3-i}").shift([coors[0], coors[1]+1.5, 0]).scale(1.5)
+                TexText(
+                    f"Part {3-i}", stroke_width=0.1).shift([coors[0], coors[1]+1.5, 0]).scale(1.5)
             )
 
         for i in range(3):
             self.play(GrowFromCenter(s[2-i]))
-            self.play(FadeInFromDown(t[2-i]))
+            self.play(FadeIn(t[2-i], shift=DOWN))
+            FadeIn
 
         self.wait()
 
         s1 = ScreenRectangle(height=2, color=RED).shift([0, 0, 0])
-        t1 = TextMobject(f"Part 2", color=RED).shift([0, 1.5, 0]).scale(1.5)
+        t1 = TexText(f"Part 2", color=RED).shift([0, 1.5, 0]).scale(1.5)
 
         self.play(Transform(t[1], t1), Transform(s[1], s1))
         self.wait()
@@ -67,13 +68,13 @@ class Intro(Scene):
 
 class LastVideo(Scene):
     def construct(self):
-        title = TextMobject("Part 1")
+        title = TexText("Part 1")
         title.scale(1.5)
         title.to_edge(UP)
         rect = ScreenRectangle(height=6)
         rect.next_to(title, DOWN)
         self.play(
-            FadeInFromDown(title),
+            FadeIn(title, shift=DOWN),
             Write(rect)
         )
         self.wait(2)
@@ -87,7 +88,7 @@ class NeuralNetworkMobject(VGroup):
         "neuron_stroke_color": BLUE,
         "neuron_stroke_width": 6,
         "neuron_fill_color": GREEN,
-        "edge_color": LIGHT_GREY,
+        "edge_color": GREY,
         "edge_stroke_width": 2,
         "edge_propogation_color": YELLOW,
         "edge_propogation_time": 1,
