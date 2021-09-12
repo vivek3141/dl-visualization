@@ -436,4 +436,42 @@ class ShowTrainingPoint(DotsScene):
             self.add(obj)
 
         self.add(b_plane, f_plane, points)
+
+        grp = VGroup(b_plane, f_plane, points)
+
+        self.play(grp.scale, 4)
+        self.play(grp.shift, 2 * LEFT)
+        self.wait()
+
+        b = BackgroundRectangle(
+            points[37], stroke_opacity=1, fill_opacity=0, stroke_width=4, buff=0.05, color=WHITE)
+
+        r1 = Rectangle(height=7, width=4, fill_opacity=0.75,
+                       stroke_opacity=0, color=BLACK)
+        r2 = Rectangle(height=7, width=4, fill_opacity=0,
+                       stroke_opacity=1, color=WHITE)
+
+        r = VGroup(r1, r2)
+        r.shift(4.5 * RIGHT)
+
+        eq1 = Tex(r"""
+            X = \begin{bmatrix}
+                0.374\\
+                0.329
+            \end{bmatrix}""",
+                  tex_to_color_map={"X": PINK})
+        eq1.scale(1.25)
+        eq1.shift(4.5 * RIGHT + 1.5 * UP)
+
+        eq2 = Tex(r"""y = 0""",
+                  tex_to_color_map={"y": BLUE})
+        eq2.scale(1.25)
+        eq2.shift(4 * RIGHT + 1.5 * DOWN)
+
+        red_r = Rectangle(
+            height=0.5, width=0.5, fill_color=colors[0], stroke_color=WHITE, fill_opacity=1)
+        red_r.shift(5.5 * RIGHT + 1.5 * DOWN)
+
+        self.add(r, eq1, eq2, red_r, b)
+
         self.embed()
