@@ -70,8 +70,6 @@ def get_dots(func):
 
 """
 This is terrible practice, but the reason why I've redefined Scene is because Scene itself has a interact() method that breaks self.embed() after hitting Ctrl + C (KeyboardInterrupt). The better way would be to find a better fix than this and to make a pull request (or I could be using touch() incorrectly!), which I will probably do in the future :)
-
-- Vivek
 """
 
 
@@ -84,6 +82,33 @@ class Scene(Scene):
                 self.update_frame()
         except KeyboardInterrupt:
             self.unlock_mobject_data()
+
+
+"""
+Again, not the best practice but I didn't feel the need to have the same CONFIG in every class I create the plane
+"""
+
+
+class DotsScene(Scene):
+    CONFIG = {
+        "foreground_plane_kwargs": {
+            "faded_line_ratio": 1,
+        },
+        "background_plane_kwargs": {
+            "color": GREY,
+            "axis_config": {
+                "stroke_color": GREY_B,
+            },
+            "axis_config": {
+                "color": GREY,
+            },
+            "background_line_style": {
+                "stroke_color": GREY,
+                "stroke_width": 1,
+            },
+            "faded_line_ratio": 1
+        }
+    }
 
 
 class Intro(Scene):
@@ -343,27 +368,7 @@ class NNDiagram(Scene):
         self.wait()
 
 
-class IntroPoints(Scene):
-    CONFIG = {
-        "foreground_plane_kwargs": {
-            "faded_line_ratio": 1,
-        },
-        "background_plane_kwargs": {
-            "color": GREY,
-            "axis_config": {
-                "stroke_color": GREY_B,
-            },
-            "axis_config": {
-                "color": GREY,
-            },
-            "background_line_style": {
-                "stroke_color": GREY,
-                "stroke_width": 1,
-            },
-            "faded_line_ratio": 1
-        }
-    }
-
+class IntroPoints(DotsScene):
     def construct(self):
         f_plane = NumberPlane(**self.foreground_plane_kwargs)
         b_plane = NumberPlane(**self.background_plane_kwargs)
@@ -377,8 +382,12 @@ class IntroPoints(Scene):
                 \cos \left[\frac{2 \pi}{K}(2 t+k-1+\mathcal{N}(0, \sigma^2) )\right]
                 \end{array}\right)"""
         )
+
         eq[0][16].set_color(AQUA)
         eq[0][41].set_color(AQUA)
+
+        eq[0][21].set_color(LAVENDER)
+        eq[0][46].set_color(LAVENDER)
 
         bg = BackgroundRectangle(eq, buff=0.5)
         eq = VGroup(bg, eq)
@@ -400,5 +409,31 @@ class IntroPoints(Scene):
             Indicate(eq[1][0][16], scale_factor=2),
             Indicate(eq[1][0][41], scale_factor=2)
         )
+        self.wait()
 
+        self.play(
+            Indicate(eq[1][0][21], scale_factor=2),
+            Indicate(eq[1][0][46], scale_factor=2)
+        )
+        self.wait()
+
+        self.play(Uncreate(eq))
+        self.wait()
+
+        self.embed()
+
+
+class ShowTrainingPoint(DotsScene):
+    def construct(self):
+        f_plane = NumberPlane(**self.foreground_plane_kwargs)
+        b_plane = NumberPlane(**self.background_plane_kwargs)
+
+        points = get_dots(lambda point: point)
+
+        def check(obj):
+            self.remove(obj)
+            self.wait(0.25)
+            self.add(obj)
+
+        self.add(b_plane, f_plane, points)
         self.embed()
