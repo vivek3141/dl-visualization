@@ -509,8 +509,28 @@ class ShowTrainingPoint(DotsScene):
         l1 = Line(v1[0], v2[1])
         l2 = Line(v1[3], v2[2])
 
-        #sheet = get_isolate_rect(v1, stroke_width=0, fill_opacity=0.75, color=BLACK)
         sheet = ImageMobject("highlight_point.png", height=FRAME_HEIGHT)
-        self.add(sheet, r, eq1, eq2, red_r, b, l1, l2)
+        sheet.set_opacity(0.85)
+
+        self.play(
+            FadeIn(sheet),
+            Write(b),
+            Write(l1),
+            Write(l2),
+            Write(r),
+            run_time=3
+        )
+        self.wait()
+
+        self.play(Write(eq1))
+        self.wait()
+
+        self.play(Write(eq2), Write(red_r))
+        self.wait()
+
+        self.play(Uncreate(VGroup(b, l1, l2, r, eq1, eq2, red_r)), FadeOut(sheet))
+        self.play(grp.shift, 2 * RIGHT)
+        self.play(grp.scale, 0.25)
+        self.wait()
 
         self.embed()
