@@ -68,6 +68,37 @@ def get_dots(func):
     )
 
 
+def get_isolate_rect(vertices, **kwargs):
+    rect = VGroup(
+        Polygon(
+            [-FRAME_WIDTH/2, -FRAME_HEIGHT/2, 0],
+            [FRAME_WIDTH/2, -FRAME_HEIGHT/2, 0],
+            [FRAME_WIDTH/2, vertices[2][1], 0],
+            [-FRAME_WIDTH/2, vertices[2][1], 0],
+            **kwargs),
+        Polygon(
+            [FRAME_WIDTH/2, vertices[2][1], 0],
+            vertices[3],
+            vertices[0],
+            [FRAME_WIDTH/2, vertices[0][1], 0],
+            **kwargs),
+        Polygon(
+            [-FRAME_WIDTH/2, vertices[2][1], 0],
+            vertices[2],
+            vertices[1],
+            [-FRAME_WIDTH/2, vertices[0][1], 0],
+            **kwargs),
+        Polygon(
+            [-FRAME_WIDTH/2, FRAME_HEIGHT/2, 0],
+            [FRAME_WIDTH/2, FRAME_HEIGHT/2, 0],
+            [FRAME_WIDTH/2, vertices[0][1], 0],
+            [-FRAME_WIDTH/2, vertices[0][1], 0],
+            **kwargs),
+    )
+
+    return rect
+
+
 """
 This is terrible practice, but the reason why I've redefined Scene is because Scene itself has a interact() method that breaks self.embed() after hitting Ctrl + C (KeyboardInterrupt). The better way would be to find a better fix than this and to make a pull request (or I could be using touch() incorrectly!), which I will probably do in the future :)
 """
@@ -472,6 +503,14 @@ class ShowTrainingPoint(DotsScene):
             height=0.5, width=0.5, fill_color=colors[0], stroke_color=WHITE, fill_opacity=1)
         red_r.shift(5.5 * RIGHT + 1.5 * DOWN)
 
-        self.add(r, eq1, eq2, red_r, b)
+        v1 = b.get_vertices()
+        v2 = r1.get_vertices()
+
+        l1 = Line(v1[0], v2[1])
+        l2 = Line(v1[3], v2[2])
+
+        #sheet = get_isolate_rect(v1, stroke_width=0, fill_opacity=0.75, color=BLACK)
+        sheet = ImageMobject("highlight_point.png", height=FRAME_HEIGHT)
+        self.add(sheet, r, eq1, eq2, red_r, b, l1, l2)
 
         self.embed()
