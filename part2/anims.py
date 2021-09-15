@@ -59,10 +59,10 @@ def heaviside(x):
     return int(x >= 0)
 
 
-def get_dots(func):
+def get_dots(func, color_func=lambda idx: colors[Y[idx]]):
     return VGroup(
         *[
-            Dot(func([point[0], point[1], 0]), color=colors[Y[index]],
+            Dot(func([point[0], point[1], 0]), color=color_func(index),
                 radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
         ]
     )
@@ -192,7 +192,7 @@ class LastVideo(Scene):
 
 class NeuralNetworkMobject(VGroup):
     CONFIG = {
-        "neuron_radius": 0.15,
+        "neuron_radius": 0.25,
         "neuron_to_neuron_buff": MED_SMALL_BUFF,
         "layer_to_layer_buff": LARGE_BUFF,
         "neuron_stroke_color": BLUE,
@@ -202,7 +202,7 @@ class NeuralNetworkMobject(VGroup):
         "edge_stroke_width": 2,
         "edge_propogation_color": YELLOW,
         "edge_propogation_time": 1,
-        "max_shown_neurons": 16,
+        "max_shown_neurons": 10,
         "brace_for_large_layers": True,
         "average_shown_activation_of_large_layer": True,
         "include_output_labels": False,
@@ -224,7 +224,7 @@ class NeuralNetworkMobject(VGroup):
             self.get_layer(size, index)
             for index, size in enumerate(self.layer_sizes)
         ])
-        layers.arrange_submobjects(RIGHT, buff=self.layer_to_layer_buff)
+        layers.arrange(RIGHT, buff=self.layer_to_layer_buff)
         self.layers = layers
         # self.add(self.layers)
         if self.include_output_labels:
@@ -247,7 +247,7 @@ class NeuralNetworkMobject(VGroup):
             n_neurons = self.max_shown_neurons
         neurons = VGroup(*[
             Circle(
-                radius=self.neuron_radius,
+                radius=0.25,
                 stroke_color=self.get_nn_fill_color(index),
                 stroke_width=self.neuron_stroke_width,
                 fill_color=BLACK,
@@ -255,7 +255,7 @@ class NeuralNetworkMobject(VGroup):
             )
             for x in range(n_neurons)
         ])
-        neurons.arrange_submobjects(
+        neurons.arrange(
             DOWN, buff=self.neuron_to_neuron_buff
         )
         for neuron in neurons:
@@ -265,7 +265,7 @@ class NeuralNetworkMobject(VGroup):
         layer.add(neurons)
 
         if size > n_neurons:
-            dots = TexMobject("\\vdots")
+            dots = TexText("\\vdots")
             dots.move_to(neurons)
             VGroup(*neurons[:len(neurons) // 2]).next_to(
                 dots, UP, MED_SMALL_BUFF
@@ -317,7 +317,7 @@ class NeuralNetworkMobject(VGroup):
     def add_input_labels(self):
         self.output_labels = VGroup()
         for n, neuron in enumerate(self.layers[0].neurons):
-            label = TexMobject(f"x_{n + 1}")
+            label = TexText(f"x_{n + 1}")
             label.set_height(0.3 * neuron.get_height())
             label.move_to(neuron)
             self.output_labels.add(label)
@@ -326,7 +326,7 @@ class NeuralNetworkMobject(VGroup):
     def add_y(self):
         self.output_labels = VGroup()
         for n, neuron in enumerate(self.layers[-1].neurons):
-            label = TexMobject(r"\hat{y}_"+"{"+f"{n + 1}"+"}")
+            label = Tex(r"\hat{y}_"+"{"+f"{n + 1}"+"}")
             label.set_height(0.4 * neuron.get_height())
             label.move_to(neuron)
             self.output_labels.add(label)
@@ -337,7 +337,7 @@ class NeuralNetworkMobject(VGroup):
 
         for n, i in enumerate(self.layers[0].neurons):
             edge = self.get_edge(i, self.layers[-1][0])
-            text = TexMobject(f"w_{n + 1}", color=RED)
+            text = Tex(f"w_{n + 1}", color=RED)
             text.move_to(edge)
             weight_group.add(text)
         self.add(weight_group)
@@ -345,7 +345,7 @@ class NeuralNetworkMobject(VGroup):
     def add_output_labels(self):
         self.output_labels = VGroup()
         for n, neuron in enumerate(self.layers[-1].neurons):
-            label = TexMobject(str(n))
+            label = Tex(str(n+1))
             label.set_height(0.75*neuron.get_height())
             label.move_to(neuron)
             label.shift(neuron.get_width()*RIGHT)
@@ -356,47 +356,11 @@ class NeuralNetworkMobject(VGroup):
         self.output_labels = VGroup()
         for layer in self.layers[1:-1]:
             for n, neuron in enumerate(layer.neurons):
-                label = TexMobject(f"h_{n + 1}")
+                label = Tex(f"h_{n + 1}")
                 label.set_height(0.4 * neuron.get_height())
                 label.move_to(neuron)
                 self.output_labels.add(label)
         self.add(self.output_labels)
-
-
-class NNDiagram(Scene):
-    def construct(self):
-        nn = NeuralNetworkMobject(
-            [2, 100, 5],
-            neuron_radius=0.15,
-            neuron_to_neuron_buff=SMALL_BUFF,
-            layer_to_layer_buff=1.5,
-            neuron_stroke_color=RED,
-            edge_stroke_width=1,
-            include_output_labels=True,
-            neuron_stroke_width=3
-        )
-
-        for i in range(2):
-            self.play(Write(nn.layers[i]))
-            self.bring_to_back(nn.edge_groups[i])
-            self.play(Write(nn.edge_groups[i]))
-
-        self.play(Write(nn.layers[-1]), Write(nn.output_labels))
-        self.wait()
-
-        nn2 = NeuralNetworkMobject(
-            [2, 100, 2, 5],
-            neuron_radius=0.15,
-            neuron_to_neuron_buff=SMALL_BUFF,
-            layer_to_layer_buff=1.5,
-            neuron_stroke_color=RED,
-            edge_stroke_width=1,
-            include_output_labels=True,
-            neuron_stroke_width=3
-        )
-
-        self.play(Transform(nn, nn2))
-        self.wait()
 
 
 class IntroPoints(DotsScene):
@@ -534,3 +498,72 @@ class ShowTrainingPoint(DotsScene):
         self.wait()
 
         self.embed()
+
+
+class IntroNNDiagram(DotsScene):
+    def construct(self):
+        nn = NeuralNetworkMobject(
+            [2, 100, 5],
+            neuron_radius=0.15,
+            neuron_to_neuron_buff=SMALL_BUFF,
+            layer_to_layer_buff=1.5,
+            neuron_stroke_color=RED,
+            edge_stroke_width=1,
+            include_output_labels=True,
+            neuron_stroke_width=3
+        )
+
+        # for i in range(2):
+        #     self.play(Write(nn.layers[i]))
+        #     self.bring_to_back(nn.edge_groups[i])
+        #     self.play(Write(nn.edge_groups[i]))
+
+        f_plane = NumberPlane((-4, 4), (-4, 4), **self.foreground_plane_kwargs)
+        b_plane = NumberPlane((-4, 4), (-4, 4), **self.background_plane_kwargs)
+
+        points = get_dots(lambda point: 4*np.array(point),
+                          color_func=lambda _: GREY)
+
+        inp_points = VGroup(b_plane, f_plane, points)
+        inp_points.scale(0.4)
+        inp_points.shift(4.75 * LEFT)
+
+        self.play(
+            Write(inp_points),
+            run_time=2
+        )
+        self.wait()
+
+        self.play(
+            TransformFromCopy(inp_points, nn.layers[0]),
+            run_time=2
+        )
+        self.bring_to_back(nn.edge_groups[0])
+        self.play(Write(nn.edge_groups[0]))
+        self.play(Write(nn.layers[1]))
+        self.wait()
+
+        self.bring_to_back(nn.edge_groups[1])
+        self.play(Write(nn.edge_groups[1]))
+        self.play(Write(nn.layers[2]), Write(nn.output_labels))
+        self.wait()
+
+        #self.add(inp_points, nn)
+        self.embed()
+
+        # self.play(Write(nn.layers[-1]), Write(nn.output_labels))
+        # self.wait()
+
+        # nn2 = NeuralNetworkMobject(
+        #     [2, 100, 2, 5],
+        #     neuron_radius=0.15,
+        #     neuron_to_neuron_buff=SMALL_BUFF,
+        #     layer_to_layer_buff=1.5,
+        #     neuron_stroke_color=RED,
+        #     edge_stroke_width=1,
+        #     include_output_labels=True,
+        #     neuron_stroke_width=3
+        # )
+
+        # self.play(Transform(nn, nn2))
+        # self.wait()
