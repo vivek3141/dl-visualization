@@ -503,17 +503,29 @@ class ShowTrainingPoint(DotsScene):
 
 
 class IntroNNDiagram(DotsScene):
+    CONFIG = {
+        "nn_config":{
+            "neuron_radius":0.15,
+            "neuron_to_neuron_buff":SMALL_BUFF,
+            "layer_to_layer_buff":1.5,
+            "neuron_stroke_color":RED,
+            "edge_stroke_width":1,
+            "include_output_labels":True,
+            "neuron_stroke_width":3
+        }
+    }
     def construct(self):
         nn = NeuralNetworkMobject(
             [2, 100, 5],
-            neuron_radius=0.15,
-            neuron_to_neuron_buff=SMALL_BUFF,
-            layer_to_layer_buff=1.5,
-            neuron_stroke_color=RED,
-            edge_stroke_width=1,
-            include_output_labels=True,
-            neuron_stroke_width=3
+            **self.nn_config
         )
+
+        nn2 = NeuralNetworkMobject(
+            [2, 100, 2, 5],
+            **self.nn_config
+        )
+
+        #nn.scale
 
         # for i in range(2):
         #     self.play(Write(nn.layers[i]))
