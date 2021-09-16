@@ -504,17 +504,23 @@ class ShowTrainingPoint(DotsScene):
 
 class IntroNNDiagram(DotsScene):
     CONFIG = {
-        "nn_config":{
-            "neuron_radius":0.15,
-            "neuron_to_neuron_buff":SMALL_BUFF,
-            "layer_to_layer_buff":1.5,
-            "neuron_stroke_color":RED,
-            "edge_stroke_width":1,
-            "include_output_labels":True,
-            "neuron_stroke_width":3
+        "nn_config": {
+            "neuron_radius": 0.15,
+            "neuron_to_neuron_buff": SMALL_BUFF,
+            "layer_to_layer_buff": 1.5,
+            "neuron_stroke_color": RED,
+            "edge_stroke_width": 1,
+            "include_output_labels": True,
+            "neuron_stroke_width": 3
         }
     }
+
     def construct(self):
+        def check(obj):
+            self.remove(obj)
+            self.wait(0.25)
+            self.add(obj)
+
         nn = NeuralNetworkMobject(
             [2, 100, 5],
             **self.nn_config
@@ -524,8 +530,22 @@ class IntroNNDiagram(DotsScene):
             [2, 100, 2, 5],
             **self.nn_config
         )
+        nn2.shift(RIGHT)
+        
+        for i in range(3):
+            nn2.edge_groups[i].stretch(2/3, 0)
 
-        #nn.scale
+        nn2.edge_groups[0].move_to(-1.5 * RIGHT)
+        nn2.layers[1].shift(LEFT)
+
+        nn2.edge_groups[1].shift(1.25 * LEFT)
+        nn2.layers[2].shift(1.5 * LEFT)
+
+        nn2.edge_groups[2].shift(1.75 * LEFT)
+        nn2.layers[3].shift(2 * LEFT)
+        nn2.output_labels.shift(2 * LEFT)
+
+        # nn.scale
 
         # for i in range(2):
         #     self.play(Write(nn.layers[i]))
@@ -574,6 +594,18 @@ class IntroNNDiagram(DotsScene):
         self.play(Write(nn.layers[1]))
         self.bring_to_back(nn.edge_groups[1])
         self.play(Write(nn.edge_groups[1]))
+        self.wait()
+
+        self.play(
+            Transform(nn.edge_groups[0], nn2.edge_groups[0]), 
+            Transform(nn.layers[1], nn2.layers[1]), 
+            Transform(nn.edge_groups[1], nn2.edge_groups[2]), 
+            Write(nn2.edge_groups[1],
+            run_time=2)
+        )
+        self.wait()
+
+        self.play(Write(nn2.layers[2]))
         self.wait()
 
         #self.add(inp_points, nn)
@@ -645,3 +677,8 @@ class IntroDecisionScene(DotsScene):
         self.wait()
 
         self.embed()
+
+
+class DemoActivation(DotsScene):
+    def construct(self):
+        
