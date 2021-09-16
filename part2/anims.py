@@ -141,6 +141,8 @@ class DotsScene(Scene):
         }
     }
 
+# BG Color - #5b6190
+
 
 class Intro(Scene):
     def construct(self):
@@ -526,7 +528,16 @@ class IntroNNDiagram(DotsScene):
 
         inp_points = VGroup(b_plane, f_plane, points)
         inp_points.scale(0.4)
-        inp_points.shift(4.75 * LEFT)
+        inp_points.shift(5 * LEFT)
+
+        f_plane = NumberPlane((-4, 4), (-4, 4), **self.foreground_plane_kwargs)
+        b_plane = NumberPlane((-4, 4), (-4, 4), **self.background_plane_kwargs)
+
+        points = get_dots(lambda point: 4*np.array(point))
+
+        out_points = VGroup(b_plane, f_plane, points)
+        out_points.scale(0.4)
+        out_points.shift(5.2 * RIGHT)
 
         self.play(
             Write(inp_points),
@@ -538,14 +549,19 @@ class IntroNNDiagram(DotsScene):
             TransformFromCopy(inp_points, nn.layers[0]),
             run_time=2
         )
+        self.wait()
+
+        self.play(Write(nn.layers[2]), Write(nn.output_labels))
+        self.play(
+            TransformFromCopy(nn.layers[2], out_points)
+        )
+        self.wait()
+
         self.bring_to_back(nn.edge_groups[0])
         self.play(Write(nn.edge_groups[0]))
         self.play(Write(nn.layers[1]))
-        self.wait()
-
         self.bring_to_back(nn.edge_groups[1])
         self.play(Write(nn.edge_groups[1]))
-        self.play(Write(nn.layers[2]), Write(nn.output_labels))
         self.wait()
 
         #self.add(inp_points, nn)
@@ -567,3 +583,53 @@ class IntroNNDiagram(DotsScene):
 
         # self.play(Transform(nn, nn2))
         # self.wait()
+
+
+class IntroDecisionScene(DotsScene):
+    def construct(self):
+        f_plane = NumberPlane(**self.foreground_plane_kwargs)
+        b_plane = NumberPlane(**self.background_plane_kwargs)
+        points = get_dots(lambda point: point)
+
+        grp = VGroup(b_plane, f_plane, points)
+        grp.scale(3)
+
+        coors = np.array([0.75, -2.5, 0])
+
+        d = Dot(coors)
+        d_y = Dot(coors, color=colors[1])
+        brect = BackgroundRectangle(
+            d_y, buff=0.1, fill_opacity=0, color=WHITE,
+            stroke_opacity=1, stroke_width=DEFAULT_STROKE_WIDTH
+        )
+
+        rect = Rectangle(
+            height=FRAME_HEIGHT, width=FRAME_WIDTH, color=BLACK,
+            fill_opacity=0.6, stroke_opacity=0, stroke_width=0
+        )
+
+        self.play(Write(b_plane), Write(f_plane))
+        self.play(Write(points))
+        self.wait()
+
+        self.play(FadeIn(rect))
+        self.wait(0.5)
+
+        self.play(Write(d), Write(brect))
+        self.wait()
+
+        self.play(Transform(d, d_y), run_time=2)
+        self.wait()
+
+        image = ImageMobject("relu_inp_decisions.png", height=FRAME_HEIGHT)
+        image.scale(3)
+        image.set_opacity(0.5)
+
+        self.play(Uncreate(d), Uncreate(brect))
+        self.play(FadeOut(rect))
+        self.wait()
+
+        self.play(FadeIn(image), run_time=2)
+        self.wait()
+
+        self.embed()
