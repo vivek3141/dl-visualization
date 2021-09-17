@@ -10,8 +10,8 @@ ASPECT_RATIO = 16.0 / 9.0
 FRAME_HEIGHT = 8.0
 FRAME_WIDTH = FRAME_HEIGHT * ASPECT_RATIO
 
-XRES = 160
-YRES = 90
+XRES = 1920
+YRES = 1080
 
 RED = (252, 98, 85)
 YELLOW = (255, 255, 0)
@@ -69,5 +69,5 @@ for i in range(len(y_values) - 1)[::-1]:
 array = np.array(pixels, dtype=np.uint8)
 
 new_image = Image.fromarray(array)
-# new_image.save("relu_inp_decisions.png")
+new_image.save("sin_inp_decisions.png")
 new_image.show()
