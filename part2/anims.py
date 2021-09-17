@@ -723,6 +723,9 @@ class DemoActivation(DotsScene):
         self.play(Write(lines))
         self.wait()
 
+        self.play(Uncreate(lines), FadeOut(rect))
+        self.wait()
+
         self.embed()
 
     def get_line(self, p1, p2, t, **kwargs):
