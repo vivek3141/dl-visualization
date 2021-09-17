@@ -531,7 +531,7 @@ class IntroNNDiagram(DotsScene):
             **self.nn_config
         )
         nn2.shift(RIGHT)
-        
+
         for i in range(3):
             nn2.edge_groups[i].stretch(2/3, 0)
 
@@ -597,11 +597,11 @@ class IntroNNDiagram(DotsScene):
         self.wait()
 
         self.play(
-            Transform(nn.edge_groups[0], nn2.edge_groups[0]), 
-            Transform(nn.layers[1], nn2.layers[1]), 
-            Transform(nn.edge_groups[1], nn2.edge_groups[2]), 
+            Transform(nn.edge_groups[0], nn2.edge_groups[0]),
+            Transform(nn.layers[1], nn2.layers[1]),
+            Transform(nn.edge_groups[1], nn2.edge_groups[2]),
             Write(nn2.edge_groups[1],
-            run_time=2)
+                  run_time=2)
         )
         self.wait()
 
@@ -681,4 +681,52 @@ class IntroDecisionScene(DotsScene):
 
 class DemoActivation(DotsScene):
     def construct(self):
-        
+        f_plane = NumberPlane(**self.foreground_plane_kwargs)
+        b_plane = NumberPlane(**self.background_plane_kwargs)
+        points = get_dots(lambda point: point)
+
+        grp = VGroup(b_plane, f_plane, points)
+        grp.scale(3)
+
+        image = ImageMobject("relu_inp_decisions.png", height=FRAME_HEIGHT)
+        image.scale(3)
+        image.set_opacity(0.5)
+
+        l_points = [
+            [[1, 1.5], [3, 3.5], [1, 3]],
+            [[1, 0], [7, -3.5], [1.5, 6]],
+            [[-0.4, -2], [-1, -3.5], [-0.3, -1]],
+            [[-4, -2], [-3, -1.5], [-1.5, -6]],
+            [[-0.625, 1], [-0.875, 3.5], [-0.65, -0.92]]
+        ]
+
+        lines = VGroup()
+
+        for p1, p2, t in l_points:
+            lines.add(
+                self.get_line(p1, p2, t, color=ORANGE, stroke_width=5)
+            )
+
+
+        self.play(Write(b_plane), Write(f_plane))
+        self.play(Write(points))
+        self.play(FadeIn(image))
+        self.wait()
+
+        self.play(ApplyMethod(grp.scale, 1/3), ApplyMethod(image.scale, 1/3))
+        self.bring_to_back(grp)
+        self.wait()
+
+        rect = Rectangle(width=FRAME_WIDTH, height=FRAME_HEIGHT, color=BLACK, fill_opacity=0.5, stroke_width=0)
+
+        self.play(FadeIn(rect))
+        self.play(Write(lines))
+        self.wait()
+
+        self.embed()
+
+    def get_line(self, p1, p2, t, **kwargs):
+        def func(t):
+            slope = (p2[1]-p1[1])/(p2[0]-p1[0])
+            return np.array([t, slope*(t-p1[0])+p1[1], 0])
+        return ParametricCurve(func, t_range=t, **kwargs)
