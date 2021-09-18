@@ -325,14 +325,23 @@ class NeuralNetworkMobject(VGroup):
             self.output_labels.add(label)
         self.add(self.output_labels)
 
-    def add_y(self):
-        self.output_labels = VGroup()
+    def get_x(self, layer=-2):
+        self.x_lbl = VGroup()
+        for n, neuron in enumerate(self.layers[layer].neurons):
+            label = Tex(r"x_"+"{"+f"{n + 1}"+"}")
+            label.set_height(0.4 * neuron.get_height())
+            label.move_to(neuron)
+            self.x_lbl.add(label)
+        return self.x_lbl
+
+    def get_y(self):
+        self.y_lbl = VGroup()
         for n, neuron in enumerate(self.layers[-1].neurons):
             label = Tex(r"\hat{y}_"+"{"+f"{n + 1}"+"}")
             label.set_height(0.4 * neuron.get_height())
             label.move_to(neuron)
-            self.output_labels.add(label)
-        self.add(self.output_labels)
+            self.y_lbl.add(label)
+        return self.y_lbl
 
     def add_weight_labels(self):
         weight_group = VGroup()
@@ -608,6 +617,31 @@ class IntroNNDiagram(DotsScene):
         self.play(Write(nn2.layers[2]))
         self.wait()
 
+        rect = Rectangle(height=FRAME_HEIGHT, width=FRAME_WIDTH,
+                         color=BLACK, fill_opacity=0.75, stroke_width=0)
+
+        grp = VGroup(inp_points, out_points, nn, nn2)
+
+        self.play(ApplyMethod(grp.scale, 2.5))
+        self.play(ApplyMethod(grp.move_to, [-4.5, 0, 0]))
+        self.play(FadeIn(rect))
+        self.play(FadeIn(VGroup(
+            nn2.layers[2].copy(),
+            nn2.edge_groups[2][0],
+            nn2.edge_groups[2][5],
+            nn2.output_labels[0],
+            nn2.layers[-1][0][0]
+        )))
+        self.wait()
+
+        eq = Tex(r"\hat{y}_1 = \sigma ( w_1 x + b_1 )",
+                 tex_to_color_map={r"\sigma": AQUA, r"x": PINK, r"b_1": BLUE, r"\hat{y}_1": BLUE})
+        eq.scale(2.5)
+        eq = VGroup(BackgroundRectangle(eq, color=BLACK, buff=0.25), eq)
+        eq.shift(2.5 * DOWN)
+
+        self.play(Write(eq), Write(nn2.get_x(layer=-2)), Write(nn2.get_y()[0]))
+        self.wait()
         #self.add(inp_points, nn)
         self.embed()
 
