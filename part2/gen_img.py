@@ -25,7 +25,7 @@ x_max = FRAME_WIDTH/2
 y_min = -FRAME_HEIGHT/2
 y_max = FRAME_HEIGHT/2
 
-activation = torch.sin
+activation = F.relu
 
 
 class Model(nn.Module):
@@ -46,7 +46,7 @@ class Model(nn.Module):
         return self.linear2(x)
 
 
-path = './model2/model.pth'
+path = './model3/model.pth'
 model = torch.load(path)
 
 x_values = np.linspace(x_min, x_max, XRES+1)
@@ -69,5 +69,5 @@ for i in range(len(y_values) - 1)[::-1]:
 array = np.array(pixels, dtype=np.uint8)
 
 new_image = Image.fromarray(array)
-new_image.save("sin_inp_decisions.png")
+new_image.save("relu_ext_decisions.png")
 new_image.show()
