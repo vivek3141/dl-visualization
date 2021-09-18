@@ -9,17 +9,27 @@ import math
 # %matplotlib notebook
 utils.set_default(figsize=(5, 5))
 
-def get_data(n=2000, d=2, c=3, std=0.2):
+def get_data(n=3000, d=2, c=3, std=0.2):
     X = torch.zeros(n * c, d)
     y = torch.zeros(n * c, dtype=torch.long)
     for i in range(c):
         index = 0
-        r = torch.linspace(0.2, 10, n)
-        t = torch.linspace(
+        r1 = torch.linspace(0.2, 1, 100)
+        t1 = torch.linspace(
             i * 2 * math.pi / c,
             (i + 2) * 2 * math.pi / c,
-            n
-        ) + torch.randn(n) * std
+            100
+        ) + torch.randn(100) * std
+
+        r2 = torch.linspace(1, 10, n-100)
+        t2 = torch.linspace(
+            (i + 2) * 2 * math.pi / c,
+            (i + 20) * 2 * math.pi / c,
+            n-100
+        ) + torch.randn(n-100) * std
+
+        r = torch.cat((r1, r2))
+        t = torch.cat((t1, t2))
 
         for ix in range(n * i, n * (i + 1)):
             X[ix] = r[index] * torch.FloatTensor((
@@ -43,8 +53,8 @@ class Model(nn.Module):
     def __init__(self, D_in, H, D_out):
         super(Model, self).__init__()
         self.linear1 = torch.nn.Linear(D_in, H)
-        self.linear2 = torch.nn.Linear(H, 2)
-        self.linear3 = torch.nn.Linear(2, D_out)
+        self.linear2 = torch.nn.Linear(H, 100)
+        self.linear3 = torch.nn.Linear(100, D_out)
     def forward(self, x):
         x = self.linear1(x)
         x = F.relu(x)
@@ -61,7 +71,7 @@ ax2 = plt.twinx(ax1); ax = ax1, ax2
 
 # Generate and train a model
 model = Model(2, 100, 5)
-acc_hist, loss_hist = utils.train(model, X, y, fig, ax, max_epochs=1500)
+acc_hist, loss_hist = utils.train(model, X, y, fig, ax, max_epochs=5000)
 
 # Save model to file
 utils.save_model('model3', model, (acc_hist, loss_hist))
