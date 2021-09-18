@@ -329,7 +329,7 @@ class NeuralNetworkMobject(VGroup):
         self.x_lbl = VGroup()
         for n, neuron in enumerate(self.layers[layer].neurons):
             label = Tex(r"x_"+"{"+f"{n + 1}"+"}")
-            label.set_height(0.4 * neuron.get_height())
+            label.set_height(0.3 * neuron.get_height())
             label.move_to(neuron)
             self.x_lbl.add(label)
         return self.x_lbl
