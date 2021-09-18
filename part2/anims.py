@@ -707,7 +707,6 @@ class DemoActivation(DotsScene):
                 self.get_line(p1, p2, t, color=ORANGE, stroke_width=5)
             )
 
-
         self.play(Write(b_plane), Write(f_plane))
         self.play(Write(points))
         self.play(FadeIn(image))
@@ -717,7 +716,8 @@ class DemoActivation(DotsScene):
         self.bring_to_back(grp)
         self.wait()
 
-        rect = Rectangle(width=FRAME_WIDTH, height=FRAME_HEIGHT, color=BLACK, fill_opacity=0.5, stroke_width=0)
+        rect = Rectangle(width=FRAME_WIDTH, height=FRAME_HEIGHT,
+                         color=BLACK, fill_opacity=0.5, stroke_width=0)
 
         self.play(FadeIn(rect))
         self.play(Write(lines))
@@ -733,3 +733,26 @@ class DemoActivation(DotsScene):
             slope = (p2[1]-p1[1])/(p2[0]-p1[0])
             return np.array([t, slope*(t-p1[0])+p1[1], 0])
         return ParametricCurve(func, t_range=t, **kwargs)
+
+
+class DemoSin(DotsScene):
+    def construct(self):
+        f_plane = NumberPlane(**self.foreground_plane_kwargs)
+        b_plane = NumberPlane(**self.background_plane_kwargs)
+        points = get_dots(lambda point: point)
+
+        grp = VGroup(b_plane, f_plane, points)
+        grp.scale(3)
+
+        image = ImageMobject("sin_inp_decisions.png", height=FRAME_HEIGHT)
+        image.scale(3)
+        image.set_opacity(0.5)
+
+        self.play(Write(b_plane), Write(f_plane))
+        self.play(Write(points))
+        self.play(FadeIn(image))
+        self.wait()
+
+        self.play(ApplyMethod(grp.scale, 1/3), ApplyMethod(image.scale, 1/3))
+        self.bring_to_back(grp)
+        self.wait()
