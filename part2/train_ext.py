@@ -54,11 +54,12 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.linear1 = torch.nn.Linear(D_in, H)
         self.linear2 = torch.nn.Linear(H, 100)
-        self.linear3 = torch.nn.Linear(100, D_out)
+        self.linear3 = torch.nn.Linear(H, 100)
+        self.linear4 = torch.nn.Linear(100, D_out)
     def forward(self, x):
         x = self.linear1(x)
         x = F.relu(x)
-        return self.linear3(self.linear2(x))
+        return self.linear4(F.relu(self.linear3(self.linear2(x))))
     
     def forward2(self, x):
         x = self.linear1(x)
@@ -71,7 +72,7 @@ ax2 = plt.twinx(ax1); ax = ax1, ax2
 
 # Generate and train a model
 model = Model(2, 100, 5)
-acc_hist, loss_hist = utils.train(model, X, y, fig, ax, max_epochs=5000)
+acc_hist, loss_hist = utils.train(model, X, y, fig, ax, max_epochs=1800)
 
 # Save model to file
 utils.save_model('model3', model, (acc_hist, loss_hist))
