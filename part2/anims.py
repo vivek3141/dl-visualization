@@ -554,13 +554,6 @@ class IntroNNDiagram(DotsScene):
         nn2.layers[3].shift(2 * LEFT)
         nn2.output_labels.shift(2 * LEFT)
 
-        # nn.scale
-
-        # for i in range(2):
-        #     self.play(Write(nn.layers[i]))
-        #     self.bring_to_back(nn.edge_groups[i])
-        #     self.play(Write(nn.edge_groups[i]))
-
         f_plane = NumberPlane((-4, 4), (-4, 4), **self.foreground_plane_kwargs)
         b_plane = NumberPlane((-4, 4), (-4, 4), **self.background_plane_kwargs)
 
@@ -642,25 +635,7 @@ class IntroNNDiagram(DotsScene):
 
         self.play(Write(eq), Write(nn2.get_x(layer=-2)), Write(nn2.get_y()[0]))
         self.wait()
-        #self.add(inp_points, nn)
         self.embed()
-
-        # self.play(Write(nn.layers[-1]), Write(nn.output_labels))
-        # self.wait()
-
-        # nn2 = NeuralNetworkMobject(
-        #     [2, 100, 2, 5],
-        #     neuron_radius=0.15,
-        #     neuron_to_neuron_buff=SMALL_BUFF,
-        #     layer_to_layer_buff=1.5,
-        #     neuron_stroke_color=RED,
-        #     edge_stroke_width=1,
-        #     include_output_labels=True,
-        #     neuron_stroke_width=3
-        # )
-
-        # self.play(Transform(nn, nn2))
-        # self.wait()
 
 
 class IntroDecisionScene(DotsScene):
@@ -701,7 +676,7 @@ class IntroDecisionScene(DotsScene):
 
         image = ImageMobject("relu_inp_decisions.png", height=FRAME_HEIGHT)
         image.scale(3)
-        image.set_opacity(0.5)
+        image.set_opacity(0.65)
 
         self.play(Uncreate(d), Uncreate(brect))
         self.play(FadeOut(rect))
@@ -724,7 +699,7 @@ class DemoActivation(DotsScene):
 
         image = ImageMobject("relu_inp_decisions.png", height=FRAME_HEIGHT)
         image.scale(3)
-        image.set_opacity(0.5)
+        image.set_opacity(0.65)
 
         l_points = [
             [[1, 1.5], [3, 3.5], [1, 3]],
@@ -760,6 +735,12 @@ class DemoActivation(DotsScene):
         self.play(Uncreate(lines), FadeOut(rect))
         self.wait()
 
+        ext = ImageMobject("relu_ext_decisions.png", height=FRAME_HEIGHT)
+        ext.set_opacity(0.65)
+
+        self.play(FadeTransform(image, ext))
+        self.wait()
+
         self.embed()
 
     def get_line(self, p1, p2, t, **kwargs):
@@ -780,7 +761,7 @@ class DemoSin(DotsScene):
 
         image = ImageMobject("sin_inp_decisions.png", height=FRAME_HEIGHT)
         image.scale(3)
-        image.set_opacity(0.5)
+        image.set_opacity(0.65)
 
         self.play(Write(b_plane), Write(f_plane))
         self.play(Write(points))

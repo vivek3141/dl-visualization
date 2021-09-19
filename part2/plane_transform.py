@@ -177,7 +177,7 @@ class ContourGroup(VGroup):
 class DecisionTest(InteractiveScene):
     def construct(self):
         d = ImageMobject("output_decisions.png", height=FRAME_HEIGHT)
-        d.set_opacity(0.5)
+        d.set_opacity(0.65)
         self.add(d)
         self.embed()
 
@@ -240,10 +240,10 @@ class NNTransform(Scene):
         )
 
         i = ImageMobject("relu_inp_decisions.png", height=FRAME_HEIGHT)
-        i.set_opacity(0.5)
+        i.set_opacity(0.65)
 
         d = ImageMobject("output_decisions.png", height=FRAME_HEIGHT)
-        d.set_opacity(0.5)
+        d.set_opacity(0.65)
 
         self.play(Write(b_plane), Write(f_plane))
         self.play(Write(init_dots))
@@ -325,7 +325,7 @@ class NNTransformPlane(Scene):
         frame = self.camera.frame
 
         d = ImageMobject("output_decisions.png", height=FRAME_HEIGHT)
-        d.set_opacity(0.5)
+        d.set_opacity(0.65)
 
         self.play(Write(b_plane), Write(f_plane))
         self.play(Write(init_dots))
