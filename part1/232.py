@@ -3,7 +3,7 @@ import matplotlib
 import numpy as np
 import torch
 import torch.nn as nn
-from manimlib.imports import *
+from manimlib import *
 import torch.nn.functional as F
 
 """
