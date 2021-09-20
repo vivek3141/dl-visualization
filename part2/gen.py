@@ -47,10 +47,6 @@ for i in range(len(y_values) - 1)[::-1]:
 
 array = np.array(pixels, dtype=np.uint8)
 
-# img = Image.new(mode="RGBA", size=(XRES, YRES))
-# img.putdata(pixels)
-# img.show()
-
 new_image = Image.fromarray(array)
 new_image.save("highlight_point.png")
 new_image.show()
