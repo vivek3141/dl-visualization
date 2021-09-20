@@ -46,19 +46,6 @@ def get_data(n=100, d=2, c=3, std=0.2):
 X, Y = get_data(c=5)
 
 
-def load_data():
-    f = gzip.open('../mnist/mnist.pkl.gz', 'rb')
-    u = pickle._Unpickler(f)
-    u.encoding = 'latin1'
-    training_data, validation_data, test_data = u.load()
-    f.close()
-    return (training_data, validation_data, test_data)
-
-
-def heaviside(x):
-    return int(x >= 0)
-
-
 def get_dots(func, color_func=lambda idx: colors[Y[idx]]):
     return VGroup(
         *[
@@ -66,37 +53,6 @@ def get_dots(func, color_func=lambda idx: colors[Y[idx]]):
                 radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
         ]
     )
-
-
-def get_isolate_rect(vertices, **kwargs):
-    rect = VGroup(
-        Polygon(
-            [-FRAME_WIDTH/2, -FRAME_HEIGHT/2, 0],
-            [FRAME_WIDTH/2, -FRAME_HEIGHT/2, 0],
-            [FRAME_WIDTH/2, vertices[2][1], 0],
-            [-FRAME_WIDTH/2, vertices[2][1], 0],
-            **kwargs),
-        Polygon(
-            [FRAME_WIDTH/2, vertices[2][1], 0],
-            vertices[3],
-            vertices[0],
-            [FRAME_WIDTH/2, vertices[0][1], 0],
-            **kwargs),
-        Polygon(
-            [-FRAME_WIDTH/2, vertices[2][1], 0],
-            vertices[2],
-            vertices[1],
-            [-FRAME_WIDTH/2, vertices[0][1], 0],
-            **kwargs),
-        Polygon(
-            [-FRAME_WIDTH/2, FRAME_HEIGHT/2, 0],
-            [FRAME_WIDTH/2, FRAME_HEIGHT/2, 0],
-            [FRAME_WIDTH/2, vertices[0][1], 0],
-            [-FRAME_WIDTH/2, vertices[0][1], 0],
-            **kwargs),
-    )
-
-    return rect
 
 
 """
@@ -469,7 +425,7 @@ class ShowTrainingPoint(DotsScene):
         eq1.scale(1.25)
         eq1.shift(4.5 * RIGHT + 1.5 * UP)
 
-        eq2 = Tex(r"""y = 0""",
+        eq2 = Tex(r"""y = 1""",
                   tex_to_color_map={"y": BLUE})
         eq2.scale(1.25)
         eq2.shift(4 * RIGHT + 1.5 * DOWN)
