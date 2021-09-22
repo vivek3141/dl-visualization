@@ -101,7 +101,7 @@ class NNTransform(Scene):
         self.play(FadeOut(i))
         self.wait()
 
-        f_plane.prepare_for_nonlinear_transform()
+        f_plane.prepare_for_nonlinear_transform(num_inserted_curves=200)
 
         self.play(
             ApplyMethod(f_plane.apply_complex_function, self.func_complex),
@@ -155,9 +155,6 @@ class NNTransformPlane(Scene):
 
         frame = self.camera.frame
 
-        d = ImageMobject("output_decisions.png", height=FRAME_HEIGHT)
-        d.set_opacity(0.65)
-
         self.play(Write(b_plane), Write(f_plane))
         self.play(Write(init_dots))
         self.wait()
@@ -192,20 +189,62 @@ class NNTransformPlane(Scene):
                 i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
             s.add(surf)
 
-        self.play(ShowCreation(s[0]))
+        p = SGroup()
+
+        def get_plane_points(i=0, u_range=(-4, 4), v_range=(-4, 4)):
+            get_x = lambda y: -(self.w[i][1] * y + self.b[0])/self.w[i][0]
+            get_y = lambda x: -(self.w[i][0] * x + self.b[0])/self.w[i][1]
+            p_func = lambda u, v: [u, v, self.w[0][0] * u + self.w[0][1] * v + self.b[0]]
+            
+            points = []
+
+            x = get_x(v_range[0])
+            if u_range[0] <= x <= u_range[1]:
+                points.append([x, v_range[0], 0])
+            else:
+                points.append([u_range[0], get_y(u_range[0]), 0])
+            
+            x = get_x(v_range[1])
+            if u_range[0] <= x <= u_range[1]:
+                points.append([x, v_range[1], 0])
+            else:
+                points.append([u_range[1], get_y(u_range[1]), 0])
+
+            points.append(
+                max(
+                    p_func(u_range[0], v_range[0])
+                )
+            )
+
+            return points
+
+            
+            self.w[0][0] * u + self.w[0][1] * v + self.b[0]
+
+        for i in range(5):
+            plane = self.surface_func(i=i, scale=3/5, func=lambda x: max(x, 0), u_range=(-4, 4), v_range=(-4, 4), opacity=0.5, color=colors[i])
+            p.add(plane)
+
+        self.add(p)
+        self.wait()
+
+        self.embed()
 
         for i in range(5):
             self.wait(5)
-            self.play(Transform(s[0], s[i]))
+            self.play(Transform(p, s[i]))
 
         self.wait(5)
+
+        self.play(ShowCreation(s[:-1]))
+        self.wait()
         self.embed()
 
     def surface_func_softmax(self, i=0, scale=3, **kwargs):
         return ParametricSurface(lambda u, v: [u, v, scale * softmax(self.w.dot(np.array([[u], [v]]) + self.b[0]))[i]], **kwargs)
 
-    def surface_func(self, i=0, scale=3, activation=sigmoid, **kwargs):
-        return ParametricSurface(lambda u, v: [u, v, scale * activation(self.w[0][0] * u + self.w[0][1] * v + self.b[0])], **kwargs)
+    def surface_func(self, i=0, scale=3, func=sigmoid, **kwargs):
+        return ParametricSurface(lambda u, v: [u, v, scale * func(self.w[i][0] * u + self.w[i][1] * v + self.b[i])], **kwargs)
 
     @staticmethod
     def get_plane_func(w0, w1, b):

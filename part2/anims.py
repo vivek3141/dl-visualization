@@ -125,12 +125,6 @@ class Intro(Scene):
 
         self.wait()
 
-        s1 = ScreenRectangle(height=2, color=RED).shift([0, 0, 0])
-        t1 = TexText(f"Part 2", color=RED).shift([0, 1.5, 0]).scale(1.5)
-
-        self.play(Transform(t[1], t1), Transform(s[1], s1))
-        self.wait()
-
 
 # BG Color - #200f21
 
