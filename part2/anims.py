@@ -205,7 +205,7 @@ class NeuralNetworkMobject(VGroup):
             n_neurons = self.max_shown_neurons
         neurons = VGroup(*[
             Circle(
-                radius=0.25,
+                radius=self.neuron_radius,
                 stroke_color=self.get_nn_fill_color(index),
                 stroke_width=self.neuron_stroke_width,
                 fill_color=BLACK,
@@ -267,7 +267,7 @@ class NeuralNetworkMobject(VGroup):
         return Line(
             neuron1.get_center(),
             neuron2.get_center(),
-            buff=self.neuron_radius,
+            buff=self.neuron_radius/2,
             stroke_color=self.edge_color,
             stroke_width=self.edge_stroke_width,
         )
@@ -275,8 +275,17 @@ class NeuralNetworkMobject(VGroup):
     def add_input_labels(self):
         self.output_labels = VGroup()
         for n, neuron in enumerate(self.layers[0].neurons):
-            label = TexText(f"x_{n + 1}")
+            label = Tex(f"x_{n + 1}")
             label.set_height(0.3 * neuron.get_height())
+            label.move_to(neuron)
+            self.output_labels.add(label)
+        self.add(self.output_labels)
+    
+    def add_y(self):
+        self.output_labels = VGroup()
+        for n, neuron in enumerate(self.layers[-1].neurons):
+            label = Tex(r"\hat{y}_"+"{"+f"{n + 1}"+"}")
+            label.set_height(0.4 * neuron.get_height())
             label.move_to(neuron)
             self.output_labels.add(label)
         self.add(self.output_labels)
@@ -470,7 +479,7 @@ class ShowTrainingPoint(DotsScene):
 class IntroNNDiagram(DotsScene):
     CONFIG = {
         "nn_config": {
-            "neuron_radius": 0.15,
+            "neuron_radius": 0.25,
             "neuron_to_neuron_buff": SMALL_BUFF,
             "layer_to_layer_buff": 1.5,
             "neuron_stroke_color": RED,
@@ -790,3 +799,48 @@ class DemoSin(DotsScene):
         self.play(ApplyMethod(grp.scale, 1/3), ApplyMethod(image.scale, 1/3))
         self.bring_to_back(grp)
         self.wait()
+
+
+class NN22Equation(Scene):
+    CONFIG = {
+        "nn_config": {
+            "neuron_radius": 0.15,
+
+        }
+    }
+    def construct(self):
+        n2 = NeuralNetworkMobject([2, 2, 2], **self.nn_config)
+        n2.scale(3)
+        n2.shift(1.5 * UP)
+
+        n2.add_input_labels()
+        n2.add_y()
+        n2.add_middle_a()
+
+        self.play(Write(n2))
+        self.wait()
+
+        eq1 = Tex(
+            r"{{\bm{h}}} = ( \bm{W}_{\bm{h}} \bm{x} + \bm{b}_{\bm{h}} )^+",
+            tex_to_color_map={
+                r"^+": AQUA,
+                r"\bm{x}": PINK, r"\bm{b}_{\bm{h}}": GREEN, r"{{\bm{h}}}": GREEN}
+        )
+        eq1.scale(1.5)
+        eq1.shift(1 * DOWN)
+
+        eq2 = Tex(
+            r"\bm{\hat{y}} = \mathrm{softmax}( \bm{W}_{\bm{y}} \bm{h} + \bm{b}_{\bm{y}})",
+            tex_to_color_map={
+                r"\mathrm{softmax}": AQUA,
+                r"\bm{h}": GREEN, r"\bm{b}_{\bm{y}}": BLUE, r"\bm{\hat{y}}": BLUE}
+        )
+        eq2.scale(1.5)
+        eq2.shift(2.5 * DOWN)
+
+        self.play(Write(eq1))
+        self.wait()
+
+        self.play(Write(eq2))
+        self.wait()
+        self.embed()
