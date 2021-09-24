@@ -20,6 +20,7 @@ UNKA = "#ccebc5"
 UNKB = "#ffed6f"
 
 torch.manual_seed(231)
+np.random.seed(231)
 
 
 def get_data(n=100, d=2, c=3, std=0.2):
@@ -53,6 +54,11 @@ def get_dots(func, color_func=lambda idx: colors[Y[idx]]):
                 radius=0.75*DEFAULT_DOT_RADIUS) for index, point in enumerate(X)
         ]
     )
+
+
+def softmax(x):
+    e = np.exp(x)
+    return e / np.sum(e)
 
 
 """
@@ -636,6 +642,73 @@ class IntroDecisionScene(DotsScene):
         self.wait()
 
         self.embed()
+
+
+class IntroSoftmax(Scene):
+    def construct(self):
+        axes = Axes(x_range=(0, 6), y_range=(-2, 2))
+
+        o = axes.get_origin()
+        dx = axes.get_axes()[0].get_unit_size()
+
+        num_points = 25
+
+        x1 = np.random.normal(0, 1, num_points)
+        x1[-1] = 0.5
+        x1[4] = 2.2
+        x1_l = self.create_lines(x1, o, dx, stroke_width=2)
+
+        eq1 = Tex(r"\mathbf{x}", tex_to_color_map={r"\mathbf{x}": PINK})
+        eq1.scale(1.5)
+        eq1.shift(3 * UP)
+
+        self.play(Write(axes))
+        self.play(Write(x1_l), run_time=2)
+        self.play(Write(eq1))
+        self.wait()
+
+        self.play(Indicate(x1_l[6:10]))
+        self.wait()
+
+        maxi = np.argmax(x1)
+        x2 = [int(i == maxi) for i in range(num_points)]
+        x2_l = self.create_lines(x2, o, dx, stroke_width=2)
+
+        eq2 = Tex(r"\mathrm{argmax}(\mathbf{x})", tex_to_color_map={
+                  r"\mathbf{x}": PINK, r"\mathrm{argmax}": AQUA})
+        eq2.scale(1.5)
+        eq2.shift(3 * UP)
+
+        cp = x1_l.copy()
+        self.play(Transform(x1_l, x2_l), Transform(eq1, eq2))
+        self.wait()
+
+        eq3 = Tex(r"\mathrm{softmax}{\mathbf{x}}", tex_to_color_map={
+                  r"\mathbf{x}": PINK, r"\mathrm{softmax}": AQUA})
+        eq3.scale(1.5)
+        eq3.shift(3 * UP)
+
+        x3 = 15*softmax(x1)
+        x3_l = self.create_lines(x3, o, dx, stroke_width=2)
+
+        self.play(Transform(x1_l, cp), Transform(eq1, eq3))
+        self.wait()
+
+        self.play(Transform(x1_l, x3_l))
+        self.wait()
+
+        self.embed()
+
+    def create_lines(self, arr, o, dx, color=ORANGE, **line_kwargs):
+        grp = VGroup()
+
+        for n, i in enumerate(np.linspace(0.25, 5.75, len(arr))):
+            grp.add(
+                Line(o + (dx*i*RIGHT), o + (dx*i*RIGHT) +
+                     (arr[n]*UP), color=color, **line_kwargs),
+                Dot(o + (dx*i*RIGHT) + (arr[n]*UP), color=color)
+            )
+        return grp
 
 
 class DemoActivation(DotsScene):
