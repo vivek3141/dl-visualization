@@ -150,22 +150,15 @@ class NNTransformPlane(Scene):
         f_plane = NumberPlane(**self.foreground_plane_kwargs)
         b_plane = NumberPlane(**self.background_plane_kwargs)
 
-        init_dots = get_dots(lambda point: point)
         final_dots = get_dots(lambda point: self.func(point[:2]))
 
         frame = self.camera.frame
 
+        f_plane.prepare_for_nonlinear_transform(num_inserted_curves=200)
+        f_plane.apply_complex_function(self.func_complex)
+
         self.play(Write(b_plane), Write(f_plane))
-        self.play(Write(init_dots))
-        self.wait()
-
-        f_plane.prepare_for_nonlinear_transform()
-
-        self.play(
-            ApplyMethod(f_plane.apply_complex_function, self.func_complex),
-            Transform(init_dots, final_dots),
-            run_time=8
-        )
+        self.play(Write(final_dots))
         self.wait()
 
         self.play(frame.set_phi, 0.35*PI)
@@ -189,40 +182,62 @@ class NNTransformPlane(Scene):
                 i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
             s.add(surf)
 
-        p = SGroup()
+        p = VGroup()
 
-        def get_plane_points(i=0, u_range=(-4, 4), v_range=(-4, 4)):
-            get_x = lambda y: -(self.w[i][1] * y + self.b[0])/self.w[i][0]
-            get_y = lambda x: -(self.w[i][0] * x + self.b[0])/self.w[i][1]
-            p_func = lambda u, v: [u, v, self.w[0][0] * u + self.w[0][1] * v + self.b[0]]
-            
+        def get_plane_points(i=0, scale=3/5, u_range=(-4, 4), v_range=(-4, 4)):
+            def get_x(y):
+                return -(self.w[i][1] * y + self.b[i])/self.w[i][0]
+
+            def get_y(x):
+                return -(self.w[i][0] * x + self.b[i])/self.w[i][1]
+
+            def p_func(u, v):
+                return [u, v, self.w[i][0] * u + self.w[i][1] * v + self.b[i]]
+
             points = []
+            end = []
 
             x = get_x(v_range[0])
             if u_range[0] <= x <= u_range[1]:
                 points.append([x, v_range[0], 0])
+                end.append(max(
+                    p_func(u_range[0], v_range[0]),
+                    p_func(u_range[1], v_range[0]),
+                    key=lambda x: x[-1]))
             else:
                 points.append([u_range[0], get_y(u_range[0]), 0])
-            
+                end.append(max(
+                    p_func(u_range[0], v_range[0]),
+                    p_func(u_range[0], v_range[1]),
+                    key=lambda x: x[-1]))
+
             x = get_x(v_range[1])
             if u_range[0] <= x <= u_range[1]:
                 points.append([x, v_range[1], 0])
+                end.append(max(
+                    p_func(u_range[0], v_range[1]),
+                    p_func(u_range[1], v_range[1]),
+                    key=lambda x: x[-1]))
             else:
                 points.append([u_range[1], get_y(u_range[1]), 0])
+                end.append(max(
+                    p_func(u_range[1], v_range[0]),
+                    p_func(u_range[1], v_range[1]),
+                    key=lambda x: x[-1]))
 
-            points.append(
-                max(
-                    p_func(u_range[0], v_range[0])
-                )
-            )
+            points += end[::-1]
+            return [[*points[i][:2], scale*points[i][2]] for i in range(4)]
 
-            return points
-
-            
             self.w[0][0] * u + self.w[0][1] * v + self.b[0]
 
+        # for i in range(5):
+        #     plane = self.surface_func(i=i, scale=3/5, func=lambda x: max(
+        #         x, 0), u_range=(-4, 4), v_range=(-4, 4), opacity=0.5, color=colors[i])
+        #     p.add(plane)
+
         for i in range(5):
-            plane = self.surface_func(i=i, scale=3/5, func=lambda x: max(x, 0), u_range=(-4, 4), v_range=(-4, 4), opacity=0.5, color=colors[i])
+            plane = Polygon(*get_plane_points(i=i), fill_opacity=0.5,
+                            stroke_opacity=1, stroke_color=WHITE, fill_color=colors[i])
             p.add(plane)
 
         self.add(p)
