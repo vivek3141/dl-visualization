@@ -671,7 +671,7 @@ class IntroSoftmax(Scene):
         self.wait()
 
         maxi = np.argmax(x1)
-        x2 = [int(i == maxi) for i in range(num_points)]
+        x2 = [2*int(i == maxi) for i in range(num_points)]
         x2_l = self.create_lines(x2, o, dx, stroke_width=2)
 
         eq2 = Tex(r"\mathrm{argmax}(\mathbf{x})", tex_to_color_map={
@@ -679,22 +679,18 @@ class IntroSoftmax(Scene):
         eq2.scale(1.5)
         eq2.shift(3 * UP)
 
-        cp = x1_l.copy()
         self.play(Transform(x1_l, x2_l), Transform(eq1, eq2))
         self.wait()
 
-        eq3 = Tex(r"\mathrm{softmax}{\mathbf{x}}", tex_to_color_map={
+        eq3 = Tex(r"\mathrm{softmax}({\mathbf{x}})", tex_to_color_map={
                   r"\mathbf{x}": PINK, r"\mathrm{softmax}": AQUA})
         eq3.scale(1.5)
         eq3.shift(3 * UP)
 
-        x3 = 15*softmax(x1)
+        x3 = 10*softmax(x1)
         x3_l = self.create_lines(x3, o, dx, stroke_width=2)
 
-        self.play(Transform(x1_l, cp), Transform(eq1, eq3))
-        self.wait()
-
-        self.play(Transform(x1_l, x3_l))
+        self.play(Transform(x1_l, x3_l), Transform(eq1, eq3))
         self.wait()
 
         self.embed()
