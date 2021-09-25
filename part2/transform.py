@@ -182,84 +182,108 @@ class NNTransformPlane(Scene):
                 i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
             s.add(surf)
 
-        p = VGroup()
+        p = SGroup()
 
-        def get_plane_points(i=0, scale=3/5, u_range=(-4, 4), v_range=(-4, 4)):
-            def get_x(y):
-                return -(self.w[i][1] * y + self.b[i])/self.w[i][0]
+        # def get_plane_points(i=0, scale=3/5, u_range=(-4, 4), v_range=(-4, 4)):
+        #     def get_x(y):
+        #         return -(self.w[i][1] * y + self.b[i])/self.w[i][0]
 
-            def get_y(x):
-                return -(self.w[i][0] * x + self.b[i])/self.w[i][1]
+        #     def get_y(x):
+        #         return -(self.w[i][0] * x + self.b[i])/self.w[i][1]
 
-            def p_func(u, v):
-                return [u, v, self.w[i][0] * u + self.w[i][1] * v + self.b[i]]
+        #     def p_func(u, v):
+        #         return [u, v, self.w[i][0] * u + self.w[i][1] * v + self.b[i]]
 
-            points = []
-            end = []
+        #     points = []
+        #     end = []
 
-            x = get_x(v_range[0])
-            if u_range[0] <= x <= u_range[1]:
-                points.append([x, v_range[0], 0])
-                end.append(max(
-                    p_func(u_range[0], v_range[0]),
-                    p_func(u_range[1], v_range[0]),
-                    key=lambda x: x[-1]))
-            else:
-                points.append([u_range[0], get_y(u_range[0]), 0])
-                end.append(max(
-                    p_func(u_range[0], v_range[0]),
-                    p_func(u_range[0], v_range[1]),
-                    key=lambda x: x[-1]))
+        #     x = get_x(v_range[0])
+        #     if u_range[0] <= x <= u_range[1]:
+        #         points.append([x, v_range[0], 0])
+        #         end.append(max(
+        #             p_func(u_range[0], v_range[0]),
+        #             p_func(u_range[1], v_range[0]),
+        #             key=lambda x: x[-1]))
+        #     else:
+        #         points.append([u_range[0], get_y(u_range[0]), 0])
+        #         end.append(max(
+        #             p_func(u_range[0], v_range[0]),
+        #             p_func(u_range[0], v_range[1]),
+        #             key=lambda x: x[-1]))
 
-            x = get_x(v_range[1])
-            if u_range[0] <= x <= u_range[1]:
-                points.append([x, v_range[1], 0])
-                end.append(max(
-                    p_func(u_range[0], v_range[1]),
-                    p_func(u_range[1], v_range[1]),
-                    key=lambda x: x[-1]))
-            else:
-                points.append([u_range[1], get_y(u_range[1]), 0])
-                end.append(max(
-                    p_func(u_range[1], v_range[0]),
-                    p_func(u_range[1], v_range[1]),
-                    key=lambda x: x[-1]))
+        #     x = get_x(v_range[1])
+        #     if u_range[0] <= x <= u_range[1]:
+        #         points.append([x, v_range[1], 0])
+        #         end.append(max(
+        #             p_func(u_range[0], v_range[1]),
+        #             p_func(u_range[1], v_range[1]),
+        #             key=lambda x: x[-1]))
+        #     else:
+        #         points.append([u_range[1], get_y(u_range[1]), 0])
+        #         end.append(max(
+        #             p_func(u_range[1], v_range[0]),
+        #             p_func(u_range[1], v_range[1]),
+        #             key=lambda x: x[-1]))
 
-            points += end[::-1]
-            return [[*points[i][:2], scale*points[i][2]] for i in range(4)]
+        #     points += end[::-1]
+        #     return [[*points[i][:2], scale*points[i][2]] for i in range(4)]
 
-            self.w[0][0] * u + self.w[0][1] * v + self.b[0]
-
-        # for i in range(5):
-        #     plane = self.surface_func(i=i, scale=3/5, func=lambda x: max(
-        #         x, 0), u_range=(-4, 4), v_range=(-4, 4), opacity=0.5, color=colors[i])
-        #     p.add(plane)
+        #     self.w[0][0] * u + self.w[0][1] * v + self.b[0]
 
         for i in range(5):
-            plane = Polygon(*get_plane_points(i=i), fill_opacity=0.5,
-                            stroke_opacity=1, stroke_color=WHITE, fill_color=colors[i])
+            plane = self.surface_func(i=i, scale=3/5, func=lambda x: max(
+                x, 0), u_range=(-8, 8), v_range=(-4, 4), opacity=0.5, color=colors[i])
             p.add(plane)
 
-        self.add(p)
-        self.wait()
+        plane = ParametricSurface(
+            self.surface_func_max,
+            u_range=(-FRAME_WIDTH/2, FRAME_WIDTH/2),
+            v_range=(-FRAME_HEIGHT/2, FRAME_HEIGHT/2),
+            resolution=(512, 512)
+        )
+        surf = TexturedSurface(
+            plane,
+            "/Users/vivek/python/nn-visualization/part2/output_decisions.png"
+        )
 
-        self.embed()
+        # for i in range(5):
+        #     plane = Polygon(*get_plane_points(i=i), fill_opacity=0.5,
+        #                     stroke_opacity=1, stroke_color=WHITE, fill_color=colors[i])
+        #     p.add(plane)
+
+        cp = s[0].copy()
+
+        self.play(ShowCreation(cp))
+        # self.wait()
+
+        # self.embed()
 
         for i in range(5):
             self.wait(5)
-            self.play(Transform(p, s[i]))
+            self.play(Transform(cp, s[i]))
 
         self.wait(5)
 
         self.play(ShowCreation(s[:-1]))
+        self.wait(5)
+
+        rotate = False
+        self.play(
+            frame.set_phi, 0,
+            frame.set_theta, 0
+        )
         self.wait()
+
         self.embed()
 
+    def surface_func_max(self, u, v):
+        return [u, v, 0.5 * max((np.array([[u, v]]).dot(self.w.T) + self.b)[0])]
+
     def surface_func_softmax(self, i=0, scale=3, **kwargs):
-        return ParametricSurface(lambda u, v: [u, v, scale * softmax(self.w.dot(np.array([[u], [v]]) + self.b[0]))[i]], **kwargs)
+        return ParametricSurface(lambda u, v: [u, v, scale * softmax((np.array([[u, v]]).dot(self.w.T) + self.b)[0])[i]], **kwargs)
 
     def surface_func(self, i=0, scale=3, func=sigmoid, **kwargs):
-        return ParametricSurface(lambda u, v: [u, v, scale * func(self.w[i][0] * u + self.w[i][1] * v + self.b[i])], **kwargs)
+        return ParametricSurface(lambda u, v: [u, v, scale * func((np.array([[u, v]]).dot(self.w.T) + self.b)[0][i])], **kwargs)
 
     @staticmethod
     def get_plane_func(w0, w1, b):

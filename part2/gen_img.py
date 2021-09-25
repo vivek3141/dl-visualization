@@ -28,6 +28,15 @@ y_max = FRAME_HEIGHT/2
 activation = F.relu
 
 
+def softmax(x):
+    e = np.exp(x)
+    return e / np.sum(e)
+
+
+def relu(*x):
+    return [max(i, 0) for i in x]
+
+
 class Model(nn.Module):
     def __init__(self, D_in, H, D_out):
         super(Model, self).__init__()
@@ -46,13 +55,18 @@ class Model(nn.Module):
         return self.linear2(x)
 
 
-path = './model3/model.pth'
+path = './model/model.pth'
 model = torch.load(path)
+
+print(model[3])
 
 x_values = np.linspace(x_min, x_max, XRES+1)
 y_values = np.linspace(y_min, y_max, YRES+1)
 
 pixels = []
+
+w = model[3].weight.detach().numpy()
+b = model[3].bias.detach().numpy()
 
 for i in range(len(y_values) - 1)[::-1]:
     pixels.append([])
@@ -60,14 +74,26 @@ for i in range(len(y_values) - 1)[::-1]:
         x1, x2 = x_values[j:j + 2]
         y1, y2 = y_values[i:i + 2]
 
-        inp = torch.tensor(
-            [(x1 + x2)/2, (y1 + y2)/2], dtype=torch.float32)
-        c = colors[np.argmax(model(inp).detach().numpy())]
+        # inp = torch.tensor(
+        #     [(x1 + x2)/2, (y1 + y2)/2], dtype=torch.float32)
+
+        #print(w, b)
+
+        x, y = (x1 + x2)/2, (y1 + y2)/2
+
+        #print(w.dot(np.array([[x], [y]])))
+
+        y = np.array([[x, y]]).dot(w.T) + b
+        print(y)
+
+        #y = np.argmax(model[3](torch.tensor([[x, y]], dtype=torch.float32)).detach())
+
+        c = colors[y]
         pixels[-1].append(c)
 
 
 array = np.array(pixels, dtype=np.uint8)
 
 new_image = Image.fromarray(array)
-new_image.save("relu_ext_decisions.png")
+# new_image.save("relu_ext_decisions.png")
 new_image.show()

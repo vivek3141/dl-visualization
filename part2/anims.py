@@ -426,11 +426,11 @@ class ShowTrainingPoint(DotsScene):
         r.shift(4.5 * RIGHT)
 
         eq1 = Tex(r"""
-            X = \begin{bmatrix}
+            x = \begin{bmatrix}
                 0.374\\
                 0.329
             \end{bmatrix}""",
-                  tex_to_color_map={"X": PINK})
+                  tex_to_color_map={"x": PINK})
         eq1.scale(1.25)
         eq1.shift(4.5 * RIGHT + 1.5 * UP)
 
