@@ -236,7 +236,7 @@ class NNTransformPlane(Scene):
             p.add(plane)
 
         plane = ParametricSurface(
-            self.surface_func_max,
+            self.surface_func_max(),
             u_range=(-FRAME_WIDTH/2, FRAME_WIDTH/2),
             v_range=(-FRAME_HEIGHT/2, FRAME_HEIGHT/2),
             resolution=(512, 512)
@@ -276,8 +276,8 @@ class NNTransformPlane(Scene):
 
         self.embed()
 
-    def surface_func_max(self, u, v):
-        return [u, v, 0.5 * max((np.array([[u, v]]).dot(self.w.T) + self.b)[0])]
+    def surface_func_max(self, i=6):
+        return lambda u, v: [u, v, 0.5 * max(*(np.array([[u, v]]).dot(self.w.T) + self.b)[0][:i], 0)]
 
     def surface_func_softmax(self, i=0, scale=3, **kwargs):
         return ParametricSurface(lambda u, v: [u, v, scale * softmax((np.array([[u, v]]).dot(self.w.T) + self.b)[0])[i]], **kwargs)
