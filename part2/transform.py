@@ -11,6 +11,10 @@ def softmax(x):
     return e / np.sum(e)
 
 
+def relu(x):
+    return max(x, 0)
+
+
 def get_data(n=100, d=2, c=3, std=0.2):
     X = torch.zeros(n * c, d)
     y = torch.zeros(n * c, dtype=torch.long)
@@ -182,7 +186,7 @@ class NNTransformPlane(Scene):
                 i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
             s.add(surf)
 
-        p = SGroup()
+        # p = SGroup()
 
         # def get_plane_points(i=0, scale=3/5, u_range=(-4, 4), v_range=(-4, 4)):
         #     def get_x(y):
@@ -230,21 +234,50 @@ class NNTransformPlane(Scene):
 
         #     self.w[0][0] * u + self.w[0][1] * v + self.b[0]
 
-        for i in range(5):
-            plane = self.surface_func(i=i, scale=3/5, func=lambda x: max(
-                x, 0), u_range=(-8, 8), v_range=(-4, 4), opacity=0.5, color=colors[i])
-            p.add(plane)
+        # for i in range(5):
+        #     plane = self.surface_func(i=i, scale=3/5, func=lambda x: max(
+        #         x, 0), u_range=(-8, 8), v_range=(-4, 4), opacity=0.5, color=colors[i])
+        #     p.add(plane)
 
-        plane = ParametricSurface(
-            self.surface_func_max(),
-            u_range=(-FRAME_WIDTH/2, FRAME_WIDTH/2),
-            v_range=(-FRAME_HEIGHT/2, FRAME_HEIGHT/2),
-            resolution=(512, 512)
+        plane_kwargs = {
+            "scale": 0.5,
+            "u_range": (-FRAME_WIDTH/2, FRAME_WIDTH/2),
+            "v_range": (-FRAME_HEIGHT/2, FRAME_HEIGHT/2),
+            "opacity": 0.65,
+        }
+
+        red_plane1 = self.surface_func(
+            i=0, color=colors[0], func=lambda x: x, **plane_kwargs
         )
-        surf = TexturedSurface(
-            plane,
-            "/Users/vivek/python/nn-visualization/part2/output_decisions.png"
+        red_plane2 = self.surface_func(
+            i=0, color=colors[0], func=relu, **plane_kwargs
         )
+
+        yellow_plane1 = self.surface_func(
+            i=1, color=colors[1], func=lambda x: x, **plane_kwargs
+        )
+        yellow_plane2 = self.surface_func(
+            i=1, color=colors[1], func=relu, **plane_kwargs
+        )
+
+        p = SGroup()
+
+        for i in range(1, 6):
+            plane = ParametricSurface(
+                self.surface_func_max(i=i),
+                resolution=(128, 128),
+                **plane_kwargs
+            )
+            surf = TexturedSurface(
+                plane,
+                f"./img/plane{i-1}.png"
+            )
+            p.add(surf)
+
+        # surf = TexturedSurface(
+        #     plane,
+        #     "/Users/vivek/python/nn-visualization/part2/output_decisions.png"
+        # )
 
         # for i in range(5):
         #     plane = Polygon(*get_plane_points(i=i), fill_opacity=0.5,
@@ -257,6 +290,8 @@ class NNTransformPlane(Scene):
         # self.wait()
 
         # self.embed()
+
+        Transform
 
         for i in range(5):
             self.wait(5)
@@ -276,8 +311,8 @@ class NNTransformPlane(Scene):
 
         self.embed()
 
-    def surface_func_max(self, i=6):
-        return lambda u, v: [u, v, 0.5 * max(*(np.array([[u, v]]).dot(self.w.T) + self.b)[0][:i], 0)]
+    def surface_func_max(self, i=6, scale=0.5, func=lambda *x: max(*x, 0)):
+        return lambda u, v: [u, v, scale * func(*(np.array([[u, v]]).dot(self.w.T) + self.b)[0][:i])]
 
     def surface_func_softmax(self, i=0, scale=3, **kwargs):
         return ParametricSurface(lambda u, v: [u, v, scale * softmax((np.array([[u, v]]).dot(self.w.T) + self.b)[0])[i]], **kwargs)
