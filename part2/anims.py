@@ -805,7 +805,6 @@ class NN22Equation(Scene):
     CONFIG = {
         "nn_config": {
             "neuron_radius": 0.15,
-
         }
     }
     def construct(self):
