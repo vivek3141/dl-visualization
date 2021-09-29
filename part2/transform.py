@@ -253,10 +253,7 @@ class NNTransformPlane(Scene):
             i=0, color=colors[0], func=relu, **plane_kwargs
         )
 
-        yellow_plane1 = self.surface_func(
-            i=1, color=colors[1], func=lambda x: x, **plane_kwargs
-        )
-        yellow_plane2 = self.surface_func(
+        yellow_plane = self.surface_func(
             i=1, color=colors[1], func=relu, **plane_kwargs
         )
 
@@ -274,6 +271,24 @@ class NNTransformPlane(Scene):
             )
             p.add(surf)
 
+        cp = p[0].copy()
+
+        self.play(ShowCreation(red_plane1))
+        self.wait()
+
+        self.play(Transform(red_plane1, red_plane2))
+        self.wait()
+
+        self.play(ShowCreation(yellow_plane))
+        self.wait()
+
+        self.play(Transform(SGroup(red_plane1, yellow_plane), p[1]))
+        self.wait()
+
+        for i in range(1, 3):
+            self.play(ReplacementTransform(p[i], p[i+1]))
+            self.wait()
+
         # surf = TexturedSurface(
         #     plane,
         #     "/Users/vivek/python/nn-visualization/part2/output_decisions.png"
@@ -287,11 +302,6 @@ class NNTransformPlane(Scene):
         cp = s[0].copy()
 
         self.play(ShowCreation(cp))
-        # self.wait()
-
-        # self.embed()
-
-        Transform
 
         for i in range(5):
             self.wait(5)
@@ -394,3 +404,54 @@ class NNTransformPlane(Scene):
                 self.update_frame()
         except KeyboardInterrupt:
             self.unlock_mobject_data()
+
+
+class Test(NNTransformPlane):
+    def construct(self):
+        frame = self.camera.frame
+        frame.set_phi(0.35*PI)
+        plane_kwargs = {
+            "scale": 0.5,
+            "u_range": (-FRAME_WIDTH/2, FRAME_WIDTH/2),
+            "v_range": (-FRAME_HEIGHT/2, FRAME_HEIGHT/2),
+            "opacity": 0.65,
+        }
+
+        w = model[3].weight.detach().numpy()
+        b = model[3].bias.detach().numpy()
+        Camera
+
+        self.w = w
+        self.b = b
+
+        red_plane1 = self.surface_func(
+            i=0, color=colors[0], func=lambda x: x, **plane_kwargs
+        )
+        red_plane2 = self.surface_func(
+            i=0, color=colors[0], func=relu, **plane_kwargs
+        )
+
+        yellow_plane1 = self.surface_func(
+            i=1, color=colors[1], func=lambda x: x, **plane_kwargs
+        )
+        yellow_plane2 = self.surface_func(
+            i=1, color=colors[1], func=relu, **plane_kwargs
+        )
+
+        p = SGroup()
+
+        for i in range(1, 6):
+            plane = ParametricSurface(
+                self.surface_func_max(i=i),
+                resolution=(128, 128),
+                **plane_kwargs
+            )
+            surf = TexturedSurface(
+                plane,
+                f"./img/plane{i-1}.png"
+            )
+            p.add(surf)
+
+        self.play(ShowCreation(p[1]))
+        self.play(FadeTransform(p[1], p[2]))
+        self.wait()
