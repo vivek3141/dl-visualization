@@ -282,12 +282,15 @@ class NNTransformPlane(Scene):
         self.play(ShowCreation(yellow_plane))
         self.wait()
 
-        self.play(Transform(SGroup(red_plane1, yellow_plane), p[1]))
+        self.play(ReplacementTransform(SGroup(red_plane1, yellow_plane), p[1]))
         self.wait()
 
         for i in range(1, 3):
             self.play(ReplacementTransform(p[i], p[i+1]))
             self.wait()
+        
+        self.play(Uncreate(p[4]))
+        self.wait()
 
         # surf = TexturedSurface(
         #     plane,
