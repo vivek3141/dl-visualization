@@ -320,9 +320,9 @@ class NNTransformPlane(Scene):
         red_blue_line = get_plane_intersect(0, 3)
 
         purple_p = [
-            intersection(red_purple_line, lines_c[4]),
+            intersection(red_purple_line, lines_c[3]),
             get_bound(red_purple_line, -1, 1),
-            get_bound(lines_c[4], -1, 1)
+            get_bound(lines_c[3], -1, 1)
         ]
         purple_fplane = Polygon(
             *purple_p, color=colors[4], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
@@ -341,7 +341,7 @@ class NNTransformPlane(Scene):
             red_p[4],
             red_p[3],
             self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
-            get_bound(lines[1], 1, 1),
+            get_bound(lines_c[1], 1, 1),
             get_bound(lines_c[1], 1, 1),
         ]
         yellow_fplane = Polygon(
