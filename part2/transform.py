@@ -239,8 +239,10 @@ class NNTransformPlane(Scene):
         #         x, 0), u_range=(-8, 8), v_range=(-4, 4), opacity=0.5, color=colors[i])
         #     p.add(plane)
 
+        SCALE = 0.4
+
         plane_kwargs = {
-            "scale": 0.5,
+            "scale": SCALE,
             "u_range": (-FRAME_WIDTH/2, FRAME_WIDTH/2),
             "v_range": (-FRAME_HEIGHT/2, FRAME_HEIGHT/2),
             "opacity": 0.65,
@@ -261,7 +263,7 @@ class NNTransformPlane(Scene):
 
         for i in range(1, 6):
             plane = ParametricSurface(
-                self.surface_func_max(i=i),
+                self.surface_func_max(i=i, scale=SCALE),
                 resolution=(128, 128),
                 **plane_kwargs
             )
@@ -271,7 +273,106 @@ class NNTransformPlane(Scene):
             )
             p.add(surf)
 
-        cp = p[0].copy()
+        def plane_intersect(a, b):
+            a_vec, b_vec = np.array(a[:3]), np.array(b[:3])
+
+            aXb_vec = np.cross(a_vec, b_vec)
+
+            A = np.array([a_vec, b_vec, aXb_vec])
+            d = np.array([-a[3], -b[3], 0.]).reshape(3, 1)
+
+            p_inter = np.linalg.solve(A, d).T
+
+            return p_inter[0], (p_inter + aXb_vec)[0]
+
+        def intersection(a, b):
+            da = a[1] - a[0]
+            db = b[1] - b[0]
+            dc = b[0] - a[0]
+            s = np.dot(np.cross(dc, db), np.cross(da, db)) / \
+                np.linalg.norm(np.cross(da, db))**2
+            return a[0] + s * da
+
+        def get_plane_intersect(i1, i2):
+            return plane_intersect(SCALE * np.array([*w[i1], -1/SCALE, b[i1]]), SCALE * np.array([*w[i2], -1/SCALE, b[i2]]))
+
+        def get_bound(line, coeff, i):
+            v = line[1] - line[0]
+            const = FRAME_HEIGHT if i else FRAME_WIDTH
+            t = (coeff * const/2 - line[0][i])/v[i]
+            return line[0] + t * v
+
+        lines = VGroup()
+        lines_c = []
+
+        for i in range(4):
+            i_points = get_plane_intersect(i, i+1)
+            lines_c.append([i_points[0], i_points[1]])
+            lines.add(Line(i_points[0], i_points[1]))
+
+        """
+        Following this comment, is by far, the worst code I've ever written in my life. Please clean your eyes before and after viewing this. Thanks!
+        """
+
+        decision_planes = VGroup()
+
+        red_purple_line = get_plane_intersect(0, -1)
+        red_blue_line = get_plane_intersect(0, 3)
+
+        purple_p = [
+            intersection(red_purple_line, lines_c[4]),
+            get_bound(red_purple_line, -1, 1),
+            get_bound(lines_c[4], -1, 1)
+        ]
+        purple_fplane = Polygon(
+            *purple_p, color=colors[4], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+
+        red_p = [
+            purple_p[0],
+            purple_p[1],
+            self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, -FRAME_HEIGHT/2),
+            get_bound(lines_c[0], 1, 0),
+            intersection(lines_c[0], red_blue_line)
+        ]
+        red_fplane = Polygon(
+            *red_p, color=colors[0], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+
+        yellow_p = [
+            red_p[4],
+            red_p[3],
+            self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
+            get_bound(lines[1], 1, 1),
+            get_bound(lines_c[1], 1, 1),
+        ]
+        yellow_fplane = Polygon(
+            *yellow_p, color=colors[1], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+
+        green_p = [
+            yellow_p[-1],
+            yellow_p[-1],
+            yellow_p[-2],
+            self.surface_func_max(scale=SCALE)(-FRAME_WIDTH/2, FRAME_HEIGHT/2),
+            get_bound(lines_c[2], -1, 0)
+        ]
+        green_fplane = Polygon(
+            *green_p, color=colors[2], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+
+        blue_p = [
+            green_p[0],
+            green_p[3],
+            self.surface_func_max(
+                scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2),
+            purple_p[2],
+            purple_p[0],
+            red_p[4]
+        ]
+        blue_fplane = Polygon(
+            *blue_p, color=colors[3], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+
+        final_decision_plane = VGroup(
+            purple_fplane, red_fplane, yellow_fplane, green_fplane, blue_fplane)
+
+        self.embed()
 
         self.play(ShowCreation(red_plane1))
         self.wait()
@@ -285,10 +386,10 @@ class NNTransformPlane(Scene):
         self.play(ReplacementTransform(SGroup(red_plane1, yellow_plane), p[1]))
         self.wait()
 
-        for i in range(1, 3):
+        for i in range(1, 4):
             self.play(ReplacementTransform(p[i], p[i+1]))
             self.wait()
-        
+
         self.play(Uncreate(p[4]))
         self.wait()
 
@@ -324,7 +425,7 @@ class NNTransformPlane(Scene):
 
         self.embed()
 
-    def surface_func_max(self, i=6, scale=0.5, func=lambda *x: max(*x, 0)):
+    def surface_func_max(self, i=6, scale=0.4, func=lambda *x: max(*x, 0)):
         return lambda u, v: [u, v, scale * func(*(np.array([[u, v]]).dot(self.w.T) + self.b)[0][:i])]
 
     def surface_func_softmax(self, i=0, scale=3, **kwargs):
