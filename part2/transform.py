@@ -267,10 +267,6 @@ class NNTransformPlane(Scene):
         )
         red_plane1 = TexturedSurface(red_plane1, "./img/plane0.png")
 
-        red_plane2 = self.surface_func(
-            i=0, color=colors[0], func=relu, **plane_kwargs
-        )
-
         yellow_plane = self.surface_func(
             i=1, color=colors[1], func=relu, **plane_kwargs
         )
