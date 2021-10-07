@@ -259,11 +259,14 @@ class NNTransformPlane(Scene):
             "u_range": (-FRAME_WIDTH/2, FRAME_WIDTH/2),
             "v_range": (-FRAME_HEIGHT/2, FRAME_HEIGHT/2),
             "opacity": 0.65,
+            "resolution": (512, 512)
         }
 
         red_plane1 = self.surface_func(
             i=0, color=colors[0], func=lambda x: x, **plane_kwargs
         )
+        red_plane1 = TexturedSurface(red_plane1, "./img/plane0.png")
+
         red_plane2 = self.surface_func(
             i=0, color=colors[0], func=relu, **plane_kwargs
         )
@@ -277,7 +280,6 @@ class NNTransformPlane(Scene):
         for i in range(1, 6):
             plane = ParametricSurface(
                 self.surface_func_max(i=i, scale=SCALE),
-                resolution=(128, 128),
                 **plane_kwargs
             )
             surf = TexturedSurface(
@@ -286,151 +288,160 @@ class NNTransformPlane(Scene):
             )
             p.add(surf)
 
-        def plane_intersect(a, b):
-            a_vec, b_vec = np.array(a[:3]), np.array(b[:3])
+        # def plane_intersect(a, b):
+        #     a_vec, b_vec = np.array(a[:3]), np.array(b[:3])
 
-            aXb_vec = np.cross(a_vec, b_vec)
+        #     aXb_vec = np.cross(a_vec, b_vec)
 
-            A = np.array([a_vec, b_vec, aXb_vec])
-            d = np.array([-a[3], -b[3], 0.]).reshape(3, 1)
+        #     A = np.array([a_vec, b_vec, aXb_vec])
+        #     d = np.array([-a[3], -b[3], 0.]).reshape(3, 1)
 
-            p_inter = np.linalg.solve(A, d).T
+        #     p_inter = np.linalg.solve(A, d).T
 
-            return p_inter[0], (p_inter + aXb_vec)[0]
+        #     return p_inter[0], (p_inter + aXb_vec)[0]
 
-        def intersection(a, b):
-            da = a[1] - a[0]
-            db = b[1] - b[0]
-            dc = b[0] - a[0]
-            s = np.dot(np.cross(dc, db), np.cross(da, db)) / \
-                np.linalg.norm(np.cross(da, db))**2
-            return a[0] + s * da
+        # def intersection(a, b):
+        #     da = a[1] - a[0]
+        #     db = b[1] - b[0]
+        #     dc = b[0] - a[0]
+        #     s = np.dot(np.cross(dc, db), np.cross(da, db)) / \
+        #         np.linalg.norm(np.cross(da, db))**2
+        #     return a[0] + s * da
 
-        def get_plane_intersect(i1, i2):
-            return plane_intersect(SCALE * np.array([*w[i1], -1/SCALE, b[i1]]), SCALE * np.array([*w[i2], -1/SCALE, b[i2]]))
+        # def get_plane_intersect(i1, i2):
+        #     return plane_intersect(SCALE * np.array([*w[i1], -1/SCALE, b[i1]]), SCALE * np.array([*w[i2], -1/SCALE, b[i2]]))
 
-        def get_bound(line, coeff, i):
-            v = line[1] - line[0]
-            const = FRAME_HEIGHT if i else FRAME_WIDTH
-            t = (coeff * const/2 - line[0][i])/v[i]
-            return line[0] + t * v
+        # def get_bound(line, coeff, i):
+        #     v = line[1] - line[0]
+        #     const = FRAME_HEIGHT if i else FRAME_WIDTH
+        #     t = (coeff * const/2 - line[0][i])/v[i]
+        #     return line[0] + t * v
 
-        def check(obj):
-            self.remove(obj)
-            self.wait(0.5)
-            self.add(obj)
+        # def check(obj):
+        #     self.remove(obj)
+        #     self.wait(0.5)
+        #     self.add(obj)
 
-        lines = VGroup()
-        lines_c = []
+        # lines = VGroup()
+        # lines_c = []
 
-        for i in range(4):
-            i_points = get_plane_intersect(i, i+1)
-            lines_c.append([i_points[0], i_points[1]])
-            lines.add(Line(i_points[0], i_points[1]))
+        # for i in range(4):
+        #     i_points = get_plane_intersect(i, i+1)
+        #     lines_c.append([i_points[0], i_points[1]])
+        #     lines.add(Line(i_points[0], i_points[1]))
 
-        """
-        Following this comment, is by far, the worst code I've ever written in my life. Please clean your eyes before and after viewing this. Thanks!
-        """
+        # """
+        # Following this comment, is by far, the worst code I've ever written in my life. Please clean your eyes before and after viewing this. Thanks!
+        # """
 
-        # Final Decision Plane
+        # # Final Decision Plane
 
-        decision_planes = VGroup()
+        # decision_planes = VGroup()
 
-        red_purple_line = get_plane_intersect(0, 4)
-        red_blue_line = get_plane_intersect(0, 3)
-        yellow_blue_line = get_plane_intersect(1, 3)
+        # red_purple_line = get_plane_intersect(0, 4)
+        # red_blue_line = get_plane_intersect(0, 3)
+        # yellow_blue_line = get_plane_intersect(1, 3)
 
-        purple_p = [
-            intersection(red_purple_line, lines_c[3]),
-            get_bound(red_purple_line, -1, 1),
-            get_bound(lines_c[3], -1, 1)
-        ]
-        purple_fplane = Polygon(
-            *purple_p, color=colors[4], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        # purple_p = [
+        #     intersection(red_purple_line, lines_c[3]),
+        #     get_bound(red_purple_line, -1, 1),
+        #     get_bound(lines_c[3], -1, 1)
+        # ]
+        # purple_fplane = Polygon(
+        #     *purple_p, color=colors[4], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
 
-        red_p = [
-            purple_p[0],
-            purple_p[1],
-            self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, -FRAME_HEIGHT/2),
-            get_bound(lines_c[0], 1, 0),
-            intersection(lines_c[0], red_blue_line)
-        ]
-        red_fplane = Polygon(
-            *red_p, color=colors[0], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        # red_p = [
+        #     purple_p[0],
+        #     purple_p[1],
+        #     self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, -FRAME_HEIGHT/2),
+        #     get_bound(lines_c[0], 1, 0),
+        #     intersection(lines_c[0], red_blue_line)
+        # ]
+        # red_fplane = Polygon(
+        #     *red_p, color=colors[0], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
 
-        yellow_p = [
-            red_p[4],
-            red_p[3],
-            self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
-            get_bound(lines_c[1], 1, 1),
-            intersection(yellow_blue_line, lines_c[2]),
-        ]
-        yellow_fplane = Polygon(
-            *yellow_p, color=colors[1], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        # yellow_p = [
+        #     red_p[4],
+        #     red_p[3],
+        #     self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
+        #     get_bound(lines_c[1], 1, 1),
+        #     intersection(yellow_blue_line, lines_c[2]),
+        # ]
+        # yellow_fplane = Polygon(
+        #     *yellow_p, color=colors[1], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
 
-        green_p = [
-            yellow_p[4],
-            yellow_p[3],
-            self.surface_func_max(scale=SCALE)(-FRAME_WIDTH/2, FRAME_HEIGHT/2),
-            get_bound(lines_c[2], -1, 0)
-        ]
-        green_fplane = Polygon(
-            *green_p, color=colors[2], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        # green_p = [
+        #     yellow_p[4],
+        #     yellow_p[3],
+        #     self.surface_func_max(scale=SCALE)(-FRAME_WIDTH/2, FRAME_HEIGHT/2),
+        #     get_bound(lines_c[2], -1, 0)
+        # ]
+        # green_fplane = Polygon(
+        #     *green_p, color=colors[2], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
 
-        blue_p = [
-            green_p[0],
-            green_p[3],
-            self.surface_func_max(
-                scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2),
-            purple_p[2],
-            purple_p[0],
-            red_p[4]
-        ]
-        blue_fplane = Polygon(
-            *blue_p, color=colors[3], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        # blue_p = [
+        #     green_p[0],
+        #     green_p[3],
+        #     self.surface_func_max(
+        #         scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2),
+        #     purple_p[2],
+        #     purple_p[0],
+        #     red_p[4]
+        # ]
+        # blue_fplane = Polygon(
+        #     *blue_p, color=colors[3], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
 
-        final_decision_plane = VGroup(
-            purple_fplane, red_fplane, yellow_fplane, green_fplane, blue_fplane)
+        # final_decision_plane = VGroup(
+        #     purple_fplane, red_fplane, yellow_fplane, green_fplane, blue_fplane)
 
-        # 2nd Last Decision Plane
+        # # 2nd Last Decision Plane
 
-        decision_plane2 = final_decision_plane.copy()
-        for n, idx in enumerate([0, 1, 4]):
-            decision_plane2.remove(decision_plane2[idx-n])
+        # decision_plane2 = final_decision_plane.copy()
+        # for n, idx in enumerate([0, 1, 4]):
+        #     decision_plane2.remove(decision_plane2[idx-n])
 
-        red_p[0] = get_bound(red_blue_line, -1, 1)
-        del red_p[1]
+        # red_p[0] = get_bound(red_blue_line, -1, 1)
+        # del red_p[1]
 
-        decision_plane2.add(
-            Polygon(*red_p, color=colors[0], stroke_opacity=0,
-                    fill_opacity=plane_kwargs["opacity"])
-        )
+        # decision_plane2.add(
+        #     Polygon(*red_p, color=colors[0], stroke_opacity=0,
+        #             fill_opacity=plane_kwargs["opacity"])
+        # )
 
-        blue_p = [red_p[3], red_p[0], self.surface_func_max(
-            scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2), green_p[3], green_p[0]]
-        decision_plane2.add(
-            Polygon(*blue_p, color=colors[3], stroke_opacity=0,
-                    fill_opacity=plane_kwargs["opacity"])
-        )
+        # blue_p = [red_p[3], red_p[0], self.surface_func_max(
+        #     scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2), green_p[3], green_p[0]]
+        # decision_plane2.add(
+        #     Polygon(*blue_p, color=colors[3], stroke_opacity=0,
+        #             fill_opacity=plane_kwargs["opacity"])
+        # )
 
         self.embed()
 
         self.play(ShowCreation(red_plane1))
-        self.wait()
+        self.wait(5)
 
-        self.play(Transform(red_plane1, red_plane2))
-        self.wait()
+        self.play(ReplacementTransform(red_plane1, p[0]))
+        self.wait(5)
 
         self.play(ShowCreation(yellow_plane))
-        self.wait()
+        self.wait(5)
 
-        self.play(ReplacementTransform(SGroup(red_plane1, yellow_plane), p[1]))
-        self.wait()
+        self.play(Uncreate(yellow_plane), ReplacementTransform(p[0], p[1]))
+        self.wait(5)
 
         for i in range(1, 4):
             self.play(ReplacementTransform(p[i], p[i+1]))
-            self.wait()
+            self.wait(5)
+        
+        rotate = False
+        self.play(
+            frame.set_phi, 0,
+            frame.set_theta, 0
+        )
+        self.wait()
 
+        rotate = True
+        self.play(frame.set_phi, 0.35*PI)
         self.play(Uncreate(p[4]))
         self.wait()
 
@@ -448,7 +459,7 @@ class NNTransformPlane(Scene):
 
         self.play(ShowCreation(cp))
 
-        for i in range(5):
+        for i in range(1, 5):
             self.wait(5)
             self.play(Transform(cp, s[i]))
 
