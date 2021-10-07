@@ -194,7 +194,7 @@ class NNTransformPlane(Scene):
             surf = self.surface_func_softmax(
                 i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
             s.add(surf)
-        
+
         def color_func(x):
             y = np.argmax(np.array([[x[0], x[1]]]).dot(w.T) + b)
             return colors_rgb[y]
@@ -428,7 +428,7 @@ class NNTransformPlane(Scene):
         for i in range(1, 4):
             self.play(ReplacementTransform(p[i], p[i+1]))
             self.wait(5)
-        
+
         rotate = False
         self.play(
             frame.set_phi, 0,
