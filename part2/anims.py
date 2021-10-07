@@ -592,8 +592,8 @@ class IntroNNDiagram(DotsScene):
         )))
         self.wait()
 
-        eq = Tex(r"\hat{y}_1 = \sigma ( w_1 x + b_1 )",
-                 tex_to_color_map={r"\sigma": AQUA, r"x": PINK, r"b_1": BLUE, r"\hat{y}_1": BLUE})
+        eq = Tex(r"\hat{y}_1 = \mathrm{softmax} ( w_1 x + b_1 )",
+                 tex_to_color_map={r"\mathrm{softmax}": AQUA, r"x": PINK, r"b_1": BLUE, r"\hat{y}_1": BLUE})
         eq.scale(2.5)
         eq = VGroup(BackgroundRectangle(eq, color=BLACK, buff=0.25), eq)
         eq.shift(2.5 * DOWN)
