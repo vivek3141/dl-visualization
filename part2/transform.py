@@ -49,6 +49,15 @@ X, Y = get_data(c=5)
 
 colors = [RED, YELLOW, GREEN, BLUE, PURPLE]
 
+RED_rgb = (252, 98, 85)
+YELLOW_rgb = (255, 255, 0)
+GREEN_rgb = (131, 193, 103)
+BLUE_rgb = (88, 196, 221)
+PURPLE_rgb = (154, 114, 172)
+
+colors_rgb = [RED_rgb, YELLOW_rgb, GREEN_rgb, BLUE_rgb, PURPLE_rgb]
+colors_rgb = [[i/256 for i in color] for color in colors_rgb]
+
 
 class InteractiveScene(Scene):
     def interact(self):
@@ -185,6 +194,10 @@ class NNTransformPlane(Scene):
             surf = self.surface_func_softmax(
                 i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
             s.add(surf)
+        
+        def color_func(x):
+            y = np.argmax(np.array([[x[0], x[1]]]).dot(w.T) + b)
+            return colors_rgb[y]
 
         # p = SGroup()
 
@@ -302,6 +315,11 @@ class NNTransformPlane(Scene):
             t = (coeff * const/2 - line[0][i])/v[i]
             return line[0] + t * v
 
+        def check(obj):
+            self.remove(obj)
+            self.wait(0.5)
+            self.add(obj)
+
         lines = VGroup()
         lines_c = []
 
@@ -314,10 +332,13 @@ class NNTransformPlane(Scene):
         Following this comment, is by far, the worst code I've ever written in my life. Please clean your eyes before and after viewing this. Thanks!
         """
 
+        # Final Decision Plane
+
         decision_planes = VGroup()
 
-        red_purple_line = get_plane_intersect(0, -1)
+        red_purple_line = get_plane_intersect(0, 4)
         red_blue_line = get_plane_intersect(0, 3)
+        yellow_blue_line = get_plane_intersect(1, 3)
 
         purple_p = [
             intersection(red_purple_line, lines_c[3]),
@@ -342,15 +363,14 @@ class NNTransformPlane(Scene):
             red_p[3],
             self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
             get_bound(lines_c[1], 1, 1),
-            get_bound(lines_c[1], 1, 1),
+            intersection(yellow_blue_line, lines_c[2]),
         ]
         yellow_fplane = Polygon(
             *yellow_p, color=colors[1], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
 
         green_p = [
-            yellow_p[-1],
-            yellow_p[-1],
-            yellow_p[-2],
+            yellow_p[4],
+            yellow_p[3],
             self.surface_func_max(scale=SCALE)(-FRAME_WIDTH/2, FRAME_HEIGHT/2),
             get_bound(lines_c[2], -1, 0)
         ]
@@ -371,6 +391,27 @@ class NNTransformPlane(Scene):
 
         final_decision_plane = VGroup(
             purple_fplane, red_fplane, yellow_fplane, green_fplane, blue_fplane)
+
+        # 2nd Last Decision Plane
+
+        decision_plane2 = final_decision_plane.copy()
+        for n, idx in enumerate([0, 1, 4]):
+            decision_plane2.remove(decision_plane2[idx-n])
+
+        red_p[0] = get_bound(red_blue_line, -1, 1)
+        del red_p[1]
+
+        decision_plane2.add(
+            Polygon(*red_p, color=colors[0], stroke_opacity=0,
+                    fill_opacity=plane_kwargs["opacity"])
+        )
+
+        blue_p = [red_p[3], red_p[0], self.surface_func_max(
+            scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2), green_p[3], green_p[0]]
+        decision_plane2.add(
+            Polygon(*blue_p, color=colors[3], stroke_opacity=0,
+                    fill_opacity=plane_kwargs["opacity"])
+        )
 
         self.embed()
 
