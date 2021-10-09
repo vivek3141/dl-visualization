@@ -430,7 +430,7 @@ class ShowTrainingPoint(DotsScene):
                 0.374\\
                 0.329
             \end{bmatrix}""",
-                  tex_to_color_map={"x": PINK})
+                  tex_to_color_map={"x ": PINK})
         eq1.scale(1.25)
         eq1.shift(4.5 * RIGHT + 1.5 * UP)
 
@@ -664,10 +664,12 @@ class IntroSoftmax(Scene):
 
         x1 = np.random.normal(0, 1, num_points)
         x1[-1] = 0.5
-        x1[4] = 2.2
+        x1[0] = 0.5
+        x1[4] = 1
+        x1[2] = 2.5
         x1_l = self.create_lines(x1, o, dx, stroke_width=2)
 
-        eq1 = Tex(r"\mathbf{x}", tex_to_color_map={r"\mathbf{x}": PINK})
+        eq1 = Tex(r"x", tex_to_color_map={r"x": PINK})
         eq1.scale(1.5)
         eq1.shift(3 * UP)
 
@@ -676,27 +678,29 @@ class IntroSoftmax(Scene):
         self.play(Write(eq1))
         self.wait()
 
-        self.play(Indicate(x1_l[6:10]))
+        self.play(Indicate(x1_l[4:8]))
         self.wait()
 
         maxi = np.argmax(x1)
-        x2 = [2*int(i == maxi) for i in range(num_points)]
+        x2 = [1.5*int(i == maxi) for i in range(num_points)]
         x2_l = self.create_lines(x2, o, dx, stroke_width=2)
 
-        eq2 = Tex(r"\mathrm{argmax}(\mathbf{x})", tex_to_color_map={
-                  r"\mathbf{x}": PINK, r"\mathrm{argmax}": AQUA})
+        #self.embed()
+
+        eq2 = Tex(r"\mathrm{argmax}(x)", tex_to_color_map={
+                  r"x": PINK, r"\mathrm{argmax}": AQUA})
         eq2.scale(1.5)
         eq2.shift(3 * UP)
 
         self.play(Transform(x1_l, x2_l), Transform(eq1, eq2))
         self.wait()
 
-        eq3 = Tex(r"\mathrm{softmax}({\mathbf{x}})", tex_to_color_map={
-                  r"\mathbf{x}": PINK, r"\mathrm{softmax}": AQUA})
+        eq3 = Tex(r"\mathrm{softmax}(x)", tex_to_color_map={
+                  r"x": PINK, r"\mathrm{softmax}": AQUA})
         eq3.scale(1.5)
         eq3.shift(3 * UP)
 
-        x3 = 10*softmax(x1)
+        x3 = 5*softmax(x1)
         x3_l = self.create_lines(x3, o, dx, stroke_width=2)
 
         self.play(Transform(x1_l, x3_l), Transform(eq1, eq3))
@@ -704,7 +708,7 @@ class IntroSoftmax(Scene):
 
         self.embed()
 
-    def create_lines(self, arr, o, dx, color=ORANGE, **line_kwargs):
+    def create_lines(self, arr, o, dx, color=PINK, **line_kwargs):
         grp = VGroup()
 
         for n, i in enumerate(np.linspace(0.25, 5.75, len(arr))):
