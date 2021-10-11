@@ -373,7 +373,7 @@ class NNTransformPlane(Scene):
             self.surface_func_max(i=2)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
             get_bound(yellow_z, 1, 1)
         ]
-            
+
         yellow_plane = Polygon(
             *yellow_points, **vector_plane_kwargs, color=colors[1]
         )
@@ -405,8 +405,69 @@ class NNTransformPlane(Scene):
         self.add(red_plane2, red_plane3)
 
         self.play(ReplacementTransform(red_plane2, yellow_plane))
-        self.wait()
-    
+        self.wait(10)
+
+        # Red + Yellow + Green Plane
+
+        yellow_green_line = get_plane_intersect(1, 2)
+        green_plane_eq = SCALE * np.array([*w[2], -1/SCALE, b[2]])
+        green_z = plane_intersect(green_plane_eq, z_plane)
+
+        green_points = [
+            intersection(yellow_z, yellow_green_line),
+            get_bound(yellow_green_line, 1, 1),
+            self.surface_func_max(i=3)(-FRAME_WIDTH/2, FRAME_HEIGHT/2),
+            self.surface_func_max(i=3)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2),
+            get_bound(green_z, -1, 1)
+        ]
+        green_plane = Polygon(
+            *green_points, **vector_plane_kwargs, color=colors[2])
+
+        yellow_points2 = [
+            *yellow_points[:3],
+            green_points[1],
+            green_points[0]
+        ]
+        yellow_plane2 = Polygon(
+            *yellow_points2, **vector_plane_kwargs, color=colors[1])
+
+        z_green_points = [[*i[:2], 0] for i in green_points]
+        z_green_plane = Polygon(
+            *z_green_points, fill_opacity=0, stroke_width=0)
+
+        self.play(Transform(yellow_plane, yellow_plane2),
+                  Transform(z_green_plane, green_plane))
+        self.wait(5)
+
+        # Red + Yellow + Green + Blue Plane
+
+        blue_green_line = get_plane_intersect(2, 3)
+        blue_yellow_line = get_plane_intersect(1, 3)
+        blue_red_line = get_plane_intersect(0, 3)
+
+        blue_points = [
+            get_bound(blue_red_line, -1, 1),
+            intersection(blue_red_line, blue_yellow_line),
+            intersection(blue_yellow_line, blue_green_line),
+            get_bound(blue_green_line, -1, 0),
+            self.surface_func_max(i=4)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2)
+        ]
+        blue_plane = Polygon(*blue_points, **vector_plane_kwargs, color=colors[3])
+
+        green_points2 = [
+            blue_points[2],
+            *green_points[1:3],
+            *blue_points[3:1:-1]
+        ]
+        green_plane2 = Polygon(*green_points2, **vector_plane_kwargs, color=colors[2])
+
+        red_points4 = [
+            *blue_points[0:2],
+            *red_points3[1:3],
+        ]
+        red_plane4 = Polygon(*red_points4, **vector_plane_kwargs, color=colors[0])
+
+
         self.embed()
         # Final Decision Plane
 
