@@ -261,7 +261,7 @@ class NNTransformPlane(Scene):
             "opacity": 0.65,
             "resolution": (50, 50)
         }
-        
+
         vector_plane_kwargs = {
             "stroke_width": 0,
             "fill_opacity": plane_kwargs["opacity"]
@@ -338,13 +338,14 @@ class NNTransformPlane(Scene):
         # Initial Red Plane
 
         red_line = [
-            [1, -(self.w[0][0] * 1 + self.b[0])/self.w[0][1], 0],
-            [-1, -(self.w[0][0] * -1 + self.b[0])/self.w[0][1], 0]
+            np.array([1, -(self.w[0][0] * 1 + self.b[0])/self.w[0][1], 0]),
+            np.array([-1, -(self.w[0][0] * -1 + self.b[0])/self.w[0][1], 0])
         ]
+
         y_minus = get_bound(red_line, -1, 1)
         y_plus = get_bound(red_line, 1, 1)
 
-        red = [
+        red_points = [
             y_minus,
             y_plus,
             self.surface_func_max(i=1)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
@@ -352,212 +353,61 @@ class NNTransformPlane(Scene):
         ]
 
         red_plane = Polygon(
-            *red, stroke_width=0, color=colors[0], fill_opacity=plane_kwargs["opacity"])
+            *red_points, **vector_plane_kwargs, color=colors[0]
+        )
 
-        p1 = [1, -(self.w[i][0] * 1 + self.b[i])/self.w[i][1], 0]
-        p1 = [1, -(self.w[0][0] * 1 + self.b[0])/self.w[0][1], 0]
-        p1 = np.array(p1)
-        add(Dot(p1))
-        touch()
-        remove(self.mobjects[-1])
-        p1 = [-1, -(self.w[0][0] * -1 + self.b[0])/self.w[0][1], 0]
-        p1 = [1, -(self.w[0][0] * 1 + self.b[0])/self.w[0][1], 0]
-        p1 = np.array(p1)
-        p2 = [-1, -(self.w[0][0] * -1 + self.b[0])/self.w[0][1], 0]
-        p2 = np.array(p2)
-        get_bound
-        get_bound([p1, p2], -1, 1)
-        y_minus = get_bound([p1, p2], -1, 1)
-        add(Dot(y_minus))
-        touch()
-        y_plus = get_bound([p1, p2], 1, 1)
-        add(Dot(y_plus))
-        touch()
-        red = [y_minus, y_plus, 0, 0]
-        red[2] = self.surface_func_max(i=1)(FRAME_WIDTH/2, FRAME_HEIGHT/2)
-        red
-        red[3] = self.surface_func_max(i=1)(FRAME_WIDTH/2, -FRAME_HEIGHT/2)
-        red
-        add(Polygon(*red))
-        touch()
-        remove(self.mobjects[-2:])
-        remove(self.mobjects[-1])
-        remove(self.mobjects[-1])
-        remove(self.mobjects[-1])
-        remove(p)
-        red_plane = Polygon(
-            *red, stroke_width=0, color=colors[0], fill_opacity=plane_kwargs["opacity"])
-        add(red_plane)
-        touchc()
-        touch()
-        yellow_p = []
-        red_yellow = get_plane_intersect(0, 1)
-        red_yellow
-        red_p
-        red_p = SCALE * np.array([*w[i1], -1/SCALE, b[i1]])
-        red_p = SCALE * np.array([*w[0], -1/SCALE, b[0]])
-        red_p
-        z_p = np.array([0, 0, 1, 0])
-        red_z = intersection(red_p, z_p)
-        red_z = plane_intersection(red_p, z_p)
-        red_z = plane_intersect(red_p, z_p)
-        red_z
-        add(Line(*red_z))
-        remove(self.mobjects[-1])
-        yellow_p1 = intersection(red_z, red_yellow)
-        add(p[1])
-        touch()
-        add(Dot(yellow_p1))
-        remove(self.mobjects[-1])
-        yellow_p
-        yellow_p.append(yellow_p1)
-        yellow_p.append(get_bound(red_yellow, 1, 0))
-        yellow_p.append(self.surface_func_max(
-            i=2)(FRAME_WIDTH/2, FRAME_HEIGHT/2))
-        red_z
-        yellow_p.append(get_bound(red_z, 1, 1))
-        add(Polygon(yellow_p))
-        add(Polygon(*yellow_p))
-        touch()
-        touch()
-        remove(self.mobjects[-1])
-        yellow_p = SCALE * np.array([*w[1], -1/SCALE, b[1]])
-        yellow_z = plane_intersect(yellow_p, z_p)
-        yellow_p[-1] = get_bound(yellow_z, 1, 1)
-        yellow_p
-        yellow_points = []
-        yellow_points.append(yellow_p1)
-        yellow_points.append(get_bound(red_yellow, 1, 0))
-        yellow_points.append(self.surface_func_max(
-            i=2)(FRAME_WIDTH/2, FRAME_HEIGHT/2))
-        yellow_points
-        yellow_points.append(get_bound(yellow_z, 1, 1))
-        add(Polygon(*yellow_points))
-        touch()
-        touch()
-        remove(p[2])
-        remove(p[1])
-        remove(self.mobjects[-1])
-        yellow_p = Polygon(
-            *yellow_points, fill_opacity=plane_kwargs["opacity"], stroke_opacity=0, color=colors[1])
-        add(yellow_p)
-        touch()
-        red
-        add(Line(*red[:2]))
-        yellow
-        yellow_p
-        yellow_points
-        yellow_points[-1:1]
-        yellow_points[1, -1]
-        add(Line(yellow_points[-1], yellow_points[1]))
-        add(Line(yellow_points[-1], yellow_points[0]))
-        remove(self.mobjects[-2])
-        touch()
-        touch()
-        touch()
-        red_yellow
-        red_plane2
-        red_p2
-        red_p2 = []
-        check
-        red
-        red_p
-        red_p2.append(red[1])
-        red_p2.append(self.surface_func_max(
-            i=1)(-FRAME_WIDTH/2, FRAME_HEIGHT/2))
-        red_p2.append(get_bound(red_yellow, -1, 0))
-        red_p2
-        red_p2.append(intersection(
-            red[:2], [yellow_points[-1], yellow_points[0]]))
-        add(Polygon(red_p2))
-        add(Polygon(*red_p2))
-        touch()
-        remove(red_p2)
-        remove(self.mobjects[-1])
-        red_p2
-        red_p2[1] = self.surface_plane_max(i=1)(-FRAME_WIDTH/2, FRAME_HEIGHT/2)
-        red_p2[1] = self.surface_func_max(i=1)(-FRAME_WIDTH/2, FRAME_HEIGHT/2)
-        red_p2
-        red_p2[1] = self.surface_func_max(i=2)(-FRAME_WIDTH/2, FRAME_HEIGHT/2)
-        red_p
-        red_p2
-        touch()
-        red
-        red_p2 = []
-        red_p2.append(red[0])
-        red_p2.append(self.surface_func_max(
-            i=1)(FRAME_WIDTH/2, -FRAME_HEIGHT/2))
-        red_p2.append(intersection(
-            red[:2], [yellow_points[-1], yellow_points[0]]))
-        red_p2.append(get_bound(red_yellow, 1, 0))
-        add(Polygon(*red_p2))
-        red_p2
-        red_p2.append(red_p2[-2])
-        red_p2
-        del red_p2[-3]
-        remove(self.mobjects[-1])
-        add(Polygon(*red_p2))
-        remove(self.mobjects[-1])
-        touch()
-        red_p3 = []
-        add(Polygon(*red_p2))
-        remove(self.mobjects[-1])
-        red_p2
-        red_p3.append(red_p2[-1])
-        red_p3.append(red_p2[-2])
-        red_p3.append(self.surface_func_max(
-            i=1)(FRAME_WIDTH/2, FRAME_HEIGHT/2))
-        red_p3.append(get_bound(red[:2], 1, 1))
-        add(Polygon(red_p3))
-        add(Polygon(*red_p3))
-        touch()
-        remove(self.mobjects[-1])
-        remove(yellow_p)
-        remove(self.mobjects[-1])
-        remove(self.mobjects[-1])
-        remove(self.mobjects[-1])
-        red_plane2 = Polygon(*red_p2, stroke_width=0,
-                             color=colors[0], fill_opacity=0.65)
-        red_plane3 = Polygon(*red_p3, stroke_width=0,
-                             color=colors[0], fill_opacity=0.65)
-        add(red_plane2, red_plane3)
-        touch()
-        remove(self.mobjects[-2:])
-        remove(self.mobjects[-1])
-        remove(self.mobjects[-1])
-        add(red_p)
-        red_plane
-        add(red_plane)
-        red_group = VGroup(red_plane1, red_plane2)
-        red_plane1
-        red_plane2
-        red_plane3
-        red_group = VGroup(red_plane2, red_plane3)
-        red_group
-        play(Transform(red_plane, red_group))
-        remove(self.mobjects[-1])
-        play(Write(red_grp))
-        play(Write(red_group))
-        self.remove(self.mobjects[-1])
+        # Red + Yellow intersection
+
+        red_yellow_line = get_plane_intersect(0, 1)
+        z_plane = np.array([0, 0, 1, 0])
+
+        red_plane_eq = SCALE * np.array([*w[0], -1/SCALE, b[0]])
+        red_z = plane_intersect(red_plane_eq, z_plane)
+
+        yellow_plane_eq = SCALE * np.array([*w[1], -1/SCALE, b[1]])
+        yellow_z = plane_intersect(yellow_plane_eq, z_plane)
+
+        yellow_points = [
+            intersection(red_z, red_yellow_line),
+            get_bound(red_yellow_line, 1, 0),
+            self.surface_func_max(i=2)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
+            get_bound(yellow_z, 1, 1)
+        ]
+            
+        yellow_plane = Polygon(
+            *yellow_points, **vector_plane_kwargs, color=colors[1]
+        )
+
+        red_points2 = [
+            intersection(red_z, red_yellow_line),
+            get_bound(red_yellow_line, 1, 0),
+            self.surface_func_max(i=1)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
+            get_bound(red_line, 1, 1)
+        ]
+        red_plane2 = Polygon(
+            *red_points2, **vector_plane_kwargs, color=colors[0]
+        )
+
+        red_points3 = [
+            intersection(red_z, red_yellow_line),
+            get_bound(red_yellow_line, 1, 0),
+            self.surface_func_max(i=1)(FRAME_WIDTH/2, -FRAME_HEIGHT/2),
+            get_bound(red_z, -1, 1),
+        ]
+        red_plane3 = Polygon(
+            *red_points3, **vector_plane_kwargs, color=colors[0]
+        )
+
         self.play(Write(red_plane))
-        red_plane = Polygon(
-            *red, stroke_width=0, color=colors[0], fill_opacity=plane_kwargs["opacity"])
-        self.play(Write(red_plane))
-        self.remove(self.mobjects[-1])
-        self.remove(self.mobjects[-1])
-        self.play(Write(red_plane))
+        self.wait(5)
+
+        self.remove(red_plane)
         self.add(red_plane2, red_plane3)
-        remove(red_plane)
-        touch()
-        self.play(Transform(red_plane3, yellow_plane))
-        yellow_plane
-        yellow_p
-        self.play(Transform(red_plane3, yellow_p))
-        touch()
-        add(p[2])
-        touch()
-        touch()
 
+        self.play(ReplacementTransform(red_plane2, yellow_plane))
+        self.wait()
+    
+        self.embed()
         # Final Decision Plane
 
         decision_planes = VGroup()
