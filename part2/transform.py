@@ -419,8 +419,6 @@ class NNTransformPlane(Scene):
         )
         self.wait(10)
 
-        self.embed()
-
         # Red + Yellow + Green Plane
 
         yellow_green_line = get_plane_intersect(1, 2)
@@ -449,11 +447,28 @@ class NNTransformPlane(Scene):
         z_green_plane = Polygon(
             *z_green_points, fill_opacity=0, stroke_width=0)
 
+        yellow_line2 = Line(
+            intersection(red_z, red_yellow_line),
+            intersection(yellow_z, yellow_green_line),
+            stroke_width=6,
+            color=colors[1]
+        )
+        green_line = Line(
+            intersection(yellow_z, yellow_green_line),
+            get_bound(green_z, -1, 1),
+            stroke_width=6,
+            color=colors[2]
+        )
+
         self.play(
             ReplacementTransform(yellow_plane, yellow_plane2),
-            ReplacementTransform(z_green_plane, green_plane)
+            ReplacementTransform(z_green_plane, green_plane),
+            ReplacementTransform(yellow_line1, yellow_line2),
+            Write(green_line)
         )
         self.wait(5)
+
+        self.embed()
 
         # Red + Yellow + Green + Blue Plane
 
@@ -500,6 +515,7 @@ class NNTransformPlane(Scene):
             *z_blue_points, fill_opacity=0, stroke_width=0)
 
         self.play(
+            Uncreate(VGroup(red_line1, yellow_line2, green_line)),
             ReplacementTransform(red_plane3, red_plane4),
             ReplacementTransform(green_plane, green_plane2),
             ReplacementTransform(z_blue_plane, blue_plane),
