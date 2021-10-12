@@ -466,9 +466,9 @@ class NNTransformPlane(Scene):
             *red_points4, **vector_plane_kwargs, color=colors[0])
 
         yellow_points3 = [
+            blue_points[2],
             blue_points[1],
-            *yellow_points2[1:4],
-            blue_points[2]
+            *yellow_points2[2:]
         ]
         yellow_plane3 = Polygon(
             *yellow_points3, **vector_plane_kwargs, color=colors[1])
@@ -512,19 +512,17 @@ class NNTransformPlane(Scene):
         ]
         blue_plane2 = Polygon(
             *blue_points2, **vector_plane_kwargs, color=colors[3])
-        
+
         z_purple_points = [[*i[:2], 0] for i in purple_points]
         z_purple_plane = Polygon(
             *z_purple_points, fill_opacity=0, stroke_width=0)
-        
+
         self.play(
             ReplacementTransform(blue_plane, blue_plane2),
             ReplacementTransform(red_plane4, red_plane5),
             ReplacementTransform(z_purple_plane, purple_plane)
         )
         self.wait(5)
-
-        self.embed()
 
         # self.embed()
 
@@ -585,25 +583,25 @@ class NNTransformPlane(Scene):
         #             fill_opacity=plane_kwargs["opacity"])
         # )
 
-        self.embed()
+        # self.embed()
 
-        # self.play(ShowCreation(red_plane1))
+        # # self.play(ShowCreation(red_plane1))
+        # # self.wait(5)
+
+        # self.play(ShowCreation(p[0]))
         # self.wait(5)
 
-        self.play(ShowCreation(p[0]))
-        self.wait(5)
+        # self.play(ShowCreation(yellow_plane))
+        # self.wait(5)
 
-        self.play(ShowCreation(yellow_plane))
-        self.wait(5)
+        # self.play(Uncreate(yellow_plane), ReplacementTransform(p[0], p[1]))
+        # self.wait(5)
 
-        self.play(Uncreate(yellow_plane), ReplacementTransform(p[0], p[1]))
-        self.wait(5)
+        # for i in range(1, 4):
+        #     self.play(ReplacementTransform(p[i], p[i+1]))
+        #     self.wait(5)
 
-        for i in range(1, 4):
-            self.play(ReplacementTransform(p[i], p[i+1]))
-            self.wait(5)
-
-        self.wait(10)
+        # self.wait(10)
 
         rotate = False
         self.play(
@@ -614,7 +612,7 @@ class NNTransformPlane(Scene):
 
         rotate = True
         self.play(frame.set_phi, 0.35*PI)
-        self.play(Uncreate(p[4]))
+        self.play(Uncreate(VGroup(red_plane5, yellow_plane3, green_plane2, blue_plane2, purple_plane)))
         self.wait()
 
         # surf = TexturedSurface(
