@@ -453,6 +453,7 @@ class NNTransformPlane(Scene):
             stroke_width=6,
             color=colors[1]
         )
+
         green_line = Line(
             intersection(yellow_z, yellow_green_line),
             get_bound(green_z, -1, 1),
@@ -467,8 +468,6 @@ class NNTransformPlane(Scene):
             Write(green_line)
         )
         self.wait(5)
-
-        self.embed()
 
         # Red + Yellow + Green + Blue Plane
 
