@@ -174,7 +174,7 @@ class NNTransformPlane(Scene):
         self.play(Write(final_dots))
         self.wait()
 
-        self.play(frame.set_phi, 0.35*PI)
+        self.play(frame.set_phi, 0.25*PI)
 
         rotate = True
         frame.add_updater(
@@ -435,8 +435,10 @@ class NNTransformPlane(Scene):
         z_green_plane = Polygon(
             *z_green_points, fill_opacity=0, stroke_width=0)
 
-        self.play(Transform(yellow_plane, yellow_plane2),
-                  Transform(z_green_plane, green_plane))
+        self.play(
+            ReplacementTransform(yellow_plane, yellow_plane2),
+            ReplacementTransform(z_green_plane, green_plane)
+        )
         self.wait(5)
 
         # Red + Yellow + Green + Blue Plane
@@ -452,21 +454,42 @@ class NNTransformPlane(Scene):
             get_bound(blue_green_line, -1, 0),
             self.surface_func_max(i=4)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2)
         ]
-        blue_plane = Polygon(*blue_points, **vector_plane_kwargs, color=colors[3])
+        blue_plane = Polygon(
+            *blue_points, **vector_plane_kwargs, color=colors[3])
 
         green_points2 = [
             blue_points[2],
             *green_points[1:3],
             *blue_points[3:1:-1]
         ]
-        green_plane2 = Polygon(*green_points2, **vector_plane_kwargs, color=colors[2])
+        green_plane2 = Polygon(
+            *green_points2, **vector_plane_kwargs, color=colors[2])
 
         red_points4 = [
             *blue_points[0:2],
             *red_points3[1:3],
         ]
-        red_plane4 = Polygon(*red_points4, **vector_plane_kwargs, color=colors[0])
+        red_plane4 = Polygon(
+            *red_points4, **vector_plane_kwargs, color=colors[0])
 
+        yellow_points3 = [
+            *blue_points[1:3],
+            *yellow_points2[1:4][::-1]
+        ]
+        yellow_plane3 = Polygon(
+            *yellow_points3, **vector_plane_kwargs, color=colors[1])
+
+        z_blue_points = [[*i[:2], 0] for i in blue_points]
+        z_blue_plane = Polygon(
+            *z_blue_points, fill_opacity=0, stroke_width=0)
+
+        self.play(
+            ReplacementTransform(red_plane3, red_plane4),
+            ReplacementTransform(green_plane, green_plane2),
+            ReplacementTransform(z_blue_plane, blue_plane),
+            ReplacementTransform(yellow_plane2, yellow_plane3)
+        )
+        self.wait(5)
 
         self.embed()
         # Final Decision Plane
