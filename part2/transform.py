@@ -267,28 +267,6 @@ class NNTransformPlane(Scene):
             "fill_opacity": plane_kwargs["opacity"]
         }
 
-        red_plane1 = self.surface_func(
-            i=0, color=colors[0], func=lambda x: x, **plane_kwargs
-        )
-        red_plane1 = TexturedSurface(red_plane1, "./img/plane0.png")
-
-        yellow_plane = self.surface_func(
-            i=1, color=colors[1], func=lambda x: x, **plane_kwargs
-        )
-
-        p = SGroup()
-
-        for i in range(1, 6):
-            plane = ParametricSurface(
-                self.surface_func_max(i=i, scale=SCALE, func=lambda x: max(x)),
-                **plane_kwargs
-            )
-            surf = TexturedSurface(
-                plane,
-                f"./img/plane{i-1}.png"
-            )
-            p.add(surf)
-
         def plane_intersect(a, b):
             a_vec, b_vec = np.array(a[:3]), np.array(b[:3])
 
@@ -337,6 +315,17 @@ class NNTransformPlane(Scene):
         y_minus = get_bound(red_line, -1, 1)
         y_plus = get_bound(red_line, 1, 1)
 
+        red_points0 = [
+            self.surface_func_max(i=1)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2),
+            self.surface_func_max(i=1)(-FRAME_WIDTH/2, FRAME_HEIGHT/2),
+            self.surface_func_max(i=1)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
+            self.surface_func_max(i=1)(FRAME_WIDTH/2, -FRAME_HEIGHT/2)
+        ]
+
+        red_plane0 = Polygon(
+            *red_points0, **vector_plane_kwargs, color=colors[0]
+        )
+
         red_points = [
             y_minus,
             y_plus,
@@ -347,6 +336,19 @@ class NNTransformPlane(Scene):
         red_plane = Polygon(
             *red_points, **vector_plane_kwargs, color=colors[0]
         )
+
+        red_line0 = Line(
+            get_bound(red_line, -1, 1),
+            get_bound(red_line, 1, 1),
+            stroke_width=6,
+            color=colors[0]
+        )
+
+        self.play(
+            Write(red_plane0),
+            Write(red_line0)
+        )
+        self.wait(5)
 
         # Red + Yellow intersection
 
@@ -390,14 +392,34 @@ class NNTransformPlane(Scene):
             *red_points3, **vector_plane_kwargs, color=colors[0]
         )
 
-        self.play(Write(red_plane))
+        red_line1 = Line(
+            get_bound(red_line, -1, 1),
+            intersection(red_z, red_yellow_line),
+            stroke_width=6,
+            color=colors[0]
+        )
+
+        yellow_line1 = Line(
+            intersection(red_z, red_yellow_line),
+            get_bound(yellow_z, 1, 1),
+            stroke_width=6,
+            color=colors[1]
+        )
+
+        self.play(ReplacementTransform(red_plane0, red_plane))
         self.wait(5)
 
         self.remove(red_plane)
         self.add(red_plane2, red_plane3)
 
-        self.play(ReplacementTransform(red_plane2, yellow_plane))
+        self.play(
+            ReplacementTransform(red_plane2, yellow_plane),
+            ReplacementTransform(red_line0, red_line1),
+            Write(yellow_line1)
+        )
         self.wait(10)
+
+        self.embed()
 
         # Red + Yellow + Green Plane
 
@@ -612,7 +634,8 @@ class NNTransformPlane(Scene):
 
         rotate = True
         self.play(frame.set_phi, 0.35*PI)
-        self.play(Uncreate(VGroup(red_plane5, yellow_plane3, green_plane2, blue_plane2, purple_plane)))
+        self.play(Uncreate(VGroup(red_plane5, yellow_plane3,
+                  green_plane2, blue_plane2, purple_plane)))
         self.wait()
 
         # surf = TexturedSurface(
@@ -656,7 +679,7 @@ class NNTransformPlane(Scene):
     def surface_func(self, i=0, scale=3, func=sigmoid, **kwargs):
         return ParametricSurface(lambda u, v: [u, v, scale * func((np.array([[u, v]]).dot(self.w.T) + self.b)[0][i])], **kwargs)
 
-    @staticmethod
+    @ staticmethod
     def get_plane_func(w0, w1, b):
         return lambda u, v: [u, v, w0*u+w1*v+b]
 
