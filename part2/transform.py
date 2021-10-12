@@ -466,15 +466,17 @@ class NNTransformPlane(Scene):
             *green_points2, **vector_plane_kwargs, color=colors[2])
 
         red_points4 = [
-            *blue_points[0:2],
+            blue_points[1],
             *red_points3[1:3],
+            blue_points[0]
         ]
         red_plane4 = Polygon(
             *red_points4, **vector_plane_kwargs, color=colors[0])
 
         yellow_points3 = [
-            *blue_points[1:3],
-            *yellow_points2[1:4][::-1]
+            blue_points[1],
+            *yellow_points2[1:4],
+            blue_points[2]
         ]
         yellow_plane3 = Polygon(
             *yellow_points3, **vector_plane_kwargs, color=colors[1])
@@ -491,8 +493,8 @@ class NNTransformPlane(Scene):
         )
         self.wait(5)
 
-        self.embed()
         # Final Decision Plane
+        # Note - I wrote this code before the other 4 planes, which is why I redefine a lot of stuff
 
         decision_planes = VGroup()
 
@@ -552,26 +554,28 @@ class NNTransformPlane(Scene):
         final_decision_plane = VGroup(
             purple_fplane, red_fplane, yellow_fplane, green_fplane, blue_fplane)
 
-        # 2nd Last Decision Plane
+        self.embed()
 
-        decision_plane2 = final_decision_plane.copy()
-        for n, idx in enumerate([0, 1, 4]):
-            decision_plane2.remove(decision_plane2[idx-n])
+        # # 2nd Last Decision Plane
 
-        red_p[0] = get_bound(red_blue_line, -1, 1)
-        del red_p[1]
+        # decision_plane2 = final_decision_plane.copy()
+        # for n, idx in enumerate([0, 1, 4]):
+        #     decision_plane2.remove(decision_plane2[idx-n])
 
-        decision_plane2.add(
-            Polygon(*red_p, color=colors[0], stroke_opacity=0,
-                    fill_opacity=plane_kwargs["opacity"])
-        )
+        # red_p[0] = get_bound(red_blue_line, -1, 1)
+        # del red_p[1]
 
-        blue_p = [red_p[3], red_p[0], self.surface_func_max(
-            scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2), green_p[3], green_p[0]]
-        decision_plane2.add(
-            Polygon(*blue_p, color=colors[3], stroke_opacity=0,
-                    fill_opacity=plane_kwargs["opacity"])
-        )
+        # decision_plane2.add(
+        #     Polygon(*red_p, color=colors[0], stroke_opacity=0,
+        #             fill_opacity=plane_kwargs["opacity"])
+        # )
+
+        # blue_p = [red_p[3], red_p[0], self.surface_func_max(
+        #     scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2), green_p[3], green_p[0]]
+        # decision_plane2.add(
+        #     Polygon(*blue_p, color=colors[3], stroke_opacity=0,
+        #             fill_opacity=plane_kwargs["opacity"])
+        # )
 
         self.embed()
 
