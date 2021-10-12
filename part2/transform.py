@@ -494,31 +494,26 @@ class NNTransformPlane(Scene):
         self.wait(5)
 
         # Final Decision Plane
-        # Note - I wrote this code before the other 4 planes, which is why I redefine a lot of stuff
-
-        decision_planes = VGroup()
 
         red_purple_line = get_plane_intersect(0, 4)
-        red_blue_line = get_plane_intersect(0, 3)
-        yellow_blue_line = get_plane_intersect(1, 3)
+        blue_purple_line = get_plane_intersect(3, 4)
 
-        purple_p = [
-            intersection(red_purple_line, lines_c[3]),
-            get_bound(red_purple_line, -1, 1),
-            get_bound(lines_c[3], -1, 1)
+        purple_points = [
+            intersection(red_purple_line, blue_purple_line),
+            get_bound(blue_purple_line, -1, 1),
+            get_bound(red_purple_line, -1, 1)
         ]
-        purple_fplane = Polygon(
-            *purple_p, color=colors[4], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        purple_plane = Polygon(
+            *purple_points, **vector_plane_kwargs, color=colors[4])
 
-        red_p = [
-            purple_p[0],
-            purple_p[1],
-            self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, -FRAME_HEIGHT/2),
-            get_bound(lines_c[0], 1, 0),
-            intersection(lines_c[0], red_blue_line)
+        red_points5 = [
+            *red_points4[:-1],
+            *purple_points[0:2][::-1]
         ]
-        red_fplane = Polygon(
-            *red_p, color=colors[0], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        red_plane5 = Polygon(
+            *red_points5, **vector_plane_kwargs, color=colors[0])
+
+        self.embed()
 
         yellow_p = [
             red_p[4],
