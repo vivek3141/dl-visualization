@@ -323,14 +323,6 @@ class NNTransformPlane(Scene):
             self.wait(0.5)
             self.add(obj)
 
-        lines = VGroup()
-        lines_c = []
-
-        for i in range(4):
-            i_points = get_plane_intersect(i, i+1)
-            lines_c.append([i_points[0], i_points[1]])
-            lines.add(Line(i_points[0], i_points[1]))
-
         """
         Following this comment, is by far, the worst code I've ever written in my life. Please clean your eyes before and after viewing this. Thanks!
         """
@@ -424,9 +416,9 @@ class NNTransformPlane(Scene):
             *green_points, **vector_plane_kwargs, color=colors[2])
 
         yellow_points2 = [
+            green_points[0],
             *yellow_points[:3],
-            green_points[1],
-            green_points[0]
+            green_points[1]
         ]
         yellow_plane2 = Polygon(
             *yellow_points2, **vector_plane_kwargs, color=colors[1])
@@ -500,8 +492,8 @@ class NNTransformPlane(Scene):
 
         purple_points = [
             intersection(red_purple_line, blue_purple_line),
+            get_bound(red_purple_line, -1, 1),
             get_bound(blue_purple_line, -1, 1),
-            get_bound(red_purple_line, -1, 1)
         ]
         purple_plane = Polygon(
             *purple_points, **vector_plane_kwargs, color=colors[4])
@@ -513,43 +505,64 @@ class NNTransformPlane(Scene):
         red_plane5 = Polygon(
             *red_points5, **vector_plane_kwargs, color=colors[0])
 
+        blue_points2 = [
+            purple_points[2],
+            purple_points[0],
+            *blue_points[1:]
+        ]
+        blue_plane2 = Polygon(
+            *blue_points2, **vector_plane_kwargs, color=colors[3])
+        
+        z_purple_points = [[*i[:2], 0] for i in purple_points]
+        z_purple_plane = Polygon(
+            *z_purple_points, fill_opacity=0, stroke_width=0)
+        
+        self.play(
+            ReplacementTransform(blue_plane, blue_plane2),
+            ReplacementTransform(red_plane4, red_plane5),
+            ReplacementTransform(z_purple_plane, purple_plane)
+        )
+        self.wait(5)
+
         self.embed()
 
-        yellow_p = [
-            red_p[4],
-            red_p[3],
-            self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
-            get_bound(lines_c[1], 1, 1),
-            intersection(yellow_blue_line, lines_c[2]),
-        ]
-        yellow_fplane = Polygon(
-            *yellow_p, color=colors[1], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        # self.embed()
 
-        green_p = [
-            yellow_p[4],
-            yellow_p[3],
-            self.surface_func_max(scale=SCALE)(-FRAME_WIDTH/2, FRAME_HEIGHT/2),
-            get_bound(lines_c[2], -1, 0)
-        ]
-        green_fplane = Polygon(
-            *green_p, color=colors[2], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        # yellow_p = [
+        #     red_p[4],
+        #     red_p[3],
+        #     self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
+        #     get_bound(lines_c[1], 1, 1),
+        #     intersection(yellow_blue_line, lines_c[2]),
+        # ]
+        # yellow_fplane = Polygon(
+        #     *yellow_p, color=colors[1], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
 
-        blue_p = [
-            green_p[0],
-            green_p[3],
-            self.surface_func_max(
-                scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2),
-            purple_p[2],
-            purple_p[0],
-            red_p[4]
-        ]
-        blue_fplane = Polygon(
-            *blue_p, color=colors[3], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
+        # green_p = [
+        #     yellow_p[4],
+        #     yellow_p[3],
+        #     self.surface_func_max(scale=SCALE)(-FRAME_WIDTH/2, FRAME_HEIGHT/2),
+        #     get_bound(lines_c[2], -1, 0)
+        # ]
+        # green_fplane = Polygon(
+        #     *green_p, color=colors[2], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
 
-        final_decision_plane = VGroup(
-            purple_fplane, red_fplane, yellow_fplane, green_fplane, blue_fplane)
+        # blue_p = [
+        #     green_p[0],
+        #     green_p[3],
+        #     self.surface_func_max(
+        #         scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2),
+        #     purple_p[2],
+        #     purple_p[0],
+        #     red_p[4]
+        # ]
+        # blue_fplane = Polygon(
+        #     *blue_p, color=colors[3], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
 
-        self.embed()
+        # final_decision_plane = VGroup(
+        #     purple_fplane, red_fplane, yellow_fplane, green_fplane, blue_fplane)
+
+        # self.embed()
 
         # # 2nd Last Decision Plane
 
