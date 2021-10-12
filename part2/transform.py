@@ -199,59 +199,6 @@ class NNTransformPlane(Scene):
             y = np.argmax(np.array([[x[0], x[1]]]).dot(w.T) + b)
             return colors_rgb[y]
 
-        # p = SGroup()
-
-        # def get_plane_points(i=0, scale=3/5, u_range=(-4, 4), v_range=(-4, 4)):
-        #     def get_x(y):
-        #         return -(self.w[i][1] * y + self.b[i])/self.w[i][0]
-
-        #     def get_y(x):
-        #         return -(self.w[i][0] * x + self.b[i])/self.w[i][1]
-
-        #     def p_func(u, v):
-        #         return [u, v, self.w[i][0] * u + self.w[i][1] * v + self.b[i]]
-
-        #     points = []
-        #     end = []
-
-        #     x = get_x(v_range[0])
-        #     if u_range[0] <= x <= u_range[1]:
-        #         points.append([x, v_range[0], 0])
-        #         end.append(max(
-        #             p_func(u_range[0], v_range[0]),
-        #             p_func(u_range[1], v_range[0]),
-        #             key=lambda x: x[-1]))
-        #     else:
-        #         points.append([u_range[0], get_y(u_range[0]), 0])
-        #         end.append(max(
-        #             p_func(u_range[0], v_range[0]),
-        #             p_func(u_range[0], v_range[1]),
-        #             key=lambda x: x[-1]))
-
-        #     x = get_x(v_range[1])
-        #     if u_range[0] <= x <= u_range[1]:
-        #         points.append([x, v_range[1], 0])
-        #         end.append(max(
-        #             p_func(u_range[0], v_range[1]),
-        #             p_func(u_range[1], v_range[1]),
-        #             key=lambda x: x[-1]))
-        #     else:
-        #         points.append([u_range[1], get_y(u_range[1]), 0])
-        #         end.append(max(
-        #             p_func(u_range[1], v_range[0]),
-        #             p_func(u_range[1], v_range[1]),
-        #             key=lambda x: x[-1]))
-
-        #     points += end[::-1]
-        #     return [[*points[i][:2], scale*points[i][2]] for i in range(4)]
-
-        #     self.w[0][0] * u + self.w[0][1] * v + self.b[0]
-
-        # for i in range(5):
-        #     plane = self.surface_func(i=i, scale=3/5, func=lambda x: max(
-        #         x, 0), u_range=(-8, 8), v_range=(-4, 4), opacity=0.5, color=colors[i])
-        #     p.add(plane)
-
         SCALE = 0.4
 
         plane_kwargs = {
@@ -561,89 +508,10 @@ class NNTransformPlane(Scene):
         )
         self.wait(5)
 
-        # self.embed()
-
-        # yellow_p = [
-        #     red_p[4],
-        #     red_p[3],
-        #     self.surface_func_max(scale=SCALE)(FRAME_WIDTH/2, FRAME_HEIGHT/2),
-        #     get_bound(lines_c[1], 1, 1),
-        #     intersection(yellow_blue_line, lines_c[2]),
-        # ]
-        # yellow_fplane = Polygon(
-        #     *yellow_p, color=colors[1], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
-
-        # green_p = [
-        #     yellow_p[4],
-        #     yellow_p[3],
-        #     self.surface_func_max(scale=SCALE)(-FRAME_WIDTH/2, FRAME_HEIGHT/2),
-        #     get_bound(lines_c[2], -1, 0)
-        # ]
-        # green_fplane = Polygon(
-        #     *green_p, color=colors[2], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
-
-        # blue_p = [
-        #     green_p[0],
-        #     green_p[3],
-        #     self.surface_func_max(
-        #         scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2),
-        #     purple_p[2],
-        #     purple_p[0],
-        #     red_p[4]
-        # ]
-        # blue_fplane = Polygon(
-        #     *blue_p, color=colors[3], stroke_opacity=0, fill_opacity=plane_kwargs["opacity"])
-
-        # final_decision_plane = VGroup(
-        #     purple_fplane, red_fplane, yellow_fplane, green_fplane, blue_fplane)
-
-        # self.embed()
-
-        # # 2nd Last Decision Plane
-
-        # decision_plane2 = final_decision_plane.copy()
-        # for n, idx in enumerate([0, 1, 4]):
-        #     decision_plane2.remove(decision_plane2[idx-n])
-
-        # red_p[0] = get_bound(red_blue_line, -1, 1)
-        # del red_p[1]
-
-        # decision_plane2.add(
-        #     Polygon(*red_p, color=colors[0], stroke_opacity=0,
-        #             fill_opacity=plane_kwargs["opacity"])
-        # )
-
-        # blue_p = [red_p[3], red_p[0], self.surface_func_max(
-        #     scale=SCALE)(-FRAME_WIDTH/2, -FRAME_HEIGHT/2), green_p[3], green_p[0]]
-        # decision_plane2.add(
-        #     Polygon(*blue_p, color=colors[3], stroke_opacity=0,
-        #             fill_opacity=plane_kwargs["opacity"])
-        # )
-
-        # self.embed()
-
-        # # self.play(ShowCreation(red_plane1))
-        # # self.wait(5)
-
-        # self.play(ShowCreation(p[0]))
-        # self.wait(5)
-
-        # self.play(ShowCreation(yellow_plane))
-        # self.wait(5)
-
-        # self.play(Uncreate(yellow_plane), ReplacementTransform(p[0], p[1]))
-        # self.wait(5)
-
-        # for i in range(1, 4):
-        #     self.play(ReplacementTransform(p[i], p[i+1]))
-        #     self.wait(5)
-
-        # self.wait(10)
-
         rotate = False
         self.play(
             frame.set_phi, 0,
-            frame.set_theta, 0
+            frame.set_theta, -1 * TAU
         )
         self.wait()
 
@@ -652,16 +520,6 @@ class NNTransformPlane(Scene):
         self.play(Uncreate(VGroup(red_plane5, yellow_plane3,
                   green_plane2, blue_plane2, purple_plane)))
         self.wait()
-
-        # surf = TexturedSurface(
-        #     plane,
-        #     "/Users/vivek/python/nn-visualization/part2/output_decisions.png"
-        # )
-
-        # for i in range(5):
-        #     plane = Polygon(*get_plane_points(i=i), fill_opacity=0.5,
-        #                     stroke_opacity=1, stroke_color=WHITE, fill_color=colors[i])
-        #     p.add(plane)
 
         cp = s[0].copy()
 
@@ -679,7 +537,7 @@ class NNTransformPlane(Scene):
         rotate = False
         self.play(
             frame.set_phi, 0,
-            frame.set_theta, 0
+            frame.set_theta, -2 * TAU
         )
         self.wait()
 
@@ -768,54 +626,3 @@ class NNTransformPlane(Scene):
                 self.update_frame()
         except KeyboardInterrupt:
             self.unlock_mobject_data()
-
-
-class Test(NNTransformPlane):
-    def construct(self):
-        frame = self.camera.frame
-        frame.set_phi(0.35*PI)
-        plane_kwargs = {
-            "scale": 0.5,
-            "u_range": (-FRAME_WIDTH/2, FRAME_WIDTH/2),
-            "v_range": (-FRAME_HEIGHT/2, FRAME_HEIGHT/2),
-            "opacity": 0.65,
-        }
-
-        w = model[3].weight.detach().numpy()
-        b = model[3].bias.detach().numpy()
-        Camera
-
-        self.w = w
-        self.b = b
-
-        red_plane1 = self.surface_func(
-            i=0, color=colors[0], func=lambda x: x, **plane_kwargs
-        )
-        red_plane2 = self.surface_func(
-            i=0, color=colors[0], func=relu, **plane_kwargs
-        )
-
-        yellow_plane1 = self.surface_func(
-            i=1, color=colors[1], func=lambda x: x, **plane_kwargs
-        )
-        yellow_plane2 = self.surface_func(
-            i=1, color=colors[1], func=relu, **plane_kwargs
-        )
-
-        p = SGroup()
-
-        for i in range(1, 6):
-            plane = ParametricSurface(
-                self.surface_func_max(i=i),
-                resolution=(128, 128),
-                **plane_kwargs
-            )
-            surf = TexturedSurface(
-                plane,
-                f"./img/plane{i-1}.png"
-            )
-            p.add(surf)
-
-        self.play(ShowCreation(p[1]))
-        self.play(FadeTransform(p[1], p[2]))
-        self.wait()
