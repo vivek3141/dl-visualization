@@ -156,7 +156,12 @@ class NNTransformPlane(Scene):
                 "stroke_width": 1,
             },
             "faded_line_ratio": 1
-        }
+        },
+        "camera_config": {
+            "samples": 1,
+            "anti_alias_width": 1.5
+        },
+        "always_update_mobjects": True,
     }
 
     def construct(self):
@@ -167,10 +172,10 @@ class NNTransformPlane(Scene):
 
         frame = self.camera.frame
 
-        f_plane.prepare_for_nonlinear_transform(num_inserted_curves=200)
+        f_plane.prepare_for_nonlinear_transform(num_inserted_curves=100)
         f_plane.apply_complex_function(self.func_complex)
 
-        self.play(Write(b_plane), Write(f_plane))
+        self.play(Write(b_plane))#, Write(f_plane))
         self.play(Write(final_dots))
         self.wait()
 
@@ -194,10 +199,6 @@ class NNTransformPlane(Scene):
             surf = self.surface_func_softmax(
                 i=i, u_range=(-4, 4), v_range=(-4, 4), color=colors[i], opacity=0.5)
             s.add(surf)
-
-        def color_func(x):
-            y = np.argmax(np.array([[x[0], x[1]]]).dot(w.T) + b)
-            return colors_rgb[y]
 
         SCALE = 0.4
 
@@ -287,7 +288,7 @@ class NNTransformPlane(Scene):
         red_line0 = Line(
             get_bound(red_line, -1, 1),
             get_bound(red_line, 1, 1),
-            stroke_width=6,
+            stroke_width=4,
             color=colors[0]
         )
 
@@ -342,27 +343,33 @@ class NNTransformPlane(Scene):
         red_line1 = Line(
             get_bound(red_line, -1, 1),
             intersection(red_z, red_yellow_line),
-            stroke_width=6,
+            stroke_width=4,
             color=colors[0]
         )
 
         yellow_line1 = Line(
             intersection(red_z, red_yellow_line),
             get_bound(yellow_z, 1, 1),
-            stroke_width=6,
+            stroke_width=4,
             color=colors[1]
+        )
+
+        red_line01 = Line(
+            intersection(red_z, red_yellow_line),
+            get_bound(red_line, 1, 1),
+            stroke_width=4,
+            color=colors[0]
         )
 
         self.play(ReplacementTransform(red_plane0, red_plane))
         self.wait(5)
 
-        self.remove(red_plane)
-        self.add(red_plane2, red_plane3)
+        self.remove(red_plane, red_line0)
+        self.add(red_plane2, red_plane3, red_line01, red_line1)
 
         self.play(
             ReplacementTransform(red_plane2, yellow_plane),
-            ReplacementTransform(red_line0, red_line1),
-            Write(yellow_line1)
+            ReplacementTransform(red_line01, yellow_line1),
         )
         self.wait(10)
 
@@ -397,22 +404,31 @@ class NNTransformPlane(Scene):
         yellow_line2 = Line(
             intersection(red_z, red_yellow_line),
             intersection(yellow_z, yellow_green_line),
-            stroke_width=6,
+            stroke_width=4,
+            color=colors[1]
+        )
+
+        yellow_line02 = Line(
+            get_bound(yellow_z, 1, 1),
+            intersection(yellow_z, yellow_green_line),
+            stroke_width=4,
             color=colors[1]
         )
 
         green_line = Line(
             intersection(yellow_z, yellow_green_line),
             get_bound(green_z, -1, 1),
-            stroke_width=6,
+            stroke_width=4,
             color=colors[2]
         )
+
+        self.remove(yellow_line1)
+        self.add(yellow_line2, yellow_line02)
 
         self.play(
             ReplacementTransform(yellow_plane, yellow_plane2),
             ReplacementTransform(z_green_plane, green_plane),
-            ReplacementTransform(yellow_line1, yellow_line2),
-            Write(green_line)
+            ReplacementTransform(yellow_line02, green_line)
         )
         self.wait(5)
 
@@ -552,7 +568,7 @@ class NNTransformPlane(Scene):
     def surface_func(self, i=0, scale=3, func=sigmoid, **kwargs):
         return ParametricSurface(lambda u, v: [u, v, scale * func((np.array([[u, v]]).dot(self.w.T) + self.b)[0][i])], **kwargs)
 
-    @ staticmethod
+    @staticmethod
     def get_plane_func(w0, w1, b):
         return lambda u, v: [u, v, w0*u+w1*v+b]
 
