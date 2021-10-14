@@ -762,7 +762,6 @@ class Tweet(Scene):
             np.array([-1, -(self.w[0][0] * -1 + self.b[0])/self.w[0][1], 0])
         ]
 
-
         # Red + Yellow intersection
 
         red_yellow_line = get_plane_intersect(0, 1)
@@ -871,7 +870,8 @@ class Tweet(Scene):
         blue_plane2 = Polygon(
             *blue_points2, **vector_plane_kwargs, color=colors[3])
 
-        self.play(Write(VGroup(red_plane5, yellow_plane3, green_plane2, blue_plane2, purple_plane)))
+        self.play(Write(VGroup(red_plane5, yellow_plane3,
+                  green_plane2, blue_plane2, purple_plane)))
         self.wait(1)
         self.play(frame.set_phi, 0.35*PI)
         rotate = True
