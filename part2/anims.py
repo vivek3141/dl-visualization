@@ -426,11 +426,11 @@ class ShowTrainingPoint(DotsScene):
         r.shift(4.5 * RIGHT)
 
         eq1 = Tex(r"""
-            x = \begin{bmatrix}
+            \bm{x} = \begin{bmatrix}
                 0.374\\
                 0.329
             \end{bmatrix}""",
-                  tex_to_color_map={"x ": PINK})
+                  tex_to_color_map={r"\bm{x}": PINK})
         eq1.scale(1.25)
         eq1.shift(4.5 * RIGHT + 1.5 * UP)
 
@@ -592,14 +592,24 @@ class IntroNNDiagram(DotsScene):
         )))
         self.wait()
 
-        eq = Tex(r"\hat{y}_1 = \mathrm{softmax} ( w_1 x + b_1 )",
-                 tex_to_color_map={r"\mathrm{softmax}": AQUA, r"x": PINK, r"b_1": BLUE, r"\hat{y}_1": BLUE})
-        eq.scale(2.5)
+        eq = Tex(r"\hat{y}_1 = \mathrm{softmax} ( \bm{w}_1 x_1 + \bm{w}_2 x_2 + \bm{b})_1",
+                 tex_to_color_map={r"\mathrm{softmax}": AQUA, r"x_1": PINK, r"x_2": PINK, r"\bm{b}": BLUE, r"\hat{y}_1": BLUE})
+        eq.scale(1.5)
         eq = VGroup(BackgroundRectangle(eq, color=BLACK, buff=0.25), eq)
         eq.shift(2.5 * DOWN)
 
+        eq2 = Tex(r"\hat{y}_1 = \bm{w}_{11} x_1 + \bm{w}_{12} x_2 + \bm{b}_1",
+                 tex_to_color_map={r"\mathrm{softmax}": AQUA, r"x_1": PINK, r"x_2": PINK, r"\bm{b}_1": BLUE, r"\hat{y}_1": BLUE})
+        eq2.scale(1.5)
+        eq2 = VGroup(BackgroundRectangle(eq2, color=BLACK, buff=0.25), eq2)
+        eq2.shift(2.5 * DOWN)
+
         self.play(Write(eq), Write(nn2.get_x(layer=-2)), Write(nn2.get_y()[0]))
         self.wait()
+
+        self.play(Transform(eq, eq2))
+        self.wait()
+
         self.embed()
 
 
@@ -669,7 +679,7 @@ class IntroSoftmax(Scene):
         x1[2] = 2.5
         x1_l = self.create_lines(x1, o, dx, stroke_width=2)
 
-        eq1 = Tex(r"x", tex_to_color_map={r"x": PINK})
+        eq1 = Tex(r"\bm{z}", tex_to_color_map={r"\bm{z}": PINK})
         eq1.scale(1.5)
         eq1.shift(3 * UP)
 
@@ -687,16 +697,16 @@ class IntroSoftmax(Scene):
 
         #self.embed()
 
-        eq2 = Tex(r"\mathrm{argmax}(x)", tex_to_color_map={
-                  r"x": PINK, r"\mathrm{argmax}": AQUA})
+        eq2 = Tex(r"\mathrm{argmax}(\bm{z})", tex_to_color_map={
+                  r"\bm{z}": PINK, r"\mathrm{argmax}": AQUA})
         eq2.scale(1.5)
         eq2.shift(3 * UP)
 
         self.play(Transform(x1_l, x2_l), Transform(eq1, eq2))
         self.wait()
 
-        eq3 = Tex(r"\mathrm{softmax}(x)", tex_to_color_map={
-                  r"x": PINK, r"\mathrm{softmax}": AQUA})
+        eq3 = Tex(r"\mathrm{softmax}(\bm{z})", tex_to_color_map={
+                  r"\bm{z}": PINK, r"\mathrm{softmax}": AQUA})
         eq3.scale(1.5)
         eq3.shift(3 * UP)
 
