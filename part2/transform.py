@@ -679,9 +679,17 @@ class Tweet(Scene):
 
         frame = self.camera.frame
         f_plane.prepare_for_nonlinear_transform(num_inserted_curves=200)
-        f_plane.apply_complex_function(self.func_complex)
+        #f_plane.apply_complex_function(self.func_complex)
 
-        self.play(Write(b_plane), Write(f_plane), Write(final_dots))
+        self.play(Write(b_plane), Write(f_plane), Write(init_dots), run_time=1)
+        self.wait(0.5)
+
+        self.play(
+            ApplyMethod(f_plane.apply_complex_function, self.func_complex),
+            Transform(init_dots, final_dots),
+            run_time=2
+        )
+        self.wait(0.5)
 
         rotate = False
         frame.add_updater(
