@@ -28,3 +28,4 @@ Tex/
 zeta.py
 *.swp
 shirt.py
+.ipynb_checkpoints/
