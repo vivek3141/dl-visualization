@@ -1,7 +1,7 @@
 import numpy as np
 import tiktoken
 
-from n_gram import train_trigram
+from n_gram.n_gram import train_trigram
 
 enc = tiktoken.encoding_for_model("davinci")
 tokenizer = enc.encode

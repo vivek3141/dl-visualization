@@ -1,0 +1,97 @@
+What makes a proof…beautiful? Maybe simplicity, or elegance, or a nice visual. To me, a proof is beautiful when it forms surprising connections between unrelated aspects of math. Take analytic number theory, for example.
+
+<pause>
+
+There’s a famous book in math called “Proofs from The Book”. “The Book” is a term coined by Paul Erdos that refers to a book in which God kept the most elegant proof of every mathematical theorem. “Proofs from The Book” aims to be an approximation, a list of proofs that the authors believe would be contained in “The Book”.
+
+Let’s turn to chapter 4, which is all about representing numbers as the sums of two squares. The theorem in question today is on page 21, dubbed Fermat’s Two Squares Theorem. It states that every prime of the form 4k+1 can be expressed as a sum of two squares. For instance, 13 = 4 * 3  + 1 and can be written as 3^2 + 2^2. 17, is 4 * 4 + 1 and can be written as 4^2 + 1^2. ` 29 is 4 * 7 + 1 and can be written as 5^2 + 2^2, and so on, you get the idea.
+
+If we go down a bit, the book refers to a one-sentence proof of this theorem. And this proof is, well, mind boggling. I mean, look at it! I certainly had no idea where to begin when I first read it. But, if we unpack each word and what it’s saying, it comes together beautifully in the end. I feel like it hits every single aspect of beauty I mentioned. There are a ton of little parts to this proof, so feel free to rewind as I go through it. Let’s begin.
+
+Part 1: Involutions
+
+Before we delve into the proof, let’s cover some background required. The first two words of the proof are “The involution”, so what even is an involution? 
+
+Consider a set S - in this case, my set consists of these 3 colored balls, and some function that maps each element of a set to another element within this set. So, here, red maps to itself, green maps to blue and blue maps to green.
+
+New Text: So here, the first element maps to itself, and the other two interchange positions.
+
+An involution is a function that is its own inverse. In other words, f(f(x)) = x for all x in S. Try and verify that this function here is an involution. The initial ordering is red green blue. Notice how red is always mapped to itself, and green and blue simply swap positions, so applying the function twice puts them back at their original place.
+
+Some common involutions over real numbers include f(x) = -x and f(x) = 1/x. Here, with f(x) = -x, notice how applying the function twice preserves the order of the colors, in other words -(-x) is x.
+
+Let’s head back to the set of colored balls, S, and try to construct an involution. We need to define a function f, that takes in elements of S and outputs elements of S such that applying it twice maps everything back to itself. Now one way to make an element, say this blue one here, map to itself after two applications of a function, is to just map it to itself. We call these fixed elements.
+
+But what about the other elements that don’t map to itself? Here, consider this green element here. After two applications of f, green must map to green, so there must be some intermediary element that green maps to, and this intermediary element maps to green. The only way this is possible is if two elements map to each other! And so, the elements that don’t map to itself come in pairs that map to each other, called paired elements.
+
+This is great! We’ve essentially boiled down that for a given involution on a set, each element must either map to itself, or be paired with a different element. Maybe this isn’t too surprising, but the reason we make this distinction is it allows us to say things about the entire set given information only about one of these sets.
+
+And how would we do this? Let’s dig a bit deeper: we know that the paired elements come in 2s, so the number of them must be even. Previously, we described how every element in an involution is either a fixed element or a paired element, so the total size of the set equals the number of fixed elements plus the number of paired elements. Given that the number of paired elements is even, this tells us that the parity of the size of the set is completely determined by the parity of the number of fixed elements. In other words, if the number of fixed points is odd, the size of S is odd, if it’s even, the size of S is even. Maybe a quick exercise is to reason to yourself that adding an even or odd number with an even number preserves its parity.
+
+This statement will be the final puzzle piece to our proof, so it’s important to keep in mind: as I go through the heart of this proof, it might seem a bit disconnected, but I promise it’s worth seeing through to the end.
+
+Part 2: The Windmill
+
+My favorite thing about number theory is how simple the theorems are to state but how wildly complicated the proofs are, especially when they touch on unexpected areas of math - take anything out of analytic number theory, for example. This proof is no exception, with some beautiful visuals to showcase.
+
+Remember that what we’re trying to prove is that any prime p of the form 4k + 1 can be expressed as a sum of two squares. What this proof does is instead of breaking p down into two squares, it breaks it down into one square and 4 rectangles, this sort of windmill figure. Let’s call the side length of the square x, and the side of each rectangle touching the square y, and the other z.
+
+This was a bit vague, so let’s boil down exactly what I’m saying. Consider a number n. The set of windmills of n, W_n, is defined as the set of all triples (x, y, z), where x, y and z are all natural numbers, such that n = x^2 for 4yz. For instance, for the number 29, (3, 1, 5) forms a windmill, since 29 = 3^2 + 4 * 1 * 5. Here are all the windmills of 29 - feel free to pause and see if you can notice any patterns.
+
+If I set n to be some prime p of the form 4k +1, you can see how if y = z, this forms a solution to p = a^2 + b^2, since p = x^2 + 4y^2 = x^2 + (2y)^2. So now our new goal is to determine that for a given prime p of the form 4k + 1, does there exist a windmill with y=z?
+
+It may seem like I’ve transformed the original statement into a harder one - I mean, why windmills? Well, what it allows for is for a larger set to play around with, of which we can use certain properties to find that element where y=z.
+
+Let’s consider the set of all windmills for a given prime number p of the form 4k + 1, say 13. 13 has 3 windmills: (1, 1, 3), (1, 3, 1) and (3, 1, 1). As a sanity check, notice that there does exist a windmill with y=z, namely (3, 1, 1). This tells us that 13 is 3 squared plus 4 squared.
+
+Okay, one thing I want you to see is that for a given prime p of the form 4k + 1, there exists at least one windmill. 
+
+New Text: Okay, now I wanna show you a fact that seems useless, but will be super important towards the end. First, I want you to see that for a given prime p of the form 4k + 1, there exists at least one windmill.
+
+Maybe some of you can see what it is! It happens to be (1, 1, k), so with 13, this windmill is (1, 1, 3). You can see that it forms a windmill by plugging it in: 1^2 plus 4k equals 4k + 1, which equals p.
+
+But what I wanna show you is that for a prime number of the form 4k + 1, (1, 1, k) is the only windmill with x = y. In other words, it’s the only windmill with the side of the square equal to the side of each rectangle touching the square. 
+
+Let’s see why this would be true. Consider trying to construct a windmill with x = y whose area is some prime p = 4k + 1. Since x = y we have two parameters to adjust: the side length of the square and the height of the 4 rectangles. The total area is x^2 + 4xz, which factored is x(x+4z). If x is not equal to 1, then x+4z cannot be p or 1, and so we’ve found a decomposition of p, which contradicts what a prime number is! This means that x has to be equal to 1, and z has to be equal to k.
+
+New Text: If x is not equal to one, the x + 4z must be more than 1 and less than p, since, well, they mutliply to give p. And now, I’ve factorized a prime, which by definition is just not possible! So this tells us that x is forced to be 1, and so is y.
+
+Once again, this is one of those facts that will only show its usefulness towards the end, so when it comes up, I’ll refer you back to this timestamp, but try and keep it in mind for now. 
+
+Part 3: The Zagier Map
+
+So far, I’ve introduced two distant concepts. First, the idea of an involution, which is a function that is its own inverse. Then, the idea of a windmill for a number n, which was defined by a triple (x, y, z), such that x^2 + 4yz = n. Now, let’s look at these two in action.
+
+For a number n, and its corresponding set of windmills W_n, what’s the simplest non-identity involution we can think of? Let’s go back: remember the involution we constructed with three balls? We had one fixed element and two paired elements.
+
+<Pause and show the involution>
+
+Well, say the first one is x, the second one is y, and the third one is z, and apply this to windmills! This gives us a map from a windmill (x, y, z) to a windmill (x, z, y). As we saw before, two applications of this mapping results in (x, y, z), which is what we started with. Let’s call this the flip map. So for example, (3, 1, 5) becomes (3, 5, 1), and vice versa.
+
+Let’s remember when we first talked about windmills. I said that if I could find a windmill of a prime p=4k+1 such that y=z, we’d have solved the original problem, since p = x^2 + 4 y^2 = x^2 + (2y)^2. Now, consider a windmill that the flip map maps to itself, a fixed point. What can you say about that windmill? Well, since y and z switch places, y must be equal to z!
+
+So now we’ve transformed our problem from trying to prove that primes of the form 4k + 1 can be broken down into two squares, into whether we can prove that a fixed point exists when applying the flip map to the windmills of primes of the form 4k + 1. But how do we prove that the flip map has a fixed point? 
+
+Let’s turn heads to a different involution: the Zagier map. This is one of those things that has a really simple and nice visual interpretation that is not at all obvious from looking at the equations. As such, I wanna start by showing you what exactly the map is, visually.
+
+Let’s start with a windmill of 29: (3, 5, 1). The first step in the Zagier Map is to find the largest possible central square, which happens to be this here.
+
+If the central square is smaller than this largest square, we transform it into the larger square. So, here, we now get the new windmill (5, 1, 1). Notice how the area did not change, so it’s still a windmill of 29.
+
+But what if the central square happens to be the largert square? Now our goal becomes the opposite: to make the central square as small as possible by extending the arms of the rectangles. Here, consider the windmill (3, 1, 5) of 29. In this case, the central square is the largest possible square. 
+
+And so, we extend the arms as much as possible, giving us the windmill (1, 7, 1). You can see how this arm-extending process is essentially the reverse of the square-extending process and so the operation is its own inverse, hence an involution.
+
+Writing out the involution is a matter of casework, and the Zagier map is in fact the large map you saw in the one sentence proof! I’ve written them all out here, so feel free to pause and convince yourself that they work. For example, case 4 is when y < x and x < 2y, so we need to extend the arms, shortening x to 2y - x and extending z to x + z - y. The most important case though, is when x = y If x = y, there are no arms to extend, and so this windmill is a fixed point of the Zagier Map.
+
+We are finally ready to complete the proof. Let’s start with the fixed points of the Zagier map, which occur when x = y. When I introduced windmills, I also said that (1, 1, k) is always a windmill for primes of the form 4k + 1. I also said that (1, 1, k) is the only windmill of these primes with x = y. This tells us that the Zagier map over primes of the form 4k + 1 has one fixed point.
+
+Okay, let’s go back to when we talked about involutions. I said that if the number of fixed points is odd, the size of the set is odd. Well, we know the Zagier Map has only one fixed point, so the size of the set of windmills for a prime of the form 4k + 1 has to be odd!
+
+Now, we turn heads to the flip map. Since the size of the set is odd, the number of fixed points of the flip map must be odd. The lowest possible number is 1, so there has to be a fixed point. In other words, there has to be a point where y = z, resulting in p = x^2 + 4y^2 = x^2 + (2y)^2, completing our proof!
+
+Let’s also go back to the one sentence proof to see that it makes sense. We define S, as the set of windmills, and then define the Zagier Map, stating that it has one fixed point. This implies the size of the set is odd, and that the flip map also has a fixed point, implying that we can break down the prime into a sum of two squares.
+
+G. H. Hardy once wrote that “Unfortunately, there is no proof [of fermat’s two squares theorem] within the comprehension of anybody but a fairly expert mathematician”. If you managed to follow this, give yourself a pat on the back! You are a fairly expert mathematician. This proof was, by no means, easy to understand. There are so many moving parts, and don’t feel ashamed to give it another pass through. I personally had to do a couple before grasping it.
+
+Despite its difficulty, can’t we all agree that this was beautiful? Who would’ve expected windmills out of all things. Thanks for watching :)

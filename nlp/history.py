@@ -1620,7 +1620,7 @@ class RNNIntro(Scene):
         self.play(Write(r.labels[0]), FadeIn(r.arrows[0], RIGHT))
         self.play(Write(r.labels[1]), FadeIn(r.arrows[1], RIGHT))
         self.wait()
-        
+
         rnn = RNN(n_cells=4)
         rnn.scale(0.75)
 
@@ -1650,7 +1650,9 @@ class RNNIntro(Scene):
         self.wait()
 
         self.play(
-            FadeOut(words, DOWN), FadeOut(rnn.cells[0], DOWN), FadeOut(rnn.cells[2:], DOWN)
+            FadeOut(words, DOWN),
+            FadeOut(rnn.cells[0], DOWN),
+            FadeOut(rnn.cells[2:], DOWN),
         )
         rnn_cell = rnn.cells[1]
         self.play(
