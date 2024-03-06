@@ -15,6 +15,7 @@ AlexNet
 NeuralLM
 Pendulum
 Extrapolation
+RNNCell
 """
 
 A_AQUA = "#8dd3c7"
@@ -1686,6 +1687,17 @@ class RNNIntro(Scene):
         eq2.scale(1.25)
         eq2.shift(3 * RIGHT + 1 * DOWN)
 
-        self.add(eq1, eq2)
+        self.play(TransformFromCopy(labels[1], eq1[:2]), Write(eq1[2]))
+        self.play(TransformFromCopy(labels[0], eq1[6:10]), Write(eq1[5]))
+        self.play(TransformFromCopy(labels[3], eq1[12:14]), Write(eq1[10:12]))
+        self.play(Write(eq1[13:-1]))
+        self.play(Write(eq1[-1]), Write(eq1[3:5]))
+        self.wait()
+
+        self.play(TransformFromCopy(labels[2], eq2[:2]), Write(eq2[2]))
+        self.play(TransformFromCopy(labels[1], eq2[6:8]), Write(eq2[5]))
+        self.play(Write(eq2[8:11]))
+        self.play(Write(eq2[11:]), Write(eq2[3:5]))
+        self.wait()
 
         self.embed()
