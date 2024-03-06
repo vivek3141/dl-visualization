@@ -1,4 +1,4 @@
-from manimlib.imports import *
+from manimlib import *
 import pickle
 import gzip
 
@@ -17,7 +17,7 @@ UNKB = "#ffed6f"
 
 
 def load_data():
-    f = gzip.open('../mnist/mnist.pkl.gz', 'rb')
+    f = gzip.open('mnist/mnist.pkl.gz', 'rb')
     u = pickle._Unpickler(f)
     u.encoding = 'latin1'
     training_data, validation_data, test_data = u.load()
