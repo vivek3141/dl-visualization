@@ -15,7 +15,9 @@ AlexNet
 NeuralLM
 Pendulum
 Extrapolation
-RNNCell
+RNNIntro
+RNNTraining
+RNNBackprop
 """
 
 A_AQUA = "#8dd3c7"
@@ -386,6 +388,134 @@ class NeuralNetwork(VGroup):
                 label.move_to(neuron)
                 self.output_labels.add(label)
         self.add(self.output_labels)
+
+
+class RNNCell(VMobject):
+    CONFIG = {
+        "fill_color": A_RED,
+        "left_most": False,
+        "right_most": False,
+        "arrow_length": 1.5,
+        "arrow_buff": 0.25,
+        "arrow_color": A_GREY,
+        "arrow_width": 10,
+        "add_labels": True,
+        "label_buff": 0.25,
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sq = Square(fill_opacity=0.75, fill_color=self.fill_color)
+        self.add(self.sq)
+
+        self.arrows = VGroup()
+        if not self.left_most:
+            self.add_arrow(
+                self.sq.get_left() + self.arrow_length * LEFT,
+                self.sq.get_left(),
+            )
+            self.left_arrow = self.arrows[-1]
+
+        if not self.right_most:
+            self.add_arrow(
+                self.sq.get_right(),
+                self.sq.get_right() + self.arrow_length * RIGHT,
+            )
+            self.right_arrow = self.arrows[-1]
+
+        self.add_arrow(
+            self.sq.get_top(),
+            self.sq.get_top() + self.arrow_length * UP,
+        )
+        self.up_arrow = self.arrows[-1]
+
+        self.add_arrow(
+            self.sq.get_bottom() + self.arrow_length * DOWN,
+            self.sq.get_bottom(),
+        )
+        self.down_arrow = self.arrows[-1]
+
+        self.add(self.arrows)
+        self.get_labels(add_to_obj=self.add_labels)
+
+        self.center()
+
+    def add_arrow(self, start, end):
+        self.arrows.add(
+            Arrow(
+                start,
+                end,
+                max_width_to_Length_ratio=float("inf"),
+                stroke_width=self.arrow_width,
+                stroke_color=self.arrow_color,
+                buff=self.arrow_buff,
+            )
+        )
+
+    def get_labels(self, english=True, add_to_obj=True):
+        self.labels = VGroup()
+        if not english:
+            labels = ["{h}_{{t}-1}", "{h}_{t}", "{y}_{t}", "{x}_{t}"]
+        else:
+            labels = [
+                r"\text{previous } {h}",
+                r"\text{next } {h}",
+                r"\text{output } {y}",
+                r"\text{input } {x}",
+            ]
+
+        tex_to_color_map = {
+            "{x}": A_PINK,
+            "{h}": A_GREEN,
+            "{y}": A_BLUE,
+            "{t}": A_YELLOW,
+            "1": A_UNKA,
+        }
+
+        for n, (label, arrow) in enumerate(zip(labels, self.arrows)):
+            curr_arrow_vec = arrow.get_end() - arrow.get_start()
+            label_tex = Tex(label, tex_to_color_map=tex_to_color_map)
+            if not english:
+                label_tex.scale(1.25)
+            if (n & 1) ^ (n >> 1 & 1):  # odd number of bits
+                label_tex.next_to(arrow.get_end(), curr_arrow_vec)
+            else:
+                label_tex.next_to(arrow.get_start(), -curr_arrow_vec)
+
+            self.labels.add(label_tex)
+
+        if add_to_obj:
+            self.add(self.labels)
+
+        return self.labels
+
+
+class RNN(VMobject):
+    def __init__(self, n_cells=4, **kwargs):
+        super().__init__(**kwargs)
+        self.n_cells = n_cells
+        self.cells = VGroup()
+        for i in range(4):
+            if i == 0:
+                c = RNNCell(add_labels=False, left_most=True)
+            elif i == 2:
+                c = RNNCell(add_labels=False)
+            elif i == 3:
+                c = RNNCell(add_labels=False, right_most=True)
+            else:
+                c = RNNCell(add_labels=False)
+
+            if i != 0:
+                if i == 1:
+                    left = self.cells[i - 1].arrows[0].get_center()
+                else:
+                    left = self.cells[i - 1].arrows[1].get_center()
+                right = c.arrows[0].get_center()
+                c.shift(left - right)
+            self.cells.add(c)
+
+        self.add(self.cells)
+        self.center()
 
 
 class EmailModel(Scene):
@@ -1427,106 +1557,6 @@ class Extrapolation(Scene):
         self.embed()
 
 
-class RNNCell(VMobject):
-    CONFIG = {
-        "fill_color": A_RED,
-        "left_most": False,
-        "right_most": False,
-        "arrow_length": 1.5,
-        "arrow_buff": 0.25,
-        "arrow_color": A_GREY,
-        "arrow_width": 10,
-        "add_labels": True,
-        "label_buff": 0.25,
-    }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.sq = Square(fill_opacity=0.75, fill_color=self.fill_color)
-        self.add(self.sq)
-
-        self.arrows = VGroup()
-        if not self.left_most:
-            self.add_arrow(
-                self.sq.get_left() + self.arrow_length * LEFT,
-                self.sq.get_left(),
-            )
-            self.left_arrow = self.arrows[-1]
-
-        if not self.right_most:
-            self.add_arrow(
-                self.sq.get_right(),
-                self.sq.get_right() + self.arrow_length * RIGHT,
-            )
-            self.right_arrow = self.arrows[-1]
-
-        self.add_arrow(
-            self.sq.get_top(),
-            self.sq.get_top() + self.arrow_length * UP,
-        )
-        self.up_arrow = self.arrows[-1]
-
-        self.add_arrow(
-            self.sq.get_bottom() + self.arrow_length * DOWN,
-            self.sq.get_bottom(),
-        )
-        self.down_arrow = self.arrows[-1]
-
-        self.add(self.arrows)
-        self.get_labels(add_to_obj=self.add_labels)
-
-        self.center()
-
-    def add_arrow(self, start, end):
-        self.arrows.add(
-            Arrow(
-                start,
-                end,
-                max_width_to_Length_ratio=float("inf"),
-                stroke_width=self.arrow_width,
-                stroke_color=self.arrow_color,
-                buff=self.arrow_buff,
-            )
-        )
-
-    def get_labels(self, english=True, add_to_obj=True):
-        self.labels = VGroup()
-        if not english:
-            labels = ["{h}_{{t}-1}", "{h}_{t}", "{y}_{t}", "{x}_{t}"]
-        else:
-            labels = [
-                r"\text{previous } {h}",
-                r"\text{next } {h}",
-                r"\text{output } {y}",
-                r"\text{input } {x}",
-            ]
-
-        tex_to_color_map = {
-            "{x}": A_PINK,
-            "{h}": A_GREEN,
-            "{y}": A_BLUE,
-            "{t}": A_YELLOW,
-            "1": A_UNKA,
-        }
-
-        for n, (label, arrow) in enumerate(zip(labels, self.arrows)):
-            curr_arrow_vec = arrow.get_end() - arrow.get_start()
-            label_tex = Tex(label, tex_to_color_map=tex_to_color_map)
-            if not english:
-                label_tex.scale(1.25)
-            if (n & 1) ^ (n >> 1 & 1):  # odd number of bits
-                label_tex.next_to(arrow.get_end(), curr_arrow_vec)
-            else:
-                label_tex.next_to(arrow.get_start(), -curr_arrow_vec)
-
-            self.labels.add(label_tex)
-
-        if add_to_obj:
-            self.add(self.labels)
-
-        return self.labels
-
-
 class RNNIntro(Scene):
     def construct(self):
         sent = ["the", "sky", "is", "blue"]
@@ -1590,29 +1620,9 @@ class RNNIntro(Scene):
         self.play(Write(r.labels[0]), FadeIn(r.arrows[0], RIGHT))
         self.play(Write(r.labels[1]), FadeIn(r.arrows[1], RIGHT))
         self.wait()
-
-        cells = VGroup()
-        for i in range(4):
-            if i == 0:
-                c = RNNCell(add_labels=False, left_most=True)
-            elif i == 2:
-                c = RNNCell(add_labels=False)
-            elif i == 3:
-                c = RNNCell(add_labels=False, right_most=True)
-            else:
-                c = RNNCell(add_labels=False)
-
-            if i != 0:
-                if i == 1:
-                    left = cells[i - 1].arrows[0].get_center()
-                else:
-                    left = cells[i - 1].arrows[1].get_center()
-                right = c.arrows[0].get_center()
-                c.shift(left - right)
-
-            cells.add(c)
-        cells.center()
-        cells.scale(0.75)
+        
+        rnn = RNN(n_cells=4)
+        rnn.scale(0.75)
 
         self.play(
             FadeOut(r.labels[0], LEFT),
@@ -1623,26 +1633,26 @@ class RNNIntro(Scene):
         self.play(
             Transform(
                 VGroup(r.sq, r.arrows),
-                cells[1],
+                rnn.cells[1],
                 replace_mobject_with_target_in_scene=True,
             )
         )
-        self.play(Write(cells[0]), Write(cells[2:]))
+        self.play(Write(rnn.cells[0]), Write(rnn.cells[2:]))
 
         words = VGroup()
         for n, i in enumerate(sent):
             w = Text(i)
             w.scale(1.25)
-            w.next_to(cells[n].down_arrow.get_start(), 1.5 * DOWN)
+            w.next_to(rnn.cells[n].down_arrow.get_start(), 1.5 * DOWN)
             words.add(w)
 
         self.play(FadeIn(words, UP))
         self.wait()
 
         self.play(
-            FadeOut(words, DOWN), FadeOut(cells[0], DOWN), FadeOut(cells[2:], DOWN)
+            FadeOut(words, DOWN), FadeOut(rnn.cells[0], DOWN), FadeOut(rnn.cells[2:], DOWN)
         )
-        rnn_cell = cells[1]
+        rnn_cell = rnn.cells[1]
         self.play(
             rnn_cell.become,
             rnn_cell.deepcopy().scale(1).move_to(0.5 * DOWN + 3.75 * LEFT),
@@ -1690,7 +1700,7 @@ class RNNIntro(Scene):
         self.play(TransformFromCopy(labels[1], eq1[:2]), Write(eq1[2]))
         self.play(TransformFromCopy(labels[0], eq1[6:10]), Write(eq1[5]))
         self.play(TransformFromCopy(labels[3], eq1[12:14]), Write(eq1[10:12]))
-        self.play(Write(eq1[13:-1]))
+        self.play(Write(eq1[14:-1]))
         self.play(Write(eq1[-1]), Write(eq1[3:5]))
         self.wait()
 
@@ -1700,4 +1710,31 @@ class RNNIntro(Scene):
         self.play(Write(eq2[11:]), Write(eq2[3:5]))
         self.wait()
 
+        self.embed()
+
+
+class RNNTraining(Scene):
+    def construct(self):
+        documents = VGroup()
+        for i in range(5):
+            d = Document()
+            d.scale(0.75)
+            d.shift(i * 2 * RIGHT)
+            documents.add(d)
+        documents.center()
+        documents.shift(2 * DOWN)
+
+        rnn = RNN(n_cells=4)
+        rnn.scale(0.75)
+        rnn.shift(1.5 * UP)
+
+        self.play(Write(documents[2]))
+        self.play(*[TransformFromCopy(documents[2], documents[i]) for i in range(5)])
+        self.play(Write(rnn))
+
+        self.embed()
+
+
+class RNNBackprop(Scene):
+    def construct(self):
         self.embed()
