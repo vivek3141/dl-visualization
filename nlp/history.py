@@ -17,6 +17,7 @@ Pendulum
 Extrapolation
 RNNIntro
 RNNTraining
+RNNInference
 RNNBackprop
 """
 
@@ -32,6 +33,14 @@ A_GREY = "#d9d9d9"
 A_VIOLET = "#bc80bd"
 A_UNKA = "#ccebc5"
 A_UNKB = "#ffed6f"
+
+
+def softmax(x, axis=1):
+    """
+    Compute softmax values for each sets of scores in x.
+    """
+    e_x = np.exp(x - np.max(x, axis=axis, keepdims=True))
+    return e_x / e_x.sum(axis=axis, keepdims=True)
 
 
 class MNISTImage(VMobject):
@@ -1733,6 +1742,128 @@ class RNNTraining(Scene):
         self.play(Write(documents[2]))
         self.play(*[TransformFromCopy(documents[2], documents[i]) for i in range(5)])
         self.play(Write(rnn))
+
+        self.embed()
+
+
+class RNNInference(Scene):
+    def construct(self):
+        raw_text = "the most beautiful proof in math is some single single mathematical aspect that âproofs is no proof of two squares what it forms two interchange down out i mean had a function of an involution is a function that here to prove that primes with x x is y as a sum of two elements in this"
+        next_probs = np.load("rnn/next_probs.npy")
+
+        def get_next_probs(idx):
+            new_words, new_probs = [], []
+            for w, p in next_probs[idx]:
+                new_words.append(w.strip())
+                new_probs.append(float(p))
+            return new_words[:7], new_probs[:7]
+
+        prompt = Text("The most beautiful proof in math is")
+        prompt.scale(1.25)
+        prompt.shift(3 * UP)
+
+        self.play(Write(prompt))
+
+        prob_bars = WordDistribution(*get_next_probs(0), max_bar_width=10)
+        prob_bars.shift(0.5 * DOWN)
+
+        prob_bars.write(self)
+        self.wait()
+
+        l = Line(10 * UP, 10 * DOWN)
+        l.shift(2 * RIGHT)
+
+        n_gram_text = Text("Trigram Model", color=A_VIOLET)
+        n_gram_text.scale(1.25)
+        n_gram_text.shift(4.5 * RIGHT + 3 * UP)
+
+        new_prob_bars = WordDistribution(
+            *get_next_probs(0), max_bar_width=1.5, word_scale=0.75, prob_scale=0.75
+        )
+        new_prob_bars.shift(4.5 * RIGHT + 0.5 * DOWN)
+        new_prob_bars.scale(0.9)
+
+        self.remove(prob_bars.prob_bars_small)
+        prob_bars.remove(prob_bars.prob_bars_small)
+
+        self.play(
+            ApplyMethod(prompt.become, prompt.copy().scale(1 / 1.25).shift(2.5 * LEFT)),
+            Transform(prob_bars.words, new_prob_bars.words),
+            Transform(prob_bars.probs, new_prob_bars.probs),
+            Transform(prob_bars.prob_bars_large, new_prob_bars.prob_bars_large),
+            Write(l),
+            Write(n_gram_text),
+        )
+        self.wait()
+
+        text = TexText(
+            # *[i.replace("\n", r"\\") + " " for i in raw_text.split(" ")], alignment=""
+            *[i + " " for i in raw_text.split(" ")][:10],
+            alignment="",
+        )
+        text.move_to(prompt, UP + LEFT)
+        self.remove(prob_bars.prob_bars_small)
+
+        words = raw_text.split(" ")
+        for i in range(7, len(words)):
+            if i > 15:
+                run_time = 0.5
+            else:
+                run_time = 1
+
+            next_word = words[i]
+            prob_word_obj = None
+
+            for word_obj in prob_bars.words:
+                if word_obj.text.strip() == next_word.strip():
+                    prob_word_obj = word_obj
+                    break
+
+            if prob_word_obj is None:
+                prob_word_obj = Text(next_word)
+                prob_word_obj.scale(0.75)
+                prob_word_obj = prob_word_obj.move_to(prob_bars)
+                prob_word_obj.shift(FRAME_HEIGHT / 2 * 1 * DOWN)
+            else:
+                self.play(Indicate(prob_word_obj), run_time=0.5 * run_time)
+
+            new_prob_word_obj = prob_word_obj.copy()
+            new_prob_word_obj.scale(1 / 0.75)
+            new_prob_word_obj.move_to(text[i])
+
+            self.play(
+                TransformFromCopy(prob_word_obj, new_prob_word_obj),
+                run_time=run_time,
+            )
+            self.wait(0.5 * run_time)
+
+            new_dist = WordDistribution(
+                *get_next_probs(i - 6),
+                max_bar_width=1.5,
+                word_scale=0.75,
+                prob_scale=0.75,
+            )
+            new_dist.move_to(prob_bars)
+
+            anims = [
+                FadeOut(prob_bars.words, UP),
+                FadeOut(prob_bars.probs, UP),
+                FadeIn(new_dist.words, UP),
+                FadeIn(new_dist.probs, UP),
+            ]
+            for i in range(len(prob_bars.words)):
+                anims += [
+                    Transform(
+                        prob_bars.prob_bars_large[i],
+                        new_dist.prob_bars_large[i],
+                    ),
+                ]
+
+            self.play(*anims, run_time=1)
+            self.remove(prob_bars)
+            self.add(new_dist.words, new_dist.probs, new_dist.prob_bars_large)
+
+            prob_bars = new_dist
 
         self.embed()
 
