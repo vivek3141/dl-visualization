@@ -9,7 +9,9 @@ import keras.utils as ku
 import numpy as np
 
 
-glove_path = "glove.twitter.27B/glove.twitter.27B.200d.txt"
+glove_path = (
+    "/Users/vivek/python/text-generation/glove.twitter.27B/glove.twitter.27B.200d.txt"
+)
 tokenizer = Tokenizer()
 
 
@@ -35,7 +37,7 @@ def text_preprocess(text):
     return predictors, label, max_seq_len, total_words
 
 
-text = open("zagier.txt", encoding="latin1").read()
+text = open("alice.txt", encoding="latin1").read()
 predictors, label, max_seq_len, total_words = text_preprocess(text)
 
 
@@ -85,4 +87,4 @@ for word, index in tokenizer.word_index.items():
 
 
 model = lstm_stack(predictors, label, max_seq_len, total_words)
-model.save("zagier.h5")
+model.save("alice.h5")

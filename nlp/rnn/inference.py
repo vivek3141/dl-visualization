@@ -42,6 +42,10 @@ def text_preprocess(text):
 
 text = open("zagier.txt", encoding="latin1").read()
 predictors, label, max_seq_len, total_words = text_preprocess(text)
+values = []
+for word, index in sorted(tokenizer.word_index.items(), key=lambda x: x[1]):
+    values.append(word)
+next_probs = []
 
 
 def generate_text(seed_text, next_words, max_seq_len):
@@ -50,10 +54,20 @@ def generate_text(seed_text, next_words, max_seq_len):
         token_list = pad_sequences([token_list], maxlen=max_seq_len - 1, padding="pre")
         output = model.predict(token_list, verbose=0)
         dist = softmax(output, axis=1)[0]
-        indices = np.argsort(dist)[-20:]
+
+        top = sorted(zip(values, dist), key=lambda x: x[1], reverse=True)[:5]
+        print(top)
+        next_probs.append(top[:10])
+
+        indices = np.argsort(dist)[-5:]
         probs = dist[indices] / np.sum(dist[indices])
+        top = []
+        for n, idx in enumerate(indices):
+            top.append((values[idx], probs[n]))
+        print(top)
+        next_probs.append(top)
         predicted = np.random.choice(indices, p=probs)
-        # predicted = np.argmax(output, axis=1)
+
         output_word = ""
         for word, index in tokenizer.word_index.items():
             if index == predicted:
@@ -65,4 +79,7 @@ def generate_text(seed_text, next_words, max_seq_len):
 
 # Load model zagier.h5
 model = load_model("zagier.h5")
-print(generate_text("The most beautiful proof in math is", 50, max_seq_len))
+print(generate_text("the most beautiful proof in math is", 50, max_seq_len))
+
+# Save next_probs.npy
+np.save("next_probs.npy", next_probs)
