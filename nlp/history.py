@@ -1075,7 +1075,7 @@ class NGramInference(Scene):
         l = Line(10 * UP, 10 * DOWN)
         l.shift(2 * RIGHT)
 
-        n_gram_text = Text("Trigram Model", color=A_VIOLET)
+        n_gram_text = Text("Trigram Model", color=A_YELLOW)
         n_gram_text.scale(1.25)
         n_gram_text.shift(4.5 * RIGHT + 3 * UP)
 
@@ -1748,7 +1748,7 @@ class RNNTraining(Scene):
 
 class RNNInference(Scene):
     def construct(self):
-        raw_text = "the most beautiful proof in math is some single single mathematical aspect that âproofs is no proof of two squares what it forms two interchange down out i mean had a function of an involution is a function that here to prove that primes with x x is y as a sum of two elements in this"
+        raw_text = "Apple is trying to limit how often\nyour iPhone apps can bug you\nto give them a rating"
         next_probs = np.load("rnn/next_probs.npy")
 
         def get_next_probs(idx):
@@ -1758,66 +1758,49 @@ class RNNInference(Scene):
                 new_probs.append(float(p))
             return new_words[:7], new_probs[:7]
 
-        prompt = Text("The most beautiful proof in math is")
-        prompt.scale(1.25)
-        prompt.shift(3 * UP)
-
-        self.play(Write(prompt))
-
-        prob_bars = WordDistribution(*get_next_probs(0), max_bar_width=10)
-        prob_bars.shift(0.5 * DOWN)
-
-        prob_bars.write(self)
-        self.wait()
-
         l = Line(10 * UP, 10 * DOWN)
         l.shift(2 * RIGHT)
 
-        n_gram_text = Text("Trigram Model", color=A_VIOLET)
-        n_gram_text.scale(1.25)
-        n_gram_text.shift(4.5 * RIGHT + 3 * UP)
+        rnn_text = Text("RNN Model", color=A_YELLOW)
+        rnn_text.scale(1.25)
+        rnn_text.shift(4.5 * RIGHT + 3 * UP)
 
-        new_prob_bars = WordDistribution(
+        prob_bars = WordDistribution(
             *get_next_probs(0), max_bar_width=1.5, word_scale=0.75, prob_scale=0.75
         )
-        new_prob_bars.shift(4.5 * RIGHT + 0.5 * DOWN)
-        new_prob_bars.scale(0.9)
+        prob_bars.shift(4.5 * RIGHT + 0.5 * DOWN)
+        prob_bars.scale(0.9)
 
-        self.remove(prob_bars.prob_bars_small)
-        prob_bars.remove(prob_bars.prob_bars_small)
+        text = TexText(*[i.replace("\n", r"\\") for i in raw_text], alignment="")
+        text.move_to(6.32553125 * LEFT + 3.21861875 * UP, UP + LEFT)
 
-        self.play(
-            ApplyMethod(prompt.become, prompt.copy().scale(1 / 1.25).shift(2.5 * LEFT)),
-            Transform(prob_bars.words, new_prob_bars.words),
-            Transform(prob_bars.probs, new_prob_bars.probs),
-            Transform(prob_bars.prob_bars_large, new_prob_bars.prob_bars_large),
-            Write(l),
-            Write(n_gram_text),
-        )
+        self.play(Write(rnn_text), Write(l))
+        prob_bars.write(self, text_run_time=0.5, prob_run_time=0.25)
         self.wait()
 
-        text = TexText(
-            # *[i.replace("\n", r"\\") + " " for i in raw_text.split(" ")], alignment=""
-            *[i + " " for i in raw_text.split(" ")][:10],
-            alignment="",
-        )
-        text.move_to(prompt, UP + LEFT)
-        self.remove(prob_bars.prob_bars_small)
+        tex_idx = 0
+        for raw_idx in range(len(raw_text)):
+            if raw_text[raw_idx] == "\n":
+                continue
 
-        words = raw_text.split(" ")
-        for i in range(7, len(words)):
-            if i > 15:
+            if raw_idx > 10:
                 run_time = 0.5
             else:
                 run_time = 1
 
-            next_word = words[i]
+            next_word = raw_text[raw_idx]
             prob_word_obj = None
 
-            for word_obj in prob_bars.words:
-                if word_obj.text.strip() == next_word.strip():
-                    prob_word_obj = word_obj
-                    break
+            if next_word != " ":
+                for word_obj in prob_bars.words:
+                    if word_obj.text.strip() == next_word.strip():
+                        prob_word_obj = word_obj
+                        break
+            else:
+                for i in range(len(prob_bars.words)):
+                    if prob_bars.words[i].text.strip() == "":
+                        prob_word_obj = prob_bars.prob_bars_large[i]
+                        break
 
             if prob_word_obj is None:
                 prob_word_obj = Text(next_word)
@@ -1829,16 +1812,17 @@ class RNNInference(Scene):
 
             new_prob_word_obj = prob_word_obj.copy()
             new_prob_word_obj.scale(1 / 0.75)
-            new_prob_word_obj.move_to(text[i])
+            new_prob_word_obj.move_to(text[tex_idx])
 
-            self.play(
-                TransformFromCopy(prob_word_obj, new_prob_word_obj),
-                run_time=run_time,
-            )
-            self.wait(0.5 * run_time)
+            if next_word != " ":
+                self.play(
+                    TransformFromCopy(prob_word_obj, new_prob_word_obj),
+                    run_time=run_time,
+                )
+                self.wait(0.5 * run_time)
 
             new_dist = WordDistribution(
-                *get_next_probs(i - 6),
+                *get_next_probs(raw_idx + 1),
                 max_bar_width=1.5,
                 word_scale=0.75,
                 prob_scale=0.75,
@@ -1864,6 +1848,8 @@ class RNNInference(Scene):
             self.add(new_dist.words, new_dist.probs, new_dist.prob_bars_large)
 
             prob_bars = new_dist
+            if next_word != " ":
+                tex_idx += 1
 
         self.embed()
 

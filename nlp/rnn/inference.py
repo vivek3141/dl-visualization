@@ -40,7 +40,7 @@ def text_preprocess(text):
     return predictors, label, max_seq_len, total_words
 
 
-text = open("zagier.txt", encoding="latin1").read()
+text = open("alice.txt", encoding="latin1").read()
 predictors, label, max_seq_len, total_words = text_preprocess(text)
 values = []
 for word, index in sorted(tokenizer.word_index.items(), key=lambda x: x[1]):
@@ -61,6 +61,8 @@ def generate_text(seed_text, next_words, max_seq_len):
 
         indices = np.argsort(dist)[-5:]
         probs = dist[indices] / np.sum(dist[indices])
+        assert np.isclose(np.sum(probs), 1.0)
+        assert len(indices) == len(probs)
         top = []
         for n, idx in enumerate(indices):
             top.append((values[idx], probs[n]))
@@ -78,8 +80,8 @@ def generate_text(seed_text, next_words, max_seq_len):
 
 
 # Load model zagier.h5
-model = load_model("zagier.h5")
-print(generate_text("the most beautiful proof in math is", 50, max_seq_len))
+model = load_model("alice.h5")
+print(generate_text("alice started to get very excited about", 50, max_seq_len))
 
 # Save next_probs.npy
 np.save("next_probs.npy", next_probs)
