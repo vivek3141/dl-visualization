@@ -155,10 +155,14 @@ class WordDistribution(VMobject):
         self,
         words,
         probs,
+        bar_height=0.5,
         max_bar_width=1.5,
         word_scale=1.0,
         prob_scale=1.0,
+        bar_spacing=FRAME_HEIGHT / 10,
         prob_bar_color=A_LAVENDER,
+        incl_word_labels=True,
+        incl_prob_labels=True,
         *args,
         **kwargs,
     ):
@@ -169,11 +173,12 @@ class WordDistribution(VMobject):
         self.words = VGroup()
         self.probs = VGroup()
 
-        widths = np.array(probs) / max(probs)
+        self.incl_word_labels = incl_word_labels
+        self.incl_prob_labels = incl_prob_labels
 
         for i, (word, prob) in enumerate(zip(words, probs)):
             bar_small = Rectangle(
-                height=0.5,
+                height=bar_height,
                 width=0,
                 fill_color=prob_bar_color,
                 fill_opacity=1,
@@ -181,42 +186,57 @@ class WordDistribution(VMobject):
             )
 
             bar_large = Rectangle(
-                height=0.5,
+                height=bar_height,
                 width=prob * max_bar_width,
                 fill_color=prob_bar_color,
                 fill_opacity=1,
             )
 
-            bar_small.move_to(FRAME_HEIGHT / 10 * i * DOWN, LEFT)
-            bar_large.move_to(FRAME_HEIGHT / 10 * i * DOWN, LEFT)
+            bar_small.move_to(bar_spacing * i * DOWN, LEFT)
+            bar_large.move_to(bar_spacing * i * DOWN, LEFT)
 
-            word_text = Text(word)
-            word_text.scale(word_scale)
-            word_text.move_to(bar_large.get_bounding_box_point(LEFT) + 1 * LEFT)
+            if self.incl_word_labels:
+                word_text = Text(word)
+                word_text.scale(word_scale)
+                word_text.move_to(bar_large.get_bounding_box_point(LEFT) + 1 * LEFT)
+                self.words.add(word_text)
 
-            prob_text = Text(f"{prob:.4f}")
-            prob_text.scale(prob_scale)
-            prob_text.move_to(bar_large.get_bounding_box_point(RIGHT) + 1 * RIGHT)
+            if self.incl_prob_labels:
+                prob_text = Text(f"{prob:.4f}")
+                prob_text.scale(prob_scale)
+                prob_text.move_to(bar_large.get_bounding_box_point(RIGHT) + 1 * RIGHT)
+                self.probs.add(prob_text)
 
             self.prob_bars_small.add(bar_small)
             self.prob_bars_large.add(bar_large)
-            self.words.add(word_text)
-            self.probs.add(prob_text)
 
         self.add(self.prob_bars_small, self.prob_bars_large, self.words, self.probs)
         self.center()
 
     def write(self, scene, text_run_time=1.5, prob_run_time=0.75):
-        scene.play(
-            Write(self.words), Write(self.prob_bars_small), run_time=text_run_time
-        )
+        if self.incl_word_labels:
+            scene.play(
+                Write(self.words), Write(self.prob_bars_small), run_time=text_run_time
+            )
+        else:
+            scene.play(Write(self.prob_bars_small), run_time=text_run_time)
 
         for i in range(len(self.prob_bars_small)):
-            scene.play(
-                ApplyMethod(self.prob_bars_small[i].become, self.prob_bars_large[i]),
-                FadeIn(self.probs[i], RIGHT),
-                run_time=prob_run_time,
-            )
+            if self.incl_prob_labels:
+                scene.play(
+                    ApplyMethod(
+                        self.prob_bars_small[i].become, self.prob_bars_large[i]
+                    ),
+                    FadeIn(self.probs[i], RIGHT),
+                    run_time=prob_run_time,
+                )
+            else:
+                scene.play(
+                    ApplyMethod(
+                        self.prob_bars_small[i].become, self.prob_bars_large[i]
+                    ),
+                    run_time=prob_run_time,
+                )
 
         scene.remove(self.prob_bars_small)
         scene.add(self.prob_bars_large)
@@ -504,12 +524,10 @@ class RNN(VMobject):
         super().__init__(**kwargs)
         self.n_cells = n_cells
         self.cells = VGroup()
-        for i in range(4):
+        for i in range(n_cells):
             if i == 0:
                 c = RNNCell(add_labels=False, left_most=True)
-            elif i == 2:
-                c = RNNCell(add_labels=False)
-            elif i == 3:
+            elif i == n_cells - 1:
                 c = RNNCell(add_labels=False, right_most=True)
             else:
                 c = RNNCell(add_labels=False)
@@ -525,6 +543,17 @@ class RNN(VMobject):
 
         self.add(self.cells)
         self.center()
+
+    def get_inputs(self, words, **text_kwargs):
+        assert len(words) >= self.n_cells
+
+        input_words = VGroup()
+        for i in range(self.n_cells):
+            t = Text(words[i], **text_kwargs)
+            t.move_to(self.cells[i].down_arrow.get_start() + 0.5 * DOWN)
+            input_words.add(t)
+
+        return input_words
 
 
 class EmailModel(Scene):
@@ -1051,7 +1080,7 @@ class NGramInference(Scene):
         enc = tiktoken.encoding_for_model("davinci")
 
         raw_text = "The most beautiful proof in math is \nthe only one with the other hand , \nthe same way to determine the value \nof the United States had been a man \nof the American League pennant , \nand his sister's a good time ."
-        next_probs = np.load("next_probs.npy")
+        next_probs = np.load("n_gram/next_probs.npy")
 
         def get_next_probs(idx):
             new_words, new_probs = [], []
@@ -1856,4 +1885,29 @@ class RNNInference(Scene):
 
 class RNNBackprop(Scene):
     def construct(self):
+        rnn = RNN(n_cells=3)
+        rnn.scale(0.75)
+
+        rnn_texts = rnn.get_inputs(["the", "sky", "is"])
+
+        self.play(Write(rnn))
+        self.play(Write(rnn_texts))
+        self.wait()
+
+        w = WordDistribution(
+            ["" for _ in range(4)],
+            [0.15, 0.5, 0.3, 0.05],
+            bar_spacing=0.5,
+            incl_prob_labels=False,
+            incl_word_labels=False,
+        )
+        w.rotate(90 * DEGREES)
+        w.move_to(rnn.cells[-1].up_arrow.get_end() + 0.75 * UP)
+
+        w.write(self)
+        self.wait()
+
+        self.play(w.move_to, rnn.cells[-2].up_arrow.get_end() + 0.75 * UP)
+        self.wait()
+
         self.embed()
