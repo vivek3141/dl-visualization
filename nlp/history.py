@@ -19,6 +19,7 @@ RNNIntro
 RNNTraining
 RNNInference
 RNNBackprop
+RNNBackpropLong
 """
 
 A_AQUA = "#8dd3c7"
@@ -1910,4 +1911,47 @@ class RNNBackprop(Scene):
         self.play(w.move_to, rnn.cells[-2].up_arrow.get_end() + 0.75 * UP)
         self.wait()
 
+        self.embed()
+
+
+class RNNBackpropLong(Scene):
+    def construct(self):
+        rnn = RNN(n_cells=10)
+        rnn.scale(0.75)
+        rnn.move_to((FRAME_WIDTH / 2 - 1) * RIGHT, RIGHT)
+
+        self.play(Write(rnn))
+        self.wait()
+
+        w = WordDistribution(
+            ["" for _ in range(4)],
+            [0.15, 0.5, 0.3, 0.05],
+            bar_spacing=0.5,
+            incl_prob_labels=False,
+            incl_word_labels=False,
+        )
+        w.rotate(90 * DEGREES)
+        w.move_to(rnn.cells[-1].up_arrow.get_end() + 0.75 * UP)
+
+        w.write(self)
+        self.wait()
+
+        anims = []
+        for i in range(len(rnn.cells) - 2, -1, -1):
+            anims += [
+                ApplyMethod(w.move_to, rnn.cells[i].up_arrow.get_end() + 0.75 * UP)
+            ]
+
+        CameraFrame
+
+        new_frame = self.camera.frame.deepcopy()
+        new_frame.set_width(2 * FRAME_WIDTH)
+        new_frame.move_to(rnn.get_center())
+
+        self.play(
+            Succession(*anims),
+            ApplyMethod(self.camera.frame.become, new_frame),
+            run_time=10,
+        )
+        self.wait()
         self.embed()
