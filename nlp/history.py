@@ -20,6 +20,7 @@ RNNTraining
 RNNInference
 RNNBackprop
 RNNBackpropLong
+MachineTranslation
 """
 
 A_AQUA = "#8dd3c7"
@@ -425,6 +426,8 @@ class RNNCell(VMobject):
         "fill_color": A_RED,
         "left_most": False,
         "right_most": False,
+        "include_input_arrow": True,
+        "include_output_arrow": True,
         "arrow_length": 1.5,
         "arrow_buff": 0.25,
         "arrow_color": A_GREY,
@@ -453,17 +456,19 @@ class RNNCell(VMobject):
             )
             self.right_arrow = self.arrows[-1]
 
-        self.add_arrow(
-            self.sq.get_top(),
-            self.sq.get_top() + self.arrow_length * UP,
-        )
-        self.up_arrow = self.arrows[-1]
+        if self.include_output_arrow:
+            self.add_arrow(
+                self.sq.get_top(),
+                self.sq.get_top() + self.arrow_length * UP,
+            )
+            self.up_arrow = self.arrows[-1]
 
-        self.add_arrow(
-            self.sq.get_bottom() + self.arrow_length * DOWN,
-            self.sq.get_bottom(),
-        )
-        self.down_arrow = self.arrows[-1]
+        if self.include_input_arrow:
+            self.add_arrow(
+                self.sq.get_bottom() + self.arrow_length * DOWN,
+                self.sq.get_bottom(),
+            )
+            self.down_arrow = self.arrows[-1]
 
         self.add(self.arrows)
         self.get_labels(add_to_obj=self.add_labels)
@@ -521,20 +526,27 @@ class RNNCell(VMobject):
 
 
 class RNN(VMobject):
-    def __init__(self, n_cells=4, **kwargs):
+    def __init__(
+        self,
+        n_cells=4,
+        remove_left_arrow=True,
+        remove_right_arrow=True,
+        rnn_kwargs={},
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.n_cells = n_cells
         self.cells = VGroup()
         for i in range(n_cells):
-            if i == 0:
-                c = RNNCell(add_labels=False, left_most=True)
-            elif i == n_cells - 1:
-                c = RNNCell(add_labels=False, right_most=True)
+            if i == 0 and remove_left_arrow:
+                c = RNNCell(add_labels=False, left_most=True, **rnn_kwargs)
+            elif i == n_cells - 1 and remove_right_arrow:
+                c = RNNCell(add_labels=False, right_most=True, **rnn_kwargs)
             else:
-                c = RNNCell(add_labels=False)
+                c = RNNCell(add_labels=False, **rnn_kwargs)
 
             if i != 0:
-                if i == 1:
+                if i == 1 and remove_left_arrow:
                     left = self.cells[i - 1].arrows[0].get_center()
                 else:
                     left = self.cells[i - 1].arrows[1].get_center()
@@ -555,6 +567,17 @@ class RNN(VMobject):
             input_words.add(t)
 
         return input_words
+
+    def get_outputs(self, words, **text_kwargs):
+        assert len(words) >= self.n_cells
+
+        output_words = VGroup()
+        for i in range(self.n_cells):
+            t = Text(words[i], **text_kwargs)
+            t.move_to(self.cells[i].up_arrow.get_end() + 0.5 * UP)
+            output_words.add(t)
+
+        return output_words
 
 
 class EmailModel(Scene):
@@ -1942,8 +1965,6 @@ class RNNBackpropLong(Scene):
                 ApplyMethod(w.move_to, rnn.cells[i].up_arrow.get_end() + 0.75 * UP)
             ]
 
-        CameraFrame
-
         new_frame = self.camera.frame.deepcopy()
         new_frame.set_width(2 * FRAME_WIDTH)
         new_frame.move_to(rnn.get_center())
@@ -1954,4 +1975,142 @@ class RNNBackpropLong(Scene):
             run_time=10,
         )
         self.wait()
+        self.embed()
+
+
+class MachineTranslation(Scene):
+    def construct(self):
+        np.random.seed(0)
+
+        rnn_encoder = RNN(
+            n_cells=4, remove_right_arrow=False, rnn_kwargs={"fill_color": A_RED}
+        )
+        rnn_decoder = RNN(
+            n_cells=4, remove_left_arrow=False, rnn_kwargs={"fill_color": A_BLUE}
+        )
+
+        offset = (
+            rnn_encoder.cells[-1].right_arrow.get_center()
+            - rnn_decoder.cells[0].left_arrow.get_center()
+        )
+        rnn_decoder.shift(offset)
+
+        rnn = VGroup(rnn_encoder, rnn_decoder)
+        rnn.center()
+        rnn.scale(0.5)
+
+        anims = [Write(rnn_encoder.cells[0])]
+        for i in range(1, 8):
+            if i < 4:
+                anims += [FadeIn(rnn_encoder.cells[i], RIGHT)]
+            else:
+                anims += [FadeIn(rnn_decoder.cells[i - 4], RIGHT)]
+
+        each_run_time = 3.0 / len(anims)
+        for anim in anims:
+            self.play(anim, run_time=each_run_time)
+        self.wait()
+
+        b1 = Brace(rnn_encoder, UP)
+        b1.add(b1.get_text("Encoder"))
+
+        b2 = Brace(rnn_decoder, DOWN)
+        b2.add(b2.get_text("Decoder"))
+
+        self.play(Write(b1))
+        self.play(Write(b2))
+        self.wait()
+
+        self.play(Uncreate(b1), Uncreate(b2))
+
+        input_text = rnn_encoder.get_inputs(["my", "name", "is", "vivek"])
+        output_text = rnn_decoder.get_outputs(["मेरा", "नाम", "विवेक", "है"])
+
+        for i in range(4):
+            self.play(FadeIn(input_text[i], UP, run_time=0.5))
+
+        self.play(FadeIn(output_text[0], UP), run_time=0.5)
+        for i in range(1, 4):
+            prev_word_copy = output_text[i - 1].deepcopy()
+            prev_word_copy.move_to(
+                rnn_decoder.cells[i].down_arrow.get_start() + 0.5 * DOWN
+            )
+
+            self.play(
+                TransformFromCopy(output_text[i - 1], prev_word_copy), run_time=0.5
+            )
+            self.play(FadeIn(output_text[i], UP), run_time=0.5)
+        self.wait()
+
+        vec = Tex(
+            f"""
+            \\begin{{bmatrix}}
+            {20 * (np.random.rand() - 0.5):.2f} \\\\
+            {20 * (np.random.rand() - 0.5):.2f} \\\\
+            \\vdots \\\\
+            {20 * (np.random.rand() - 0.5):.2f}
+            \\end{{bmatrix}}
+            """
+        )
+        vec.scale(0.65)
+
+        meaning_text = Text("encodes meaning")
+        meaning_text.next_to(vec, RIGHT)
+        meaning_text.shift(RIGHT)
+
+        arr = Arrow(
+            vec,
+            meaning_text,
+            stroke_width=10,
+            max_width_to_length_ratio=float("inf"),
+            stroke_color=A_VIOLET,
+        )
+
+        meaning_grp = VGroup(vec, meaning_text, arr)
+        meaning_grp.move_to(2.75 * UP)
+
+        self.play(GrowFromPoint(vec, ORIGIN))
+        self.play(Write(arr), Write(meaning_text))
+        self.wait()
+
+        self.play(Uncreate(meaning_grp))
+
+        scale_coeffs = np.polyfit([0, 0.5, 1], [0, 0.5, 0], 2)
+        scale_curve = lambda x: np.polyval(scale_coeffs, x)
+
+        for i in range(4):
+            original_vec = Tex(
+                f"""
+                \\begin{{bmatrix}}
+                {20 * (np.random.rand() - 0.5):.2f} \\\\
+                {20 * (np.random.rand() - 0.5):.2f} \\\\
+                \\vdots \\\\
+                {20 * (np.random.rand() - 0.5):.2f}
+                \\end{{bmatrix}}
+                """
+            )
+            original_vec.scale(0.65)
+
+            vec = original_vec.deepcopy()
+
+            start_point = rnn_encoder.cells[i].get_center()
+            vec.move_to(start_point)
+
+            points = np.array([start_point, start_point / 2 + 2 * UP, ORIGIN])
+            pos_coeffs = np.polyfit([0, 0.5, 1], points, 2)
+            pos_curve = lambda x: np.polyval(pos_coeffs, x)
+            vt = ValueTracker(0)
+
+            def vec_updater(v):
+                new_vec = original_vec.deepcopy()
+                new_vec.scale(scale_curve(vt.get_value()))
+                new_vec.move_to(pos_curve(vt.get_value()))
+
+                v.become(new_vec)
+
+            vec.add_updater(vec_updater)
+
+            self.add(vec)
+            self.play(vt.increment_value, 1, run_time=0.5)
+
         self.embed()
