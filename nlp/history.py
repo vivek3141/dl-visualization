@@ -21,6 +21,7 @@ RNNInference
 RNNBackprop
 RNNBackpropLong
 MachineTranslation
+Attention
 """
 
 A_AQUA = "#8dd3c7"
@@ -2112,5 +2113,52 @@ class MachineTranslation(Scene):
 
             self.add(vec)
             self.play(vt.increment_value, 1, run_time=0.5)
+
+        b_rect = SurroundingRectangle(
+            VGroup(
+                rnn_encoder.cells[-1].sq,
+                rnn_encoder.cells[-1].up_arrow,
+                rnn_encoder.cells[-1].down_arrow,
+            ),
+            color=A_YELLOW,
+            stroke_width=6,
+            fill_opacity=0,
+        )
+        b_text = Text("Bottleneck", color=A_YELLOW)
+        b_text.next_to(b_rect, UP)
+
+        self.play(Write(b_rect), Write(b_text))
+        self.wait()
+
+        self.play(
+            Uncreate(b_rect),
+            Uncreate(b_text),
+            Uncreate(input_text),
+            Uncreate(output_text),
+        )
+
+        self.embed()
+
+
+class Attention(Scene):
+    def construct(self):
+        rnn_encoder = RNN(
+            n_cells=4, remove_right_arrow=False, rnn_kwargs={"fill_color": A_RED}
+        )
+        rnn_decoder = RNN(
+            n_cells=4, remove_left_arrow=False, rnn_kwargs={"fill_color": A_BLUE}
+        )
+
+        offset = (
+            rnn_encoder.cells[-1].right_arrow.get_center()
+            - rnn_decoder.cells[0].left_arrow.get_center()
+        )
+        rnn_decoder.shift(offset)
+
+        rnn = VGroup(rnn_encoder, rnn_decoder)
+        rnn.center()
+        rnn.scale(0.5)
+
+        self.add(rnn)
 
         self.embed()
