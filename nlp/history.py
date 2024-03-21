@@ -2161,4 +2161,28 @@ class Attention(Scene):
 
         self.add(rnn)
 
+        title = Text("Attention Mechanism", color=A_YELLOW)
+        title.scale(1.5)
+        title.shift(3 * UP)
+
+        self.play(Write(title))
+        self.wait()
+
+        init_arrows = VGroup()
+        for i in range(4):
+            start_point = rnn_encoder.cells[i].sq.get_bounding_box_point(UP + RIGHT)
+            end_point = rnn_decoder.cells[0].sq.get_bounding_box_point(UP + LEFT)
+
+            arrow = CurvedArrow(
+                start_point,
+                end_point,
+                angle=-90 * DEGREES,
+                stroke_width=4,
+                tip_config={"width": 0.25, "length": 0.25},
+                color=A_AQUA,
+            )
+            init_arrows.add(arrow)
+        
+        self.add(init_arrows)
+
         self.embed()
