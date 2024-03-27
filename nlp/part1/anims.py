@@ -1,5 +1,6 @@
 from manimlib import *
 import tiktoken
+import scipy
 
 """
 Scenes In Order:
@@ -279,6 +280,143 @@ class Title3b1b(TitleScene):
         "text": "3blue1brown",
         "tex_to_color_map": {"blue": BLUE, "brown": "#CD853F"},
     }
+
+
+class Timeline(Scene):
+    CONFIG = {
+        "color": GREY_E,
+        "text": "3blue1brown",
+        "tex_to_color_map": {"blue": BLUE, "brown": "#CD853F"},
+        "EPS_R": 0.1,
+        "image_paths": [
+            "img/n_gram.png",
+            "img/rnn.png",
+            "img/attention.png",
+            "img/transformer.png",
+        ],
+    }
+
+    def construct(self):
+        brect = Rectangle(
+            height=10 * FRAME_HEIGHT,
+            width=10 * FRAME_WIDTH,
+            fill_opacity=1,
+            color=self.color,
+        )
+
+        title = TexText(
+            self.text if isinstance(self.text, str) else self.text[0],
+            tex_to_color_map=self.tex_to_color_map,
+        )
+        title.scale(1.5)
+        title.to_edge(UP)
+
+        rect = ScreenRectangle(height=6)
+        rect.next_to(title, DOWN)
+
+        t_img = ImageMobject("img/transformer.png", height=5.95)
+        t_img.move_to(rect)
+
+        self.add(brect, rect, title, t_img)
+
+        left_most_point = 30 * LEFT
+        up_most_point = rect.get_center()[1] * UP
+        down_most_point = 10 * DOWN
+        gap = RIGHT * (rect.get_center() - left_most_point)[0] / 4
+        t = ValueTracker(0)  # Max Value of 1
+
+        control_points = left_most_point + np.array(
+            [
+                1 * gap + down_most_point,
+                2 * gap + up_most_point,
+                3 * gap + down_most_point,
+                4 * gap + up_most_point,
+            ]
+        )
+
+        spline = scipy.interpolate.CubicSpline(
+            control_points[:, 0],
+            control_points[:, 1],
+            bc_type="clamped",
+        )
+
+        x_min, x_max = control_points[0][0], control_points[-1][0]
+        curve = FunctionGraph(
+            spline,
+            x_range=[x_min, x_max, 0.01],
+            stroke_width=30,
+            color=WHITE,
+        )
+
+        def curve_updater(curve):
+            t_val = t.get_value()
+            x = x_min + (1 - t_val) * (x_max - x_min)
+            new_curve = FunctionGraph(
+                spline,
+                x_range=[x, x_max],
+                stroke_width=30,
+                color=WHITE,
+            )
+            curve.become(new_curve)
+
+        curve.add_updater(curve_updater)
+
+        def compute_alpha(n):
+            t_val = t.get_value()
+            curr_bin = ((3 - n) / 3) - self.EPS_R
+
+            if curr_bin <= t_val <= curr_bin + self.EPS_R:
+                return (t_val - curr_bin) / self.EPS_R
+            elif t_val > curr_bin + self.EPS_R:
+                return 1
+            else:
+                return 0
+
+        def rect_updater(rect):
+            alpha = compute_alpha(rect.update_n_value)
+            new_rect = ScreenRectangle(
+                height=6 * alpha
+            )
+            new_rect.move_to(rect)
+            rect.become(new_rect)
+
+        def img_updater(img):
+            alpha = compute_alpha(img.update_n_value)
+            new_img = ImageMobject(
+                self.image_paths[img.update_n_value], height=5.95 * alpha
+            )
+            new_img.move_to(img)
+            img.become(new_img)
+
+        rects, images = VGroup(), Group()
+        for n, cp in enumerate(control_points):
+            r = ScreenRectangle(height=6)
+            r.update_n_value = n
+            r.move_to(cp)
+            r.add_updater(rect_updater)
+
+            rects.add(r)
+
+            img = ImageMobject(self.image_paths[n], height=5.95)
+            img.update_n_value = n
+            img.move_to(cp)
+            img.add_updater(img_updater)
+            images.add(img)
+
+        new_frame = self.camera.frame.copy()
+        new_frame.set_width(2.5 * FRAME_WIDTH)
+        new_frame.move_to([-11.25, -5.131797, 0.0])
+
+        self.add(curve, rects, images)
+
+        self.play(
+            Transform(self.camera.frame, new_frame),
+            ApplyMethod(t.set_value, 1),
+            run_time=10,
+        )
+        self.wait()
+
+        self.embed()
 
 
 class StolenPainting(Scene):
