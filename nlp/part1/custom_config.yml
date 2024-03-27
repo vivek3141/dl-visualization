@@ -1,0 +1,5 @@
+style:
+    font: "CMU Serif"
+    background_color: "#000000"
+camera_qualities:
+    default_quality: "ultra_high"

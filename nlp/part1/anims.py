@@ -227,7 +227,7 @@ class WordDistribution(VMobject):
 
 
 class TitleScene(Scene):
-    CONFIG = {"color": None, "text": None}
+    CONFIG = {"color": None, "text": None, "tex_to_color_map": {}}
 
     def construct(self):
         if self.text is None:
@@ -237,7 +237,10 @@ class TitleScene(Scene):
             height=FRAME_HEIGHT, width=FRAME_WIDTH, fill_opacity=1, color=self.color
         )
 
-        title = TexText(self.text)
+        title = TexText(
+            self.text if isinstance(self.text, str) else self.text[0],
+            tex_to_color_map=self.tex_to_color_map,
+        )
         title.scale(1.5)
         title.to_edge(UP)
 
@@ -248,9 +251,64 @@ class TitleScene(Scene):
         self.play(FadeIn(rect, DOWN), Write(title), run_time=2)
         self.wait()
 
+        if isinstance(self.text, list):
+            for i in range(1, len(self.text)):
+                new_title = TexText(
+                    self.text[i], tex_to_color_map=self.tex_to_color_map
+                )
+                new_title.scale(1.5)
+                new_title.to_edge(UP)
+
+                self.play(FadeOut(title, UP), FadeIn(new_title, UP))
+                self.wait()
+
+                title = new_title
+
 
 class TitleU(TitleScene):
     CONFIG = {"color": "#200f21", "text": "Upcoming"}
+
+
+class TitleChatGPT(TitleScene):
+    CONFIG = {"color": "#5c608f", "text": ["ChatGPT", "The Generated Animation"]}
+
+
+class Title3b1b(TitleScene):
+    CONFIG = {
+        "color": GREY_E,
+        "text": "3blue1brown",
+        "tex_to_color_map": {"blue": BLUE, "brown": "#CD853F"},
+    }
+
+
+class StolenPainting(Scene):
+    def construct(self):
+        text = Text("The stolen painting was found by a tree")
+        text.scale(1.5)
+        text.shift(3 * UP)
+
+        l = Line(10 * LEFT, 10 * RIGHT)
+        l.next_to(text, DOWN)
+
+        image = ImageMobject("img/evil_tree.jpg")
+        image.scale(1.675)
+        image.move_to(l, UP)
+        image.shift(0.025 * DOWN)
+
+        svg = SVGMobject("img/evil_tree.svg")
+        svg.set_opacity(0.375)
+        svg.apply_function(lambda p: [p[0], -p[1], 0])
+
+        svg.scale(2 * 1.675)
+        svg.move_to(l, UP)
+        svg.shift(0.15 * UL)
+
+        self.play(Write(text), Write(l))
+        self.play(Write(svg), FadeIn(image), run_time=10)
+        self.remove(svg)
+        self.wait()
+
+        self.embed()
 
 
 class EmailModel(Scene):
