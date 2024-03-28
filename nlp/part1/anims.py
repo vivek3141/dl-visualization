@@ -374,9 +374,7 @@ class Timeline(Scene):
 
         def rect_updater(rect):
             alpha = compute_alpha(rect.update_n_value)
-            new_rect = ScreenRectangle(
-                height=6 * alpha
-            )
+            new_rect = ScreenRectangle(height=6 * alpha)
             new_rect.move_to(rect)
             rect.become(new_rect)
 
@@ -414,6 +412,138 @@ class Timeline(Scene):
             ApplyMethod(t.set_value, 1),
             run_time=10,
         )
+        self.wait()
+
+        self.embed()
+
+
+class NLP(Scene):
+    def construct(self):
+        MAIN_GAP = 4
+        MAIN_COLOR = WHITE
+
+        SUB_SCALE = 0.75
+        SUB_COLOR = A_GREY
+
+        arrow_kwargs = {
+            "stroke_color": A_PINK,
+            "max_width_to_Length_ratio": float("inf"),
+            "stroke_width": 5,
+        }
+
+        title = Text("Natural Language Processing (NLP)", color=A_YELLOW)
+        title.scale(1.5)
+        title.shift(3 * UP)
+
+        speech = Text("Speech", color=MAIN_COLOR)
+        speech.shift(MAIN_GAP * RIGHT + 0.5 * UP)
+
+        tts = TexText(r"Text-To-Speech\\(TTS)", color=SUB_COLOR)
+        tts.scale(SUB_SCALE)
+        tts.next_to(speech, DOWN)
+        tts.shift(1.5 * DL)
+
+        asr = TexText(r"Automatic Speech\\Recognition (ASR)", color=SUB_COLOR)
+        asr.scale(SUB_SCALE)
+        asr.next_to(speech, DOWN)
+        asr.shift(1.5 * DR)
+
+        speech_arrows = VGroup(
+            Arrow(speech, tts, **arrow_kwargs),
+            Arrow(speech, asr, **arrow_kwargs),
+        )
+
+        lm = TexText(r"Language\\Modeling", color=MAIN_COLOR)
+        lm.shift(MAIN_GAP * LEFT + 0.5 * UP)
+
+        tr = TexText(r"Machine\\Translation", color=SUB_COLOR)
+        tr.scale(SUB_SCALE)
+        tr.next_to(lm, DOWN)
+        tr.shift(DL + 0.5 * LEFT)
+
+        ts = TexText(r"Text\\Summarization", color=SUB_COLOR)
+        ts.scale(SUB_SCALE)
+        ts.next_to(lm, DOWN)
+        ts.shift(2 * DOWN)
+
+        qa = TexText(r"Question\\Answering", color=SUB_COLOR)
+        qa.scale(SUB_SCALE)
+        qa.next_to(lm, DOWN)
+        qa.shift(DR + 0.5 * RIGHT)
+
+        lm_arrows = VGroup(
+            Arrow(lm, tr, **arrow_kwargs),
+            Arrow(lm, ts, **arrow_kwargs),
+            Arrow(lm, qa, **arrow_kwargs),
+        )
+
+        grounding = Text("Grounding", color=MAIN_COLOR)
+        grounding.shift(0.5 * UP)
+
+        ti = TexText(r"Text to Image", color=SUB_COLOR)
+        ti.scale(SUB_SCALE)
+        ti.next_to(grounding, DOWN)
+        ti.shift(DOWN)
+
+        grounding_arrows = VGroup(
+            Arrow(grounding, ti, **arrow_kwargs),
+        )
+
+        category_arrows = VGroup(
+            Arrow(title, speech, **arrow_kwargs),
+            Arrow(title, lm, **arrow_kwargs),
+            Arrow(title, grounding, **arrow_kwargs),
+        )
+
+        self.add(title, speech, tts, asr, lm, tr, ts, qa, grounding, ti)
+        self.add(speech_arrows, lm_arrows, grounding_arrows, category_arrows)
+        self.wait()
+
+        self.play(Indicate(speech))
+        self.play(Indicate(tts), run_time=0.5)
+        self.play(Indicate(asr), run_time=0.5)
+        self.wait()
+
+        self.play(Indicate(lm))
+        self.play(Indicate(tr), run_time=0.5)
+        self.play(Indicate(ts), run_time=0.5)
+        self.play(Indicate(qa), run_time=0.5)
+        self.wait()
+
+        self.play(Indicate(grounding))
+        self.play(Indicate(ti), run_time=0.5)
+        self.wait()
+
+        arr = CurvedArrow(
+            tr.get_bounding_box_point(RIGHT),
+            tts.get_bounding_box_point(UP) + 0.25 * UL,
+            angle=-TAU / 4,
+            color=RED,
+            stroke_width=10,
+            max_width_to_length_ratio=float("inf"),
+            buff=0.375,
+        )
+
+        img = ImageMobject("img/slt.jpeg")
+        img.scale(0.5)
+        img.shift(2 * LEFT)
+        img.add_background_rectangle(
+            stroke_width=8, stroke_opacity=1, opacity=0, color=A_GREY
+        )
+
+        lbl = Text("Spoken Language Translation")
+        lbl.next_to(img, UP)
+
+        img_grp = Group(lbl, img)
+        img_grp.add_background_rectangle(opacity=0.875)
+
+        self.play(
+            ShowCreation(arr, run_time=2.5),
+            GrowFromCenter(img_grp, run_time=1),
+        )
+        self.wait()
+
+        self.play(Uncreate(arr), Uncreate(img_grp))
         self.wait()
 
         self.embed()
