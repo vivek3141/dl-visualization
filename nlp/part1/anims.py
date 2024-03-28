@@ -289,11 +289,13 @@ class Timeline(Scene):
         "tex_to_color_map": {"blue": BLUE, "brown": "#CD853F"},
         "EPS_R": 0.1,
         "image_paths": [
+            "img/nlp.png",
             "img/n_gram.png",
             "img/rnn.png",
             "img/attention.png",
             "img/transformer.png",
         ],
+        "zoomed_out_point": np.array([-15, -5.131797, 0.0]),
     }
 
     def construct(self):
@@ -327,10 +329,8 @@ class Timeline(Scene):
 
         control_points = left_most_point + np.array(
             [
-                1 * gap + down_most_point,
-                2 * gap + up_most_point,
-                3 * gap + down_most_point,
-                4 * gap + up_most_point,
+                i * gap + (i & 1 ^ 1) * up_most_point + (i & 1) * down_most_point
+                for i in range(5)
             ]
         )
 
@@ -401,18 +401,35 @@ class Timeline(Scene):
             img.add_updater(img_updater)
             images.add(img)
 
-        new_frame = self.camera.frame.copy()
-        new_frame.set_width(2.5 * FRAME_WIDTH)
-        new_frame.move_to([-11.25, -5.131797, 0.0])
+        zoomed_out_frame = self.camera.frame.copy()
+        zoomed_out_frame.set_width(3 * FRAME_WIDTH)
+        zoomed_out_frame.move_to(self.zoomed_out_point)
 
         self.add(curve, rects, images)
 
         self.play(
-            Transform(self.camera.frame, new_frame),
-            ApplyMethod(t.set_value, 1),
-            run_time=10,
+            AnimationGroup(
+                Transform(self.camera.frame, zoomed_out_frame, run_time=10),
+                ApplyMethod(t.set_value, 1, run_time=10),
+                lag_ratio=DEFAULT_LAGGED_START_LAG_RATIO,
+            )
         )
         self.wait()
+
+        for i in range(5):
+            new_frame = self.camera.frame.copy()
+            new_frame.set_width(images[i].get_width())
+            new_frame.move_to(images[i])
+
+            self.play(
+                Transform(self.camera.frame, new_frame, run_time=5),
+            )
+            self.wait()
+
+            self.play(
+                Transform(self.camera.frame, zoomed_out_frame, run_time=5),
+            )
+            self.wait()
 
         self.embed()
 
