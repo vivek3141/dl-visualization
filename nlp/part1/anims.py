@@ -7,6 +7,11 @@ import scipy
 """
 Scenes In Order:
 
+TitleU
+TitleChatGPT
+Title3b1b
+Timeline
+NLP
 EmailModel
 MNISTClassification
 NextWordPrediction
@@ -1389,13 +1394,14 @@ class Thumb(Scene):
             t.rotate(np.random.uniform(0, TAU))
             t.move_to(cloud)
             t.shift(
-                1.25 * np.random.uniform(-1, 1) * UP + 1.25 * np.random.uniform(-1, 1) * RIGHT
+                1.25 * np.random.uniform(-1, 1) * UP
+                + 1.25 * np.random.uniform(-1, 1) * RIGHT
             )
             words.add(t)
 
         title = Text("Language Model?", color=A_YELLOW, font="Berlin Sans FB")
-        title.scale(2.5)
-        title.shift(3 * UP)
+        title.scale(3)
+        title.shift(2.75 * UP)
 
         dist = WordDistribution(
             ["the", "blue", "sky", "green", "falling"],
@@ -1415,5 +1421,10 @@ class Thumb(Scene):
         )
         arr.shift(0.75 * DOWN)
 
-        self.add(title, cloud, dist, arr, words)
+        grp = VGroup(title, cloud, dist, arr, words)
+        grp.center()
+
+        self.add(grp)
+        self.wait()
+
         self.embed()
