@@ -1,4 +1,6 @@
 from manimlib import *
+from manim_fonts import *
+
 import tiktoken
 import scipy
 
@@ -1327,4 +1329,91 @@ class InferenceAlgorithms(Scene):
                 self.play(FadeIn(texts[i], DOWN), run_time=1)
         self.wait()
 
+        self.embed()
+
+
+class TitleN(TitleScene):
+    CONFIG = {"color": "#200f21", "text": "Next Video"}
+
+
+class Thumb(Scene):
+    CONFIG = {"num_points": 6}
+
+    def construct(self):
+        np.random.seed(0)
+
+        control_points = []
+        for i in range(self.num_points):
+            mask = (1 if i % 2 == 0 else -1) * np.random.uniform(0, 0.25)
+            mask = 0
+            theta = i * TAU / self.num_points
+            x = 2.25 * np.cos(theta) + mask
+            y = 2.25 * np.sin(theta) + mask
+            control_points.append([x, y, 0])
+        control_points = np.array(control_points)
+
+        cloud = VGroup()
+        for i in range(self.num_points):
+            arc = ArcBetweenPoints(
+                control_points[i],
+                control_points[(i + 1) % self.num_points],
+                angle=TAU / 3,
+            )
+            cloud.add(arc)
+        inside = Polygon(*control_points, color=GREY_D, fill_opacity=1, stroke_width=0)
+        cloud.add(inside)
+
+        cloud.shift(4.25 * LEFT + 0.75 * DOWN)
+        cloud.set_fill(GREY_D, 1)
+
+        words_raw = [
+            "Laplace Transform",
+            "Zagier Map",
+            "Riemann Hypothesis",
+            "P vs NP",
+            "Neural Network",
+            "Splay Tree",
+            "The Mandelbrot Set",
+            "The Collatz Conjecture",
+            "The Riemann Hypothesis",
+            "BNW Algorithm",
+            "Queuing Theory",
+            "Category Theory",
+            "The Halting Problem",
+        ]
+
+        words = VGroup()
+        for word in words_raw:
+            t = Text(word)
+            t.scale(0.5)
+            t.rotate(np.random.uniform(0, TAU))
+            t.move_to(cloud)
+            t.shift(
+                1.25 * np.random.uniform(-1, 1) * UP + 1.25 * np.random.uniform(-1, 1) * RIGHT
+            )
+            words.add(t)
+
+        title = Text("Language Model?", color=A_YELLOW, font="Berlin Sans FB")
+        title.scale(2.5)
+        title.shift(3 * UP)
+
+        dist = WordDistribution(
+            ["the", "blue", "sky", "green", "falling"],
+            [0.1524, 0.0859, 0.0729, 0.0508, 0.034],
+            max_bar_width=4,
+            prob_bar_color=A_GREEN,
+        )
+        dist.scale(1.25)
+        dist.shift(4.25 * RIGHT + 0.75 * DOWN)
+
+        arr = Arrow(
+            1.5 * LEFT,
+            1.5 * RIGHT,
+            stroke_color=RED,
+            max_width_to_length_ratio=300,
+            stroke_width=40,
+        )
+        arr.shift(0.75 * DOWN)
+
+        self.add(title, cloud, dist, arr, words)
         self.embed()
