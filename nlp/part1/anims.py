@@ -1368,7 +1368,7 @@ class Thumb(Scene):
         inside = Polygon(*control_points, color=GREY_D, fill_opacity=1, stroke_width=0)
         cloud.add(inside)
 
-        cloud.shift(4.25 * LEFT + 0.75 * DOWN)
+        cloud.shift(4 * LEFT + 0.75 * DOWN)
         cloud.set_fill(GREY_D, 1)
 
         words_raw = [
@@ -1410,7 +1410,7 @@ class Thumb(Scene):
             prob_bar_color=A_GREEN,
         )
         dist.scale(1.25)
-        dist.shift(4.25 * RIGHT + 0.75 * DOWN)
+        dist.shift(4 * RIGHT + 0.75 * DOWN)
 
         arr = Arrow(
             1.5 * LEFT,
