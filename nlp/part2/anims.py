@@ -4,14 +4,6 @@ import tiktoken
 """
 Scenes In Order:
 
-EmailModel
-MNISTClassification
-NextWordPrediction
-DiceProbability
-NGramModel
-Inference
-InferenceAlgorithms
-AlexNet
 NeuralLM
 Pendulum
 Extrapolation
@@ -493,7 +485,7 @@ class RNN(VMobject):
 
 
 class TitleScene(Scene):
-    CONFIG = {"color": None, "text": None}
+    CONFIG = {"color": None, "text": None, "tex_to_color_map": {}}
 
     def construct(self):
         if self.text is None:
@@ -503,7 +495,10 @@ class TitleScene(Scene):
             height=FRAME_HEIGHT, width=FRAME_WIDTH, fill_opacity=1, color=self.color
         )
 
-        title = TexText(self.text)
+        title = TexText(
+            self.text if isinstance(self.text, str) else self.text[0],
+            tex_to_color_map=self.tex_to_color_map,
+        )
         title.scale(1.5)
         title.to_edge(UP)
 
@@ -514,10 +509,29 @@ class TitleScene(Scene):
         self.play(FadeIn(rect, DOWN), Write(title), run_time=2)
         self.wait()
 
+        if isinstance(self.text, list):
+            for i in range(1, len(self.text)):
+                new_title = TexText(
+                    self.text[i], tex_to_color_map=self.tex_to_color_map
+                )
+                new_title.scale(1.5)
+                new_title.to_edge(UP)
 
-class AlexNet(Scene):
-    def construct(self):
-        pass
+                self.play(FadeOut(title, UP), FadeIn(new_title, UP))
+                self.wait()
+
+                title = new_title
+
+
+class TitleL(TitleScene):
+    CONFIG = {"color": "#5c608f", "text": "Last Video"}
+
+
+class TitleDpub(TitleScene):
+    CONFIG = {
+        "color": GREY_E,
+        "text": "distill.pub",
+    }
 
 
 class NeuralLM(Scene):
@@ -1541,5 +1555,101 @@ class Attention(Scene):
 
         self.play(TransformFromCopy(eq, VMobject().move_to(decoder_label)))
         self.wait()
+
+        self.embed()
+
+class LSTMCell(VGroup):
+    CONFIG = {
+        "circle_radius": 0.15,
+    }
+
+    def __init__(self, *args, **kwargs):
+        VGroup.__init__(self, *args, **kwargs)
+
+        self.rect = RoundedRectangle(width=4.5, height=3)
+
+        self.up_line = Line(2.25 * LEFT, 2.25 * RIGHT)
+        self.up_line.shift(1 * UP)
+
+        self.down_line = Line(2.25 * LEFT, 0.5 * RIGHT)
+        self.down_line.shift(1 * DOWN)
+
+        self.output_gate = VGroup(
+            Line(0.5 * RIGHT + 1 * DOWN, 0.5 * RIGHT + 0.5 * DOWN),
+            Arrow(0.5 * RIGHT + 0.5 * DOWN, 1 * RIGHT + 0.5 * DOWN, buff=0),
+            Circle(
+                radius=self.circle_radius, fill_opacity=1, color=A_GREEN
+            ).move_to(0.5 * RIGHT + 0.5 * DOWN),
+        )
+
+        gate = Square(side_length=0.25)
+        gate.move_to(self.output_gate[1].get_end() + 0.2 * RIGHT)
+        self.output_gate.add(gate)
+
+        self.output_gate.add(
+            Line(gate, gate.get_center()[0] * RIGHT + 1 * DOWN),
+            Line(
+                gate.get_center()[0] * RIGHT + 1 * DOWN, 2.25 * RIGHT + 1 * DOWN
+            ),
+        )
+
+        self.tanh_gate_1 = VGroup(
+            Line(gate, gate.get_center()[0] * RIGHT + 1 * UP),
+            Circle(
+                radius=self.circle_radius, fill_opacity=1, color=A_GREEN
+            ).move_to(gate.get_center()[0] * RIGHT + 0.375 * UP),
+        )
+
+        self.forget_gate = VGroup(
+            Line(
+                (2.25 - 2.75 / 4) * LEFT + 1 * DOWN,
+                (2.25 - 2.75 / 4) * LEFT + 1 * UP,
+            ),
+            Circle(
+                radius=self.circle_radius, fill_opacity=1, color=A_RED
+            ).move_to((2.25 - 2.75 / 4) * LEFT + 0.5 * DOWN),
+            Square(side_length=0.25).move_to((2.25 - 2.75 / 4) * LEFT + 1 * UP),
+        )
+
+        self.input_gate = VGroup(
+            Line(
+                (2.25 - 2 * 2.75 / 4) * LEFT + 1 * DOWN,
+                (2.25 - 2 * 2.75 / 4) * LEFT + 0.25 * UP,
+            ),
+            Circle(
+                radius=self.circle_radius, fill_opacity=1, color=A_BLUE
+            ).move_to((2.25 - 2 * 2.75 / 4) * LEFT + 0.5 * DOWN),
+            Arrow(
+                (2.25 - 2 * 2.75 / 4) * LEFT + 0.25 * UP,
+                (2.25 - 3 * 2.75 / 4 + 0.2) * LEFT + 0.25 * UP,
+                buff=0,
+            ),
+        )
+
+        self.update_gate = VGroup(
+            Line(
+                (2.25 - 3 * 2.75 / 4) * LEFT + 1 * DOWN,
+                (2.25 - 3 * 2.75 / 4) * LEFT + 1 * UP,
+            ),
+            Circle(
+                radius=self.circle_radius, fill_opacity=1, color=A_YELLOW
+            ).move_to((2.25 - 3 * 2.75 / 4) * LEFT + 0.5 * DOWN),
+            Square(side_length=0.25).move_to(
+                (2.25 - 3 * 2.75 / 4) * LEFT + 0.25 * UP
+            ),
+            Square(side_length=0.25).move_to(
+                (2.25 - 3 * 2.75 / 4) * LEFT + 1 * UP
+            ),
+        )
+
+        self.add(self.rect, self.up_line, self.down_line)
+        self.add(self.output_gate, self.tanh_gate_1)
+        self.add(self.forget_gate, self.input_gate, self.update_gate)
+
+
+class LSTMDemo(Scene):
+    def construct(self):
+        l = LSTMCell()
+        self.add(l)
 
         self.embed()
