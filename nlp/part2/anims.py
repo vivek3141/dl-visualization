@@ -1571,6 +1571,7 @@ class LSTMCell(VGroup):
         "arrow_kwargs": {"color": WHITE},
         "tanh_color": A_PINK,
         "sigmoid_color": A_AQUA,
+        "arrow_end_buff": 0.05,
     }
 
     def __init__(self, *args, **kwargs):
@@ -1583,32 +1584,27 @@ class LSTMCell(VGroup):
             width=4.5, height=3, corner_radius=0.375, fill_color=GREY_E, fill_opacity=1
         )
 
-        self.up_line = VGroup(
-            Line(2.25 * LEFT, (2.25 - 2.75 / 4 + self.square_side_length / 2) * LEFT),
-            Line(
-                (2.25 - 2.75 / 4 - self.square_side_length / 2) * LEFT,
-                (2.25 - 3 * 2.75 / 4 + self.square_side_length / 2) * LEFT,
-            ),
-            Line(
-                (2.25 - 3 * 2.75 / 4 - self.square_side_length / 2) * LEFT,
-                2.25 * RIGHT,
-            ),
-        )
+        # self.up_line = VGroup(
+        #     Line(2.25 * LEFT, (2.25 - 2.75 / 4 + self.square_side_length / 2) * LEFT),
+        #     Line(
+        #         (2.25 - 2.75 / 4 - self.square_side_length / 2) * LEFT,
+        #         (2.25 - 3 * 2.75 / 4 + self.square_side_length / 2) * LEFT,
+        #     ),
+        #     Line(
+        #         (2.25 - 3 * 2.75 / 4 - self.square_side_length / 2) * LEFT,
+        #         2.25 * RIGHT,
+        #     ),
+        # )
+        self.up_line = VGroup(Line(2.25 * LEFT, 2.25 * RIGHT))
         self.up_line.shift(1 * UP)
 
-        self.down_line = Line(2.25 * LEFT, 0.5 * RIGHT)
+        self.down_line = VGroup(Line(2.25 * LEFT, 0.5 * RIGHT))
         self.down_line.shift(1 * DOWN)
 
         self.output_gate = VGroup(
             Line(
                 0.5 * RIGHT + 1 * DOWN,
                 0.5 * RIGHT + (0.5 + self.circle_radius) * DOWN,
-                **self.arrow_kwargs,
-            ),
-            Arrow(
-                (0.5 + self.circle_radius) * RIGHT + 0.5 * DOWN,
-                1 * RIGHT + 0.5 * DOWN,
-                buff=0,
                 **self.arrow_kwargs,
             ),
             Circle(
@@ -1618,10 +1614,19 @@ class LSTMCell(VGroup):
             )
             .move_to(0.5 * RIGHT + 0.5 * DOWN)
             .add(Tex(r"\sigma").scale(0.625).move_to(0.5 * RIGHT + 0.5 * DOWN)),
+            Arrow(
+                (0.5 + self.circle_radius) * RIGHT + 0.5 * DOWN,
+                1 * RIGHT + 0.5 * DOWN,
+                buff=0,
+                **self.arrow_kwargs,
+            ),
         )
 
         gate = Square(side_length=self.square_side_length, **self.square_kwargs)
-        gate.move_to(self.output_gate[1].get_end() + 0.25 * RIGHT)
+        gate.move_to(
+            self.output_gate[2].get_end()
+            + (self.arrow_end_buff + self.square_side_length / 2) * RIGHT
+        )
         gate.add(Tex(r"\cross").scale(0.625).move_to(gate.get_center()))
         self.output_gate.add(gate)
 
@@ -1667,9 +1672,11 @@ class LSTMCell(VGroup):
                 .scale(0.625)
                 .move_to((2.25 - 2.75 / 4) * LEFT + 0.5 * DOWN)
             ),
-            Line(
+            Arrow(
                 (2.25 - 2.75 / 4) * LEFT + (0.5 - self.circle_radius) * DOWN,
-                (2.25 - 2.75 / 4) * LEFT + (1 - self.square_side_length / 2) * UP,
+                (2.25 - 2.75 / 4) * LEFT
+                + (1 - self.square_side_length / 2 - self.arrow_end_buff) * UP,
+                buff=0,
             ),
             Square(side_length=self.square_side_length, **self.square_kwargs)
             .move_to((2.25 - 2.75 / 4) * LEFT + 1 * UP)
@@ -1700,7 +1707,14 @@ class LSTMCell(VGroup):
             ),
             Arrow(
                 (2.25 - 2 * 2.75 / 4) * LEFT + 0.25 * UP,
-                (2.25 - 3 * 2.75 / 4 + 0.25) * LEFT + 0.25 * UP,
+                (
+                    2.25
+                    - 3 * 2.75 / 4
+                    + self.square_side_length / 2
+                    + self.arrow_end_buff
+                )
+                * LEFT
+                + 0.25 * UP,
                 buff=0,
                 **self.arrow_kwargs,
             ),
@@ -1748,11 +1762,37 @@ class LSTMCell(VGroup):
         self.add(self.output_gate, self.tanh_gate_1)
         self.add(self.forget_gate, self.input_gate, self.update_gate)
 
+    def write(self, scene):
+        scene.play(Write(self.rect))
+        self.write_subpart(self.up_line, scene)
+        self.write_subpart(self.down_line, scene)
+
+        self.write_subpart(self.output_gate, scene)
+        self.write_subpart(self.tanh_gate_1, scene)
+        self.write_subpart(self.forget_gate, scene)
+        self.write_subpart(self.input_gate, scene)
+        self.write_subpart(self.update_gate, scene)
+
+    def write_subpart(self, part, scene):
+        for obj in part:
+            if isinstance(obj, Circle) or isinstance(obj, Square):
+                scene.play(GrowFromCenter(obj), run_time=0.5)
+            else:
+                scene.play(ShowCreation(obj), run_time=0.5)
+
 
 class LSTMDemo(Scene):
     def construct(self):
+        title = Text("Long Short-Term Memory", color=A_YELLOW)
+        title.scale(1.5)
+        title.shift(3 * UP)
+
         l = LSTMCell()
-        l.scale(2)
-        self.add(l)
+        l.scale(1.75)
+        l.shift(0.5 * DOWN)
+
+        self.play(Write(title))
+        l.write(self)
+        self.wait()
 
         self.embed()
