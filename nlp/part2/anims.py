@@ -1558,88 +1558,190 @@ class Attention(Scene):
 
         self.embed()
 
+
 class LSTMCell(VGroup):
     CONFIG = {
-        "circle_radius": 0.15,
+        "gate_width": 0.4,
+        "circle_kwargs": {"fill_opacity": 0.5},
+        "square_kwargs": {
+            "fill_opacity": 1,
+            "fill_color": BLACK,
+            "stroke_color": A_GREY,
+        },
+        "arrow_kwargs": {"color": WHITE},
+        "tanh_color": A_PINK,
+        "sigmoid_color": A_AQUA,
     }
 
     def __init__(self, *args, **kwargs):
         VGroup.__init__(self, *args, **kwargs)
 
-        self.rect = RoundedRectangle(width=4.5, height=3)
+        self.circle_radius = self.gate_width / 1.75
+        self.square_side_length = self.gate_width
 
-        self.up_line = Line(2.25 * LEFT, 2.25 * RIGHT)
+        self.rect = RoundedRectangle(
+            width=4.5, height=3, corner_radius=0.375, fill_color=GREY_E, fill_opacity=1
+        )
+
+        self.up_line = VGroup(
+            Line(2.25 * LEFT, (2.25 - 2.75 / 4 + self.square_side_length / 2) * LEFT),
+            Line(
+                (2.25 - 2.75 / 4 - self.square_side_length / 2) * LEFT,
+                (2.25 - 3 * 2.75 / 4 + self.square_side_length / 2) * LEFT,
+            ),
+            Line(
+                (2.25 - 3 * 2.75 / 4 - self.square_side_length / 2) * LEFT,
+                2.25 * RIGHT,
+            ),
+        )
         self.up_line.shift(1 * UP)
 
         self.down_line = Line(2.25 * LEFT, 0.5 * RIGHT)
         self.down_line.shift(1 * DOWN)
 
         self.output_gate = VGroup(
-            Line(0.5 * RIGHT + 1 * DOWN, 0.5 * RIGHT + 0.5 * DOWN),
-            Arrow(0.5 * RIGHT + 0.5 * DOWN, 1 * RIGHT + 0.5 * DOWN, buff=0),
+            Line(
+                0.5 * RIGHT + 1 * DOWN,
+                0.5 * RIGHT + (0.5 + self.circle_radius) * DOWN,
+                **self.arrow_kwargs,
+            ),
+            Arrow(
+                (0.5 + self.circle_radius) * RIGHT + 0.5 * DOWN,
+                1 * RIGHT + 0.5 * DOWN,
+                buff=0,
+                **self.arrow_kwargs,
+            ),
             Circle(
-                radius=self.circle_radius, fill_opacity=1, color=A_GREEN
-            ).move_to(0.5 * RIGHT + 0.5 * DOWN),
+                radius=self.circle_radius,
+                color=self.sigmoid_color,
+                **self.circle_kwargs,
+            )
+            .move_to(0.5 * RIGHT + 0.5 * DOWN)
+            .add(Tex(r"\sigma").scale(0.625).move_to(0.5 * RIGHT + 0.5 * DOWN)),
         )
 
-        gate = Square(side_length=0.25)
-        gate.move_to(self.output_gate[1].get_end() + 0.2 * RIGHT)
+        gate = Square(side_length=self.square_side_length, **self.square_kwargs)
+        gate.move_to(self.output_gate[1].get_end() + 0.25 * RIGHT)
+        gate.add(Tex(r"\cross").scale(0.625).move_to(gate.get_center()))
         self.output_gate.add(gate)
 
         self.output_gate.add(
             Line(gate, gate.get_center()[0] * RIGHT + 1 * DOWN),
-            Line(
-                gate.get_center()[0] * RIGHT + 1 * DOWN, 2.25 * RIGHT + 1 * DOWN
-            ),
+            Line(gate.get_center()[0] * RIGHT + 1 * DOWN, 2.25 * RIGHT + 1 * DOWN),
         )
 
         self.tanh_gate_1 = VGroup(
-            Line(gate, gate.get_center()[0] * RIGHT + 1 * UP),
+            Line(
+                gate, gate.get_center()[0] * RIGHT + (0.375 - self.circle_radius) * UP
+            ),
             Circle(
-                radius=self.circle_radius, fill_opacity=1, color=A_GREEN
-            ).move_to(gate.get_center()[0] * RIGHT + 0.375 * UP),
+                radius=self.circle_radius,
+                color=self.tanh_color,
+                **self.circle_kwargs,
+            )
+            .move_to(gate.get_center()[0] * RIGHT + 0.375 * UP)
+            .add(
+                Tex(r"\mathrm{tanh}")
+                .scale(0.375)
+                .move_to(gate.get_center()[0] * RIGHT + 0.375 * UP)
+            ),
+            Line(
+                gate.get_center()[0] * RIGHT + (0.375 + self.circle_radius) * UP,
+                gate.get_center()[0] * RIGHT + 1 * UP,
+            ),
         )
 
         self.forget_gate = VGroup(
             Line(
                 (2.25 - 2.75 / 4) * LEFT + 1 * DOWN,
-                (2.25 - 2.75 / 4) * LEFT + 1 * UP,
+                (2.25 - 2.75 / 4) * LEFT + (0.5 + self.circle_radius) * DOWN,
             ),
             Circle(
-                radius=self.circle_radius, fill_opacity=1, color=A_RED
-            ).move_to((2.25 - 2.75 / 4) * LEFT + 0.5 * DOWN),
-            Square(side_length=0.25).move_to((2.25 - 2.75 / 4) * LEFT + 1 * UP),
+                radius=self.circle_radius,
+                color=self.sigmoid_color,
+                **self.circle_kwargs,
+            )
+            .move_to((2.25 - 2.75 / 4) * LEFT + 0.5 * DOWN)
+            .add(
+                Tex(r"\sigma")
+                .scale(0.625)
+                .move_to((2.25 - 2.75 / 4) * LEFT + 0.5 * DOWN)
+            ),
+            Line(
+                (2.25 - 2.75 / 4) * LEFT + (0.5 - self.circle_radius) * DOWN,
+                (2.25 - 2.75 / 4) * LEFT + (1 - self.square_side_length / 2) * UP,
+            ),
+            Square(side_length=self.square_side_length, **self.square_kwargs)
+            .move_to((2.25 - 2.75 / 4) * LEFT + 1 * UP)
+            .add(
+                Tex(r"\cross").scale(0.625).move_to((2.25 - 2.75 / 4) * LEFT + 1 * UP)
+            ),
         )
 
         self.input_gate = VGroup(
             Line(
                 (2.25 - 2 * 2.75 / 4) * LEFT + 1 * DOWN,
-                (2.25 - 2 * 2.75 / 4) * LEFT + 0.25 * UP,
+                (2.25 - 2 * 2.75 / 4) * LEFT + (0.5 + self.circle_radius) * DOWN,
             ),
             Circle(
-                radius=self.circle_radius, fill_opacity=1, color=A_BLUE
-            ).move_to((2.25 - 2 * 2.75 / 4) * LEFT + 0.5 * DOWN),
+                radius=self.circle_radius,
+                color=self.sigmoid_color,
+                **self.circle_kwargs,
+            )
+            .move_to((2.25 - 2 * 2.75 / 4) * LEFT + 0.5 * DOWN)
+            .add(
+                Tex(r"\sigma")
+                .scale(0.625)
+                .move_to((2.25 - 2 * 2.75 / 4) * LEFT + 0.5 * DOWN)
+            ),
+            Line(
+                (2.25 - 2 * 2.75 / 4) * LEFT + (0.5 - self.circle_radius) * DOWN,
+                (2.25 - 2 * 2.75 / 4) * LEFT + 0.25 * UP,
+            ),
             Arrow(
                 (2.25 - 2 * 2.75 / 4) * LEFT + 0.25 * UP,
-                (2.25 - 3 * 2.75 / 4 + 0.2) * LEFT + 0.25 * UP,
+                (2.25 - 3 * 2.75 / 4 + 0.25) * LEFT + 0.25 * UP,
                 buff=0,
+                **self.arrow_kwargs,
             ),
         )
 
         self.update_gate = VGroup(
             Line(
                 (2.25 - 3 * 2.75 / 4) * LEFT + 1 * DOWN,
-                (2.25 - 3 * 2.75 / 4) * LEFT + 1 * UP,
+                (2.25 - 3 * 2.75 / 4) * LEFT + (0.5 + self.circle_radius) * DOWN,
             ),
             Circle(
-                radius=self.circle_radius, fill_opacity=1, color=A_YELLOW
-            ).move_to((2.25 - 3 * 2.75 / 4) * LEFT + 0.5 * DOWN),
-            Square(side_length=0.25).move_to(
-                (2.25 - 3 * 2.75 / 4) * LEFT + 0.25 * UP
+                radius=self.circle_radius,
+                color=self.tanh_color,
+                **self.circle_kwargs,
+            )
+            .move_to((2.25 - 3 * 2.75 / 4) * LEFT + 0.5 * DOWN)
+            .add(
+                Tex(r"\mathrm{tanh}")
+                .scale(0.375)
+                .move_to((2.25 - 3 * 2.75 / 4) * LEFT + 0.5 * DOWN)
             ),
-            Square(side_length=0.25).move_to(
-                (2.25 - 3 * 2.75 / 4) * LEFT + 1 * UP
+            Line(
+                (2.25 - 3 * 2.75 / 4) * LEFT + (0.5 - self.circle_radius) * DOWN,
+                (2.25 - 3 * 2.75 / 4) * LEFT
+                + (0.25 - self.square_side_length / 2) * UP,
             ),
+            Square(side_length=self.square_side_length, **self.square_kwargs)
+            .move_to((2.25 - 3 * 2.75 / 4) * LEFT + 0.25 * UP)
+            .add(
+                Tex(r"\cross")
+                .scale(0.625)
+                .move_to((2.25 - 3 * 2.75 / 4) * LEFT + 0.25 * UP)
+            ),
+            Line(
+                (2.25 - 3 * 2.75 / 4) * LEFT
+                + (0.25 + self.square_side_length / 2) * UP,
+                (2.25 - 3 * 2.75 / 4) * LEFT + (1 - self.square_side_length / 2) * UP,
+            ),
+            Square(side_length=self.square_side_length, **self.square_kwargs)
+            .move_to((2.25 - 3 * 2.75 / 4) * LEFT + 1 * UP)
+            .add(Tex(r"+").scale(0.625).move_to((2.25 - 3 * 2.75 / 4) * LEFT + 1 * UP)),
         )
 
         self.add(self.rect, self.up_line, self.down_line)
@@ -1650,6 +1752,7 @@ class LSTMCell(VGroup):
 class LSTMDemo(Scene):
     def construct(self):
         l = LSTMCell()
+        l.scale(2)
         self.add(l)
 
         self.embed()
