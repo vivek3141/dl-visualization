@@ -1572,6 +1572,21 @@ class LSTMCell(VGroup):
         "tanh_color": A_PINK,
         "sigmoid_color": A_AQUA,
         "arrow_end_buff": 0.05,
+        "hidden_arrow_length": 1,
+        "hidden_arrow_kwargs": {
+            "max_width_to_length_ratio": float("inf"),
+            "stroke_width": 7.5,
+            "stroke_color": A_GREY,
+            "buff": 0.125,
+        },
+        "hidden_tex_color_map": {
+            "{c}": A_LAVENDER,
+            "{x}": A_PINK,
+            "{h}": A_GREEN,
+            "{y}": A_BLUE,
+            "{t}": A_YELLOW,
+            "1": A_UNKA,
+        },
     }
 
     def __init__(self, *args, **kwargs):
@@ -1584,17 +1599,6 @@ class LSTMCell(VGroup):
             width=4.5, height=3, corner_radius=0.375, fill_color=GREY_E, fill_opacity=1
         )
 
-        # self.up_line = VGroup(
-        #     Line(2.25 * LEFT, (2.25 - 2.75 / 4 + self.square_side_length / 2) * LEFT),
-        #     Line(
-        #         (2.25 - 2.75 / 4 - self.square_side_length / 2) * LEFT,
-        #         (2.25 - 3 * 2.75 / 4 + self.square_side_length / 2) * LEFT,
-        #     ),
-        #     Line(
-        #         (2.25 - 3 * 2.75 / 4 - self.square_side_length / 2) * LEFT,
-        #         2.25 * RIGHT,
-        #     ),
-        # )
         self.up_line = VGroup(Line(2.25 * LEFT, 2.25 * RIGHT))
         self.up_line.shift(1 * UP)
 
@@ -1758,14 +1762,61 @@ class LSTMCell(VGroup):
             .add(Tex(r"+").scale(0.625).move_to((2.25 - 3 * 2.75 / 4) * LEFT + 1 * UP)),
         )
 
+        self.left_arrows = VGroup(
+            Arrow(
+                (2.25 + self.hidden_arrow_length) * LEFT + 1 * UP,
+                2.25 * LEFT + 1 * UP,
+                **self.hidden_arrow_kwargs,
+            ),
+            Arrow(
+                (2.25 + self.hidden_arrow_length) * LEFT + 1 * DOWN,
+                2.25 * LEFT + 1 * DOWN,
+                **self.hidden_arrow_kwargs,
+            ),
+        )
+
+        self.left_arrows.add(
+            Tex(r"{c}_{{t}-1}", tex_to_color_map=self.hidden_tex_color_map)
+            .scale(0.75)
+            .move_to(self.left_arrows[0].get_start() + 0.375 * LEFT),
+            Tex(r"{h}_{{t}-1}", tex_to_color_map=self.hidden_tex_color_map)
+            .scale(0.75)
+            .move_to(self.left_arrows[1].get_start() + 0.375 * LEFT),
+        )
+
+        self.right_arrows = VGroup(
+            Arrow(
+                2.25 * RIGHT + 1 * UP,
+                (2.25 + self.hidden_arrow_length) * RIGHT + 1 * UP,
+                **self.hidden_arrow_kwargs,
+            ),
+            Arrow(
+                2.25 * RIGHT + 1 * DOWN,
+                (2.25 + self.hidden_arrow_length) * RIGHT + 1 * DOWN,
+                **self.hidden_arrow_kwargs,
+            ),
+        )
+
+        self.right_arrows.add(
+            Tex(r"{c}_{t}", tex_to_color_map=self.hidden_tex_color_map)
+            .scale(0.75)
+            .move_to(self.right_arrows[0].get_end() + 0.25 * RIGHT),
+            Tex(r"{h}_{t}", tex_to_color_map=self.hidden_tex_color_map)
+            .scale(0.75)
+            .move_to(self.right_arrows[1].get_end() + 0.25 * RIGHT),
+        )
+
         self.add(self.rect, self.up_line, self.down_line)
         self.add(self.output_gate, self.tanh_gate_1)
         self.add(self.forget_gate, self.input_gate, self.update_gate)
+        self.add(self.left_arrows, self.right_arrows)
 
     def write(self, scene):
         scene.play(Write(self.rect))
         self.write_subpart(self.up_line, scene)
         self.write_subpart(self.down_line, scene)
+        scene.play(FadeIn(self.left_arrows, RIGHT))
+        scene.play(FadeIn(self.right_arrows, RIGHT))
 
         self.write_subpart(self.output_gate, scene)
         self.write_subpart(self.tanh_gate_1, scene)
@@ -1796,3 +1847,10 @@ class LSTMDemo(Scene):
         self.wait()
 
         self.embed()
+
+
+class TitleColah(TitleScene):
+    CONFIG = {
+        "color": GREY_E,
+        "text": "Chris Olah's LSTM Blog",
+    }
