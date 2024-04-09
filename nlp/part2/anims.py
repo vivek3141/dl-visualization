@@ -1854,3 +1854,20 @@ class TitleColah(TitleScene):
         "color": GREY_E,
         "text": "Chris Olah's LSTM Blog",
     }
+
+
+class Thumb(Scene):
+    def construct(self):
+        title = Text("Recurrent Neural Networks", font="Berlin Sans FB", color=A_YELLOW)
+        title.scale(2.3)
+        title.shift(2.5 * UP)
+
+        rnn = RNN(n_cells=4)
+        rnn.shift(1.1 * DOWN)
+
+        VGroup(title, rnn).center()
+
+        self.add(title, rnn)
+        self.wait()
+
+        self.embed()
