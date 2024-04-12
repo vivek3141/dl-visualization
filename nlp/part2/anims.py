@@ -1858,7 +1858,7 @@ class TitleColah(TitleScene):
 
 class Thumb(Scene):
     def construct(self):
-        title = Text("Recurrent Neural Networks", font="Berlin Sans FB", color=A_YELLOW)
+        title = Text("Recurrent Neural Netwoks", font="Berlin Sans FB", color=A_YELLOW)
         title.scale(2.3)
         title.shift(2.5 * UP)
 
