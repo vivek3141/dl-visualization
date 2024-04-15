@@ -20,6 +20,8 @@ A_VIOLET = "#bc80bd"
 A_UNKA = "#ccebc5"
 A_UNKB = "#ffed6f"
 
+EPS = 1e-6
+
 
 def softmax(x, axis=1):
     """
@@ -439,11 +441,14 @@ class MachineTranslation(Scene):
             self.play(FadeIn(input_text[i], UP, run_time=0.5))
 
         self.play(FadeIn(output_text[0], UP), run_time=0.5)
+
+        output_text_copies = VGroup()
         for i in range(1, 4):
             prev_word_copy = output_text[i - 1].deepcopy()
             prev_word_copy.move_to(
                 rnn_decoder.cells[i].down_arrow.get_start() + 0.5 * DOWN
             )
+            output_text_copies.add(prev_word_copy)
 
             self.play(
                 TransformFromCopy(output_text[i - 1], prev_word_copy), run_time=0.5
@@ -477,6 +482,9 @@ class MachineTranslation(Scene):
 
         meaning_grp = VGroup(vec, meaning_text, arr)
         meaning_grp.move_to(2.75 * UP)
+
+        self.play(Uncreate(title))
+        self.wait()
 
         self.play(GrowFromPoint(vec, ORIGIN))
         self.play(Write(arr), Write(meaning_text))
@@ -543,7 +551,169 @@ class MachineTranslation(Scene):
             Uncreate(b_text),
             Uncreate(input_text),
             Uncreate(output_text),
+            Uncreate(output_text_copies),
         )
+
+        self.embed()
+
+
+class Softmax(Scene):
+    def construct(self):
+        input_vec = [-1.5, 2.7, 0.3, -0.5, 1.6]
+        exp_vec = np.exp(input_vec)
+        # output_vec = softmax(input_vec, axis=0)
+        output_vec = [0.01, 0.68, 0.06, 0.03, 0.23]
+
+        input_tex = Tex(
+            f"[{', '.join([str(x) for x in input_vec])}]",
+            tex_to_color_map={f"{i}": A_YELLOW for i in input_vec},
+        )
+        input_tex.scale(1.5)
+        input_tex.shift(2.75 * UP)
+
+        exp_tex = Tex(
+            f"[{', '.join([f'{x:.2f}' for x in exp_vec])}]",
+            tex_to_color_map={f"{x:.2f}": A_YELLOW for x in exp_vec},
+        )
+        exp_tex.scale(1.5)
+        exp_tex.shift(0.5 * UP)
+
+        softmax_tex = Tex(
+            f"[{', '.join([f'{x:.2f}' for x in output_vec])}]",
+            tex_to_color_map={f"{x:.2f}": A_YELLOW for x in output_vec},
+        )
+        softmax_tex.scale(1.5)
+        softmax_tex.shift(1.75 * DOWN)
+
+        axes = Axes(
+            x_range=(0, 1),
+            y_range=(0, 1),
+            height=FRAME_HEIGHT - 3,
+            width=FRAME_WIDTH - 3,
+            x_axis_config={"include_ticks": False},
+        )
+        axes.shift(0.75 * DOWN)
+
+        bars = VGroup()
+        for i in range(len(output_vec)):
+            bar = Rectangle(
+                width=1 / (2 * len(output_vec)) * (FRAME_WIDTH - 3),
+                height=EPS,
+                # height=output_vec[i] * (FRAME_HEIGHT - 3),
+                fill_color=A_LAVENDER,
+                fill_opacity=1,
+                stroke_opacity=1,
+            )
+            bar.move_to(axes.c2p((2 * i + 1) / (2 * len(output_vec))), DOWN)
+            bars.add(bar)
+
+        self.play(Write(input_tex))
+        self.play(Write(axes))
+
+        self.play(
+            *[
+                TransformFromCopy(input_tex[2 * i + 1], bars[i])
+                for i in range(len(bars))
+            ]
+        )
+
+        labels, stretch_anims = VGroup(), []
+        for i in range(len(bars)):
+            new_bar = bars[i].deepcopy()
+            new_bar.set_height(output_vec[i] * (FRAME_HEIGHT - 3), stretch=True)
+            new_bar.move_to(axes.c2p((2 * i + 1) / (2 * len(output_vec))), DOWN)
+
+            label = Tex(f"{output_vec[i]:.2f}")
+            label.next_to(new_bar, UP)
+            labels.add(label)
+
+            stretch_anims.append(Transform(bars[i], new_bar))
+            stretch_anims.append(FadeIn(labels[i], UP))
+        self.play(*stretch_anims)
+        self.wait()
+
+        plus, move_up_anims, move_back_anims = VGroup(), [], []
+        for i in range(len(bars)):
+            mask = i == (len(bars) - 1)
+            p = Tex("+" if not mask else "= 1.00")
+            p.move_to(axes.c2p((2 * (i + 1) + 0.25 * mask) / (2 * len(output_vec))))
+            p.shift(4 * UP)
+            plus.add(p)
+
+            old_center = labels[i].get_center().copy()
+            new_center = [old_center[0], p.get_center()[1], 0]
+            move_up_anims.append(
+                ApplyMethod(
+                    labels[i].move_to,
+                    new_center,
+                )
+            )
+
+            move_back_anims.append(
+                ApplyMethod(
+                    labels[i].move_to,
+                    old_center,
+                )
+            )
+
+        self.play(*move_up_anims, FadeIn(plus, UP))
+        self.wait()
+
+        self.play(*move_back_anims, FadeOut(plus, UP))
+        self.wait()
+
+        self.play(Uncreate(VGroup(axes, bars, labels)))
+
+        arr1 = Arrow(
+            input_tex.get_bottom(),
+            exp_tex.get_top(),
+            stroke_width=10,
+            max_width_to_Length_ratio=float("inf"),
+            stroke_color=A_GREY,
+        )
+        lbl1 = Tex(
+            "e^{x}",
+            tex_to_color_map={"x": A_PINK, "e": A_GREEN},
+        )
+        lbl1.next_to(arr1, RIGHT, buff=0.5)
+
+        arr2 = Arrow(
+            exp_tex.get_bottom(),
+            softmax_tex.get_top(),
+            stroke_width=10,
+            max_width_to_Length_ratio=float("inf"),
+            stroke_color=A_GREY,
+        )
+        lbl2 = Tex(
+            r"1/{\Sigma e^{x}}",
+            tex_to_color_map={"x": A_PINK, "e": A_GREEN, r"\Sigma": A_GREY},
+        )
+        lbl2.next_to(arr2, RIGHT, buff=0.5)
+
+        eq = Tex(
+            r"\text{softmax}({x}) = {{e}^{x} \over \sum {e}^{x}}",
+            tex_to_color_map={
+                "{x}": A_PINK,
+                "{e}": A_GREEN,
+                r"\sum": A_GREY,
+                r"\text{softmax}": A_AQUA,
+            },
+        )
+        eq.scale(1.25)
+        eq.shift(3 * DOWN)
+
+        self.play(FadeIn(arr1, DOWN), Write(lbl1))
+        self.play(FadeIn(exp_tex, DOWN))
+        self.wait()
+
+        self.play(FadeIn(arr2, DOWN), Write(lbl2))
+        self.play(FadeIn(softmax_tex, DOWN))
+        self.wait()
+
+        group = VGroup(*[mob for mob in self.mobjects if isinstance(mob, VMobject)])
+        self.play(group.shift, 0.25 * UP)
+        self.play(Write(eq))
+        self.wait()
 
         self.embed()
 
