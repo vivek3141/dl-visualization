@@ -1060,3 +1060,63 @@ class AttentionScores(Scene):
         self.wait()
 
         self.embed()
+
+
+class Translations(Scene):
+    def construct(self):
+        source = Text(
+            """This kind of experience is part of Disney's efforts to "extend the lifetime of its series and build new relationships with audiences via digital platforms that are becoming ever more important," he added.""",
+        )
+        source.scale(0.75)
+        source.move_to((-FRAME_HEIGHT / 2 + 5 * FRAME_HEIGHT / 6) * UP + 1.5 * RIGHT)
+
+        source_lbl = Text("Source", color=A_PINK)
+        source_lbl.move_to(
+            (4.25 + (FRAME_WIDTH / 2 - 4.25) / 2) * LEFT
+            + (-FRAME_HEIGHT / 2 + 5 * FRAME_HEIGHT / 6) * UP
+        )
+
+        reference = Text(
+            """Ce type d'experience entre dans le cadre des efforts de Disney pour « étendre la dur durée vie de ses séries et construire de nouvelles relations avec son public grâce à des plateformes numériques qui sont de plus en plus importantes », a-t-il ajout é"""
+        )
+        reference.scale(0.75)
+        reference.move_to(-(FRAME_HEIGHT / 2 - 3 * FRAME_HEIGHT / 6) * UP + 1.5 * RIGHT)
+
+        reference_lbl = Text("Reference", color=A_PINK)
+        reference_lbl.move_to(
+            (4.25 + (FRAME_WIDTH / 2 - 4.25) / 2) * LEFT
+            + (-FRAME_HEIGHT / 2 + 3 * FRAME_HEIGHT / 6) * UP
+        )
+
+        output = Text(
+            """Ce genre d'expérience fait partie des efforts de Disney pour « prolonger la durée de vie de ses séries et créer de nouvelles relations avec des publics via des plateformes numériques de plus en plus importantes », a-t-il ajouté."""
+        )
+        output.scale(0.75)
+        output.move_to(-(FRAME_HEIGHT / 2 - 1 * FRAME_HEIGHT / 6) * UP + 1.5 * RIGHT)
+
+        output_lbl = Text("Attention\nModel", color=A_PINK)
+        c1 = output_lbl[:9].get_center()
+        c2 = output_lbl[-5:].get_center()
+        output_lbl[-5:].move_to([c1[0], c2[1], 0])
+        output_lbl.move_to(
+            (4.25 + (FRAME_WIDTH / 2 - 4.25) / 2) * LEFT
+            + (-FRAME_HEIGHT / 2 + 1 * FRAME_HEIGHT / 6) * UP
+        )
+
+        l_left = Line(10 * UP, 10 * DOWN)
+        l_left.shift(4.25 * LEFT)
+
+        l1 = Line(10 * LEFT, 10 * RIGHT)
+        l1.move_to((-FRAME_HEIGHT / 2 + FRAME_HEIGHT / 3) * UP)
+
+        l2 = Line(10 * LEFT, 10 * RIGHT)
+        l2.move_to((-FRAME_HEIGHT / 2 + 2 * FRAME_HEIGHT / 3) * UP)
+
+        self.play(ShowCreation(l_left))
+        self.play(ShowCreation(l1), ShowCreation(l2))
+        self.play(Write(source_lbl), Write(source))
+        self.play(Write(reference_lbl), Write(reference))
+        self.play(Write(output_lbl), Write(output))
+        self.wait()
+
+        self.embed()
