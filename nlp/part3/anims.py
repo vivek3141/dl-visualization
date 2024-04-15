@@ -906,7 +906,6 @@ class Attention(Scene):
             score_anims += [
                 TransformMatchingShapes(score_lbl[i][:2].deepcopy(), eq[3:5]),
                 TransformMatchingShapes(score_lbl[i][2].deepcopy(), eq[5]),
-                # Transform(score_lbl[i][3].deepcopy(), eq[4]),
             ]
             value_anims += [
                 TransformMatchingShapes(encoder_labels[i][0][0].deepcopy(), eq[8]),
@@ -918,6 +917,146 @@ class Attention(Scene):
         self.wait()
 
         self.play(TransformFromCopy(eq, VMobject().move_to(decoder_label)))
+        self.wait()
+
+        self.embed()
+
+
+class AttentionScores(Scene):
+    def construct(self):
+        english_sent = "The agreement on the European Economic Area was signed in August 1992 . <end>"
+        english_sent.split(" ")
+
+        french_sent = "L' accord sur la zone économique européenne a été signé en août 1992 . <end>"
+        french_sent.split(" ")
+
+        image = Image.open("img/attention_scores.png")
+        image = image.convert("RGB")
+
+        pixels = np.array(image.getdata())
+        pixels = pixels.reshape((image.height, image.width, 3))
+
+        HEIGHT = 15
+        WIDTH = 14
+
+        attention_scores = np.zeros((HEIGHT, WIDTH))
+
+        for i in range(HEIGHT):
+            for j in range(WIDTH):
+                h = int((i + 0.5) * image.height / HEIGHT)
+                w = int((j + 0.5) * image.width / WIDTH)
+
+                block = pixels[h : h + 10, w : w + 10]
+                avg = np.mean(block, axis=(0, 1))
+                attention_scores[i][j] = np.mean(avg)
+
+        grid = VGroup()
+        for i in range(HEIGHT):
+            for j in range(WIDTH):
+                color = attention_scores[i][j] / 255 * np.array([1, 1, 1])
+                color = rgb_to_hex(color)
+                rect = Rectangle(
+                    height=1,
+                    width=1,
+                    fill_color=color,
+                    fill_opacity=1,
+                    stroke_width=0,
+                )
+                rect.move_to((i - HEIGHT / 2) * DOWN + (j - WIDTH / 2) * RIGHT)
+                grid.add(rect)
+        grid.scale(0.4)
+
+        french_labels = VGroup()
+        for i, word in enumerate(french_sent.split(" ")):
+            label = Text(word)
+            label.scale(0.5)
+            label.next_to(grid[i * WIDTH], LEFT, buff=0.125)
+            french_labels.add(label)
+
+        english_labels = VGroup()
+        for i, word in enumerate(english_sent.split(" ")):
+            label = Text(word)
+            label.scale(0.5)
+            label.rotate(90 * DEGREES)
+            label.next_to(grid[i], UP, buff=0.125)
+            english_labels.add(label)
+
+        VGroup(french_labels, english_labels, grid).center()
+
+        self.play(Write(french_labels), Write(english_labels))
+        self.play(Write(grid))
+        self.wait()
+
+        l1 = Line(
+            grid[5].get_top(),
+            grid[5 * WIDTH + 5].get_center(),
+            color=A_YELLOW,
+            stroke_width=8,
+        )
+        l2 = Line(
+            grid[5 * WIDTH + 5].get_center(),
+            grid[5 * WIDTH].get_left(),
+            color=A_YELLOW,
+            stroke_width=8,
+        )
+
+        self.play(ShowCreation(l1))
+        self.play(ShowCreation(l2))
+        self.wait()
+
+        self.embed()
+
+        self.play(Uncreate(l1), Uncreate(l2))
+
+        l1 = Line(
+            grid[7].get_top(),
+            grid[8 * WIDTH + 7].get_center(),
+            color=A_YELLOW,
+            stroke_width=8,
+        )
+        l2 = Line(
+            grid[8 * WIDTH + 7].get_center(),
+            grid[8 * WIDTH].get_left(),
+            color=A_YELLOW,
+            stroke_width=8,
+        )
+        l3 = Line(
+            grid[7 * WIDTH + 7].get_center(),
+            grid[7 * WIDTH].get_left(),
+            color=A_YELLOW,
+            stroke_width=8,
+        )
+
+        self.play(ShowCreation(l1))
+        self.play(ShowCreation(l2), ShowCreation(l3))
+        self.wait()
+
+        self.play(Uncreate(l1), Uncreate(l2), Uncreate(l3))
+
+        l1 = Line(
+            grid[8].get_top(),
+            grid[9 * WIDTH + 8].get_center(),
+            color=A_YELLOW,
+            stroke_width=8,
+        )
+        l2 = Line(
+            grid[9 * WIDTH + 8].get_center(),
+            grid[9 * WIDTH].get_left(),
+            color=A_YELLOW,
+            stroke_width=8,
+        )
+        l3 = Line(
+            grid[8 * WIDTH + 8].get_center(),
+            grid[8 * WIDTH].get_left(),
+            color=A_YELLOW,
+            stroke_width=8,
+        )
+
+        self.play(ShowCreation(l1))
+        self.play(ShowCreation(l2), ShowCreation(l3))
+        self.wait()
+
+        self.play(Uncreate(l1), Uncreate(l2), Uncreate(l3))
         self.wait()
 
         self.embed()
