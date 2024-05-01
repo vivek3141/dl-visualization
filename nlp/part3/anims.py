@@ -1120,3 +1120,91 @@ class Translations(Scene):
         self.wait()
 
         self.embed()
+
+
+class Thumb(Scene):
+    def construct(self):
+        title = Text("Attention Mechanism", color=A_YELLOW, font="Berlin Sans FB")
+        title.scale(2.75)
+        title.shift(3 * UP)
+
+        rnn_encoder = RNN(
+            n_cells=4, remove_right_arrow=False, rnn_kwargs={"fill_color": A_RED}
+        )
+        rnn_encoder.scale(1.35)
+
+        rnn_decoder = RNN(
+            n_cells=1, remove_left_arrow=False, rnn_kwargs={"fill_color": A_BLUE}
+        )
+        rnn_decoder.scale(1.35)
+
+        offset = (
+            rnn_encoder.cells[-1].right_arrow.get_center()
+            - rnn_decoder.cells[0].left_arrow.get_center()
+        )
+        rnn_decoder.shift(offset + 3 * RIGHT)
+
+        rnn = VGroup(rnn_encoder, rnn_decoder)
+        rnn.move_to(1.75 * DOWN)
+        rnn.scale(0.5)
+
+        self.add(rnn, title)
+
+        encoder_labels = VGroup()
+        for i in range(4):
+            lbl = Tex(f"h_{i+1}")
+            lbl.move_to(rnn_encoder.cells[i].sq)
+            lbl.scale(1.25)
+            encoder_labels.add(lbl)
+
+        decoder_label = Tex("s")
+        decoder_label.scale(1.25)
+        decoder_label.move_to(rnn_decoder.cells[0].sq)
+
+        arr_1 = VGroup()
+        score_lbl, bars = VGroup(), VGroup()
+        distrib = [0.05, 0.1, 0.65, 0.2]
+
+        for i in range(4):
+            arr = Arrow(
+                rnn_decoder.cells[0].sq.get_bounding_box_point(UP) + 0.125 * UP,
+                rnn_encoder.cells[i].up_arrow.get_end(),
+                max_width_to_Length_ratio=float("inf"),
+                stroke_width=4,
+                stroke_color=A_GREY,
+                buff=0.125,
+            )
+            arr_1.add(arr)
+
+            lbl = Tex(
+                f"s^T h_{i+1}",
+                tex_to_color_map={
+                    "s": A_PINK,
+                    "h": A_GREEN,
+                    f"{i+1}": A_UNKA,
+                    "T": A_GREY,
+                },
+            )
+            lbl.scale(1.5)
+            lbl.next_to(rnn_encoder.cells[i].up_arrow, UP)
+            score_lbl.add(lbl)
+
+            bar = Rectangle(
+                height=distrib[i],
+                width=1,
+                stroke_width=4,
+                stroke_color=WHITE,
+                fill_color=A_LAVENDER,
+                fill_opacity=0.75,
+            )
+            bar.next_to(lbl, UP)
+            bars.add(bar)
+
+        self.add(arr_1, bars, score_lbl)
+
+        grp = VGroup(*[mob for mob in self.mobjects if isinstance(mob, VMobject)])
+        grp.center()
+
+        self.embed()
+
+        self.wait()

@@ -1858,8 +1858,8 @@ class TitleColah(TitleScene):
 
 class Thumb(Scene):
     def construct(self):
-        title = Text("Recurrent Neural Netwoks", font="Berlin Sans FB", color=A_YELLOW)
-        title.scale(2.3)
+        title = Text("Recurrent Neural Netwok", font="Berlin Sans FB", color=A_YELLOW)
+        title.scale(2.75)
         title.shift(2.5 * UP)
 
         rnn = RNN(n_cells=4)
